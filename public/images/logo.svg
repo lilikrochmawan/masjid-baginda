@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="40" fill="none" stroke="#047857" stroke-width="20" />
+  <path d="M120 220c0-50 40-90 90-90s90 40 90 90v65H120v-65Z" fill="#059669"/>
+  <path d="M95 220c0-70 55-125 125-125s125 55 125 125v60H95v-60Z" fill="url(#g)" opacity="0.85"/>
+  <path d="M200 80c-30 0-55 25-55 55h110c0-30-25-55-55-55Z" fill="#10b981"/>
+  <path d="M170 45c0 25 20 45 45 45s45-20 45-45c0-15-12-27-27-27-8 0-16 4-21 10-7-6-16-10-26-10-15 0-27 12-27 27Z" fill="#10b981"/>
+  <path d="M223 57c0-9-7-16-16-16s-16 7-16 16c0 7 4 13 10 15v7h12v-7c6-2 10-8 10-15Z" fill="#fff"/>
+  <text x="200" y="290" text-anchor="middle" fill="#064e3b" font-family="Segoe UI, sans-serif" font-size="30" font-weight="700">MASJID BAGINDA</text>
+  <text x="200" y="330" text-anchor="middle" fill="#065f46" font-family="Segoe UI, sans-serif" font-size="20">PERUM TAMAN HARMONI</text>
+</svg>
