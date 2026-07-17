@@ -1,3 +1,7 @@
+@php
+    $setting = \App\Models\Setting::first();
+    $logoImage = $setting && $setting->logo ? asset('storage/' . $setting->logo) : asset('images/image.png');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -401,7 +405,10 @@
 </head>
 <body>
     <div class="navbar">
-        <div class="navbar-brand"><span>🕌</span> Masjid Baginda</div>
+        <div class="navbar-brand">
+            <img src="{{ $logoImage }}" alt="Logo" style="height: 36px; width: auto; object-fit: contain; border-radius: 6px; vertical-align: middle;">
+            Masjid Baginda
+        </div>
         <div class="navbar-menu">
             <a href="{{ route('dashboard') }}">Dashboard</a>
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
@@ -445,6 +452,11 @@
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="no_hp">No HP</label>
+                        <input type="text" id="no_hp" name="no_hp" value="{{ old('no_hp') }}" placeholder="08xxxxxxxxxx">
                     </div>
 
                     <div class="form-group">
@@ -495,6 +507,10 @@
                                 <div class="permission-child">
                                     <input type="checkbox" id="sub_koin_scan" name="akses_modul[]" value="koin.scan" class="child-checkbox">
                                     <label for="sub_koin_scan">Transaksi Scan</label>
+                                </div>
+                                <div class="permission-child">
+                                    <input type="checkbox" id="sub_koin_qr" name="akses_modul[]" value="koin.qr.generate" class="child-checkbox">
+                                    <label for="sub_koin_qr">Generate QR Code</label>
                                 </div>
                                 <div class="permission-child">
                                     <input type="checkbox" id="sub_koin_pen" name="akses_modul[]" value="koin.penerimaan" class="child-checkbox">
@@ -610,6 +626,7 @@
                                 <th>#</th>
                                 <th>Nama</th>
                                 <th>Email</th>
+                                <th>No HP</th>
                                 <th>Hak Akses</th>
                                 <th>Dibuat</th>
                                 <th>Aksi</th>
@@ -621,6 +638,7 @@
                                     <td>{{ $item->id }}</td>
                                     <td><strong>{{ $item->name }}</strong></td>
                                     <td>{{ $item->email }}</td>
+                                    <td>{{ $item->no_hp ?: '-' }}</td>
                                     <td><span class="badge role-{{ $item->hakakses->nama_hakakses }}">{{ ucfirst(str_replace('_', ' ', $item->hakakses->nama_hakakses)) }}</span></td>
                                     <td>{{ $item->created_at->format('d M Y') }}</td>
                                     <td><a href="{{ route('users.edit', $item->id) }}" class="action-button">Ubah</a></td>

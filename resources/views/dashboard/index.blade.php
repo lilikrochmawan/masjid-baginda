@@ -1,3 +1,7 @@
+@php
+    $setting = \App\Models\Setting::first();
+    $logoImage = $setting && $setting->logo ? asset('storage/' . $setting->logo) : asset('images/image.png');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -290,38 +294,56 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
+            width: 95%;
             margin: 40px auto;
             padding: 0 24px;
         }
         
         .dashboard-header {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            background: linear-gradient(135deg, #059669 0%, #022c1e 100%);
+            padding: 36px 30px;
+            border-radius: 24px;
+            box-shadow: 0 12px 36px rgba(5, 150, 105, 0.12);
             margin-bottom: 30px;
-            border: 1px solid rgba(16, 185, 129, 0.08);
             position: relative;
             overflow: hidden;
+            border: none;
         }
 
         .dashboard-header::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 6px;
-            height: 100%;
-            background: linear-gradient(to bottom, #10b981, #059669);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+            top: -100px;
+            right: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .dashboard-header::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            bottom: -50px;
+            left: -50px;
+            border-radius: 50%;
+            pointer-events: none;
         }
         
         .dashboard-header h2 {
-            color: #0f172a;
+            color: #ffffff;
             margin-bottom: 8px;
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 800;
             letter-spacing: -0.5px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .user-info {
@@ -364,16 +386,19 @@
             font-weight: 600;
         }
         
-        .dashboard-content {
+        .dashboard-card {
             background: white;
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            padding: 28px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
             border: 1px solid rgba(16, 185, 129, 0.08);
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
         }
         
-        .dashboard-content h3 {
+        .dashboard-card h3 {
             color: #0f172a;
             font-size: 20px;
             font-weight: 800;
@@ -384,7 +409,7 @@
             position: relative;
         }
 
-        .dashboard-content h3::after {
+        .dashboard-card h3::after {
             content: '';
             position: absolute;
             bottom: -2px;
@@ -446,98 +471,85 @@
             opacity: 0.95;
         }
 
-        .menu-grid {
+        /* Slideshow / Slider Styles */
+        .mySlides {
+            display: none;
+        }
+        .fade {
+            animation-name: fade;
+            animation-duration: 1s;
+        }
+        @keyframes fade {
+            from {opacity: .4} 
+            to {opacity: 1}
+        }
+        .dot.active {
+            background-color: #10b981 !important;
+        }
+        
+        /* 2-Column Grid Layout for menus */
+        .menu-grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .menu-item {
-            position: relative;
-            color: white;
-            padding: 24px;
-            border-radius: 16px;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 190px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
-            opacity: 0;
-            transition: opacity 0.3s;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
         }
 
-        .menu-item:hover::before {
-            opacity: 1;
+        @media (max-width: 1200px) {
+            .menu-grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .menu-grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .menu-grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Restored original colorful menu card classes */
+        .menu-item-compact {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            text-decoration: none;
+            color: white !important;
+            min-height: 72px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .menu-item-compact:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+            filter: brightness(1.05);
         }
         
-        .menu-item:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
-        }
-        
-        .menu-item-icon {
-            font-size: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            width: 52px;
-            height: 52px;
+        .menu-item-icon-compact {
+            font-size: 20px;
+            background: rgba(255,255,255,0.2);
+            width: 42px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
+            border-radius: 10px;
+            flex-shrink: 0;
             backdrop-filter: blur(5px);
             transition: transform 0.3s;
         }
         
-        .menu-item:hover .menu-item-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .menu-item-name {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-            margin-top: 12px;
-        }
-        
-        .menu-item-desc {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.85);
-            margin-top: 6px;
-            line-height: 1.4;
-            font-weight: 400;
-            flex-grow: 1;
-        }
-
-        .menu-item-arrow {
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            margin-top: 16px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            opacity: 0.95;
-            transition: gap 0.2s;
-        }
-
-        .menu-item:hover .menu-item-arrow {
-            gap: 8px;
+        .menu-item-compact:hover .menu-item-icon-compact {
+            transform: scale(1.08) rotate(3deg);
         }
 
         /* Specific Gradients */
@@ -547,6 +559,13 @@
         .item-keu { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
         .item-tpq { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
         .item-about { background: linear-gradient(135deg, #6b7280 0%, #374151 100%); }
+
+        @media (max-width: 1024px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr !important;
+                gap: 24px !important;
+            }
+        }
         
         @media (max-width: 768px) {
             .navbar {
@@ -611,29 +630,34 @@
             }
             
             .dashboard-header {
-                padding: 20px;
+                padding: 28px 20px;
             }
             .dashboard-header h2 {
-                font-size: 22px;
+                font-size: 24px;
             }
             .user-info {
                 grid-template-columns: 1fr;
             }
             
-            .dashboard-content {
-                padding: 24px;
+            .dashboard-card {
+                padding: 20px;
+                border-radius: 20px;
+                margin-bottom: 20px;
             }
             
-            .menu-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
+            .menu-grid-container {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
             }
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <div class="navbar-brand"><span>🕌</span> Masjid Baginda</div>
+        <div class="navbar-brand">
+            <img src="{{ $logoImage }}" alt="Logo" style="height: 36px; width: auto; object-fit: contain; border-radius: 6px; vertical-align: middle;">
+            Masjid Baginda
+        </div>
         <button type="button" class="menu-toggle" id="menuToggle">☰</button>
         <div class="navbar-menu" id="navbarMenu">
             <button type="button" id="profileToggle" class="profile-toggle">
@@ -718,86 +742,119 @@
     
     <div class="container">
         <div class="dashboard-header">
-            <h2>Selamat Datang, {{ $user->name }}! 👋</h2>
-            
-            <div class="user-info">
-                <div class="info-card">
-                    <label>Email</label>
-                    <div class="value">{{ $user->email }}</div>
-                </div>
-                <div class="info-card">
-                    <label>Hak Akses</label>
-                    <div class="value">{{ ucfirst($hakakses->nama_hakakses) }}</div>
-                </div>
-                <div class="info-card">
-                    <label>Deskripsi</label>
-                    <div class="value">{{ $hakakses->deskripsi }}</div>
-                </div>
-            </div>
+            <h2>Ahlan wa sahlan, {{ $user->name }}! 👋</h2>
         </div>
         
-        <div class="dashboard-content">
-            <h3>📊 Dashboard Utama</h3>
-            
-            <div class="welcome-message">
-                <p>Anda telah berhasil login ke sistem Baginda dengan hak akses <strong>{{ ucfirst($hakakses->nama_hakakses) }}</strong>.</p>
-                <p>Gunakan menu di bawah untuk mengakses berbagai fitur sistem sesuai dengan hak akses Anda.</p>
+        <div class="dashboard-layout" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-bottom: 40px; margin-top: 20px;">
+            <!-- Left Side: Slideshow / Announcement -->
+            <div class="dashboard-card slideshow-container" style="justify-content: space-between;">
+                <h3>📢 Pengumuman & Kegiatan Masjid</h3>
+                
+                <div class="slider-wrapper" style="position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px; border: 1px solid #e2e8f0; background:#f8fafc;">
+                    @if($pengumumanList->isEmpty())
+                        <div class="mySlides fade" style="display: block; width: 100%; height: 100%;">
+                            <img src="{{ asset('images/default_announcement.png') }}" style="width:100%; height:100%; object-fit: cover;" alt="Welcome Announcement">
+                        </div>
+                    @else
+                        @foreach($pengumumanList as $index => $item)
+                            <div class="mySlides fade" style="display: {{ $index === 0 ? 'block' : 'none' }}; width: 100%; height: 100%; position: relative;">
+                                <img src="{{ asset('storage/' . $item->image_path) }}" style="width:100%; height:100%; object-fit: cover;" alt="{{ $item->title ?? 'Announcement' }}">
+                                @if($item->title)
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0) 100%); color: white; padding: 25px 15px 15px; font-size: 14px; font-weight: 600; text-align: left;">
+                                        {{ $item->title }}
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    @endif
+
+                    @if($pengumumanList->count() > 1)
+                        <!-- Next/prev buttons -->
+                        <a class="prev" onclick="plusSlides(-1)" style="cursor: pointer; position: absolute; top: 50%; width: auto; margin-top: -22px; padding: 12px 16px; color: white; font-weight: bold; font-size: 18px; transition: 0.6s ease; border-radius: 0 3px 3px 0; user-select: none; background-color: rgba(0,0,0,0.4); left: 0; z-index:10; text-decoration:none;">&#10094;</a>
+                        <a class="next" onclick="plusSlides(1)" style="cursor: pointer; position: absolute; top: 50%; width: auto; margin-top: -22px; padding: 12px 16px; color: white; font-weight: bold; font-size: 18px; transition: 0.6s ease; border-radius: 3px 0 0 3px; user-select: none; background-color: rgba(0,0,0,0.4); right: 0; z-index:10; text-decoration:none;">&#10095;</a>
+                    @endif
+                </div>
+
+                @if($pengumumanList->count() > 1)
+                    <!-- The dots/circles -->
+                    <div style="text-align:center; margin-top: 15px;">
+                        @foreach($pengumumanList as $index => $item)
+                            <span class="dot {{ $index === 0 ? 'active' : '' }}" onclick="currentSlide({{ $index + 1 }})" style="cursor: pointer; height: 10px; width: 10px; margin: 0 4px; background-color: #cbd5e1; border-radius: 50%; display: inline-block; transition: background-color 0.6s ease;"></span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
-            <div class="menu-grid">
-                @if ($user->hasAccess('users'))
-                    <a href="{{ route('users.index') }}" class="menu-item item-user">
-                        <div class="menu-item-icon">👥</div>
-                        <div class="menu-item-name">Manajemen User</div>
-                        <div class="menu-item-desc">Atur data pengguna, hak akses, dan tingkat keamanan sistem secara terpusat.</div>
-                        <div class="menu-item-arrow">Buka Modul ➔</div>
-                    </a>
-                @endif
+            <!-- Right Side: Menu Cards -->
+            <div class="dashboard-card dashboard-content">
+                <h3>📊 Menu Utama</h3>
 
-                @if ($user->hasAccess('koin'))
-                    <a href="{{ route('koin.index') }}" class="menu-item item-koin">
-                        <div class="menu-item-icon">🥫</div>
-                        <div class="menu-item-name">Koin Baginda</div>
-                        <div class="menu-item-desc">Pencatatan sirkulasi, stok, dan distribusi Koin Baginda untuk sosial masjid.</div>
-                        <div class="menu-item-arrow">Buka Modul ➔</div>
-                    </a>
-                @endif
-                
-                @if ($user->hasAccess('operasional'))
-                    <a href="{{ route('operasional.dashboard') }}" class="menu-item item-op">
-                        <div class="menu-item-icon">📋</div>
-                        <div class="menu-item-name">Data Operasional</div>
-                        <div class="menu-item-desc">Pengelolaan inventarisasi fisik, aset, dan berkas administrasi operasional.</div>
-                        <div class="menu-item-arrow">Buka Modul ➔</div>
-                    </a>
-                @endif
-                
-                @if ($user->hasAccess('keuangan'))
-                    <a href="{{ route('keuangan.index') }}" class="menu-item item-keu">
-                        <div class="menu-item-icon">💰</div>
-                        <div class="menu-item-name">Keuangan</div>
-                        <div class="menu-item-desc">Pantau catatan kas masuk, pengeluaran, anggaran, serta infak & sedekah masjid.</div>
-                        <div class="menu-item-arrow">Buka Modul ➔</div>
-                    </a>
-                @endif
-                
-                @if ($user->hasAccess('tpq'))
-                    <a href="{{ route('tpq.dashboard') }}" class="menu-item item-tpq">
-                        <div class="menu-item-icon">📚</div>
-                        <div class="menu-item-name">Manajemen TPQ</div>
-                        <div class="menu-item-desc">Kelola administrasi santri, data kelas, guru pengampu, absensi, serta rekap laporan.</div>
-                        <div class="menu-item-arrow">Buka Modul ➔</div>
-                    </a>
-                @endif
-                
-                @if ($user->hasAccess('tentang'))
-                    <a href="{{ route('settings.index') }}" class="menu-item item-about">
-                        <div class="menu-item-icon">⚙️</div>
-                        <div class="menu-item-name">Pengaturan Sistem</div>
-                        <div class="menu-item-desc">Konfigurasi token WhatsApp Gateway Fonnte, kredensial Payment Gateway Midtrans, dan parameter sistem lainnya.</div>
-                        <div class="menu-item-arrow">Buka Pengaturan ➔</div>
-                    </a>
-                @endif
+                <div class="welcome-message" style="margin-bottom: 20px; font-size: 13.5px; color: #475569; text-align:left;">
+                    <p>Anda login sebagai <strong>{{ ucfirst($hakakses->nama_hakakses) }}</strong>. Silakan pilih modul kerja di bawah:</p>
+                </div>
+
+                <!-- 2-column grid layout for menus with original colorful gradient styling -->
+                <div class="menu-grid-container" style="flex: 1;">
+                    @if ($user->hasAccess('users'))
+                        <a href="{{ route('users.index') }}" class="menu-item-compact item-user">
+                            <div class="menu-item-icon-compact">👥</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Manajemen User</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Atur data pengguna, hak akses, dan tingkat keamanan.</div>
+                            </div>
+                        </a>
+                    @endif
+
+                    @if ($user->hasAccess('koin'))
+                        <a href="{{ route('koin.index') }}" class="menu-item-compact item-koin">
+                            <div class="menu-item-icon-compact">🥫</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Koin Baginda</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Pencatatan sirkulasi, stok, dan distribusi Koin Baginda.</div>
+                            </div>
+                        </a>
+                    @endif
+                    
+                    @if ($user->hasAccess('operasional'))
+                        <a href="{{ route('operasional.dashboard') }}" class="menu-item-compact item-op">
+                            <div class="menu-item-icon-compact">📋</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Data Operasional</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Pengelolaan inventarisasi fisik, aset, dan berkas.</div>
+                            </div>
+                        </a>
+                    @endif
+                    
+                    @if ($user->hasAccess('keuangan'))
+                        <a href="{{ route('keuangan.index') }}" class="menu-item-compact item-keu">
+                            <div class="menu-item-icon-compact">💰</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Keuangan</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Pantau catatan kas masuk, pengeluaran, anggaran, infak.</div>
+                            </div>
+                        </a>
+                    @endif
+                    
+                    @if ($user->hasAccess('tpq'))
+                        <a href="{{ route('tpq.dashboard') }}" class="menu-item-compact item-tpq">
+                            <div class="menu-item-icon-compact">📚</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Manajemen TPQ</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Kelola administrasi santri, data kelas, guru, absensi.</div>
+                            </div>
+                        </a>
+                    @endif
+                    
+                    @if ($user->hasAccess('tentang'))
+                        <a href="{{ route('settings.index') }}" class="menu-item-compact item-about">
+                            <div class="menu-item-icon-compact">⚙️</div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Pengaturan Sistem</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Konfigurasi token Fonnte, Midtrans, & parameter sistem.</div>
+                            </div>
+                        </a>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -846,6 +903,61 @@
                 navbarMenu.classList.remove('active');
             }
         });
+
+        // Slideshow logic
+        let slideIndex = 1;
+        let slideInterval;
+        const slides = document.getElementsByClassName("mySlides");
+        const dots = document.getElementsByClassName("dot");
+
+        if (slides.length > 0) {
+            showSlides(slideIndex);
+            startAutoSlide();
+        }
+
+        function plusSlides(n) {
+            stopAutoSlide();
+            showSlides(slideIndex += n);
+            startAutoSlide();
+        }
+
+        function currentSlide(n) {
+            stopAutoSlide();
+            showSlides(slideIndex = n);
+            startAutoSlide();
+        }
+
+        function showSlides(n) {
+            let i;
+            if (n > slides.length) {slideIndex = 1}
+            if (n < 1) {slideIndex = slides.length}
+            
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            
+            if (slides[slideIndex-1]) {
+                slides[slideIndex-1].style.display = "block";
+            }
+            if (dots[slideIndex-1]) {
+                dots[slideIndex-1].className += " active";
+            }
+        }
+
+        function startAutoSlide() {
+            if (slides.length > 1) {
+                slideInterval = setInterval(function() {
+                    showSlides(slideIndex += 1);
+                }, 5000); // Auto change every 5 seconds
+            }
+        }
+
+        function stopAutoSlide() {
+            clearInterval(slideInterval);
+        }
     </script>
 </body>
 </html>

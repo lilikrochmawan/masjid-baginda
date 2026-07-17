@@ -35,6 +35,9 @@ class KoinBagindaController extends Controller
                 if (str_starts_with($route, 'koin.scan') && !$user->hasAccess('koin.scan')) {
                     abort(403, 'Anda tidak memiliki akses untuk submodule Transaksi Scan.');
                 }
+                if (str_starts_with($route, 'koin.qr.generate') && !$user->hasAccess('koin.qr.generate')) {
+                    abort(403, 'Anda tidak memiliki akses untuk submodule Generate QR.');
+                }
                 if (str_starts_with($route, 'koin.laporan') && !$user->hasAccess('koin.laporan')) {
                     abort(403, 'Anda tidak memiliki akses untuk submodule Laporan Koin.');
                 }
@@ -162,16 +165,108 @@ class KoinBagindaController extends Controller
             ->orderBy('kode_kaleng')
             ->get();
 
+        // Gabungkan seluruh kaleng dengan menyematkan status
+        $allKalengs = [];
+        foreach ($kalengBelum as $k) {
+            $allKalengs[] = [
+                'id' => $k->id,
+                'kode_kaleng' => $k->kode_kaleng,
+                'nama_kaleng' => $k->nama_kaleng,
+                'pemilik' => $k->latestPemilik?->nama ?? '-',
+                'alamat' => $k->latestPemilik?->alamat ?? '-',
+                'status' => 'Belum Scan',
+                'status_code' => 0
+            ];
+        }
+        foreach ($kalengSudah as $k) {
+            $allKalengs[] = [
+                'id' => $k->id,
+                'kode_kaleng' => $k->kode_kaleng,
+                'nama_kaleng' => $k->nama_kaleng,
+                'pemilik' => $k->latestPemilik?->nama ?? '-',
+                'alamat' => $k->latestPemilik?->alamat ?? '-',
+                'status' => 'Sudah Scan',
+                'status_code' => 1
+            ];
+        }
+
         $penerimaan = PenerimaanKaleng::with('user')->orderBy('tanggal_penerimaan', 'desc')->get();
         $totalPenerimaan = $penerimaan->sum('jumlah');
+
+        $penerimaanList = [];
+        foreach ($penerimaan as $item) {
+            $penerimaanList[] = [
+                'id' => $item->id,
+                'tanggal_penerimaan' => $item->tanggal_penerimaan,
+                'tanggal_formatted' => \Illuminate\Support\Carbon::parse($item->tanggal_penerimaan)->format('d M Y'),
+                'jumlah' => $item->jumlah,
+                'jumlah_formatted' => 'Rp ' . number_format($item->jumlah, 0, ',', '.'),
+                'keterangan' => $item->keterangan ?? '-',
+                'user_name' => $item->user?->name ?? '-'
+            ];
+        }
 
         return view('koin.laporan', compact(
             'user',
             'hakakses',
             'kalengSudah',
             'kalengBelum',
+            'allKalengs',
             'penerimaan',
+            'penerimaanList',
             'totalPenerimaan'
+        ));
+    }
+
+    public function printLaporan(Request $request)
+    {
+        $user = Auth::user();
+        $hakakses = $user->hakakses;
+
+        if (!$user->hasAccess('koin.laporan')) {
+            abort(403, 'Anda tidak memiliki hak akses untuk Laporan.');
+        }
+
+        $type = $request->query('type', 'bulanan');
+        $month = $request->query('bulan', now()->month);
+        $year = $request->query('tahun', now()->year);
+
+        $query = PenerimaanKaleng::with('user');
+
+        if ($type === 'bulanan') {
+            $query->whereMonth('tanggal_penerimaan', $month)
+                  ->whereYear('tanggal_penerimaan', $year);
+        } elseif ($type === 'tahunan') {
+            $query->whereYear('tanggal_penerimaan', $year);
+        }
+
+        $penerimaan = $query->orderBy('tanggal_penerimaan', 'asc')->get();
+        $totalPenerimaan = $penerimaan->sum('jumlah');
+
+        $setting = \App\Models\Setting::first();
+        $logoImage = $setting && $setting->logo ? asset('storage/' . $setting->logo) : asset('images/image.png');
+
+        $bulanNama = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        $periodeText = '';
+        if ($type === 'bulanan') {
+            $periodeText = $bulanNama[(int)$month] . ' ' . $year;
+        } elseif ($type === 'tahunan') {
+            $periodeText = 'Tahun ' . $year;
+        } else {
+            $periodeText = 'Semua Periode';
+        }
+
+        return view('koin.laporan_print', compact(
+            'penerimaan',
+            'totalPenerimaan',
+            'logoImage',
+            'type',
+            'periodeText'
         ));
     }
 
@@ -180,7 +275,16 @@ class KoinBagindaController extends Controller
         $request->validate([
             'kode_kaleng' => 'required|string|exists:tb_kaleng,kode_kaleng',
             'tanggal_ambil' => 'required|date',
+            'qr_signature' => 'required|string',
         ]);
+
+        $expected = substr(hash_hmac('sha256', $request->kode_kaleng, config('app.key') ?? 'default_secret'), 0, 16);
+
+        if (!hash_equals($expected, $request->qr_signature)) {
+            return redirect()->route('koin.scan')
+                ->with('error', 'QR Code tidak valid atau bukan berasal dari aplikasi ini.')
+                ->withInput();
+        }
 
         $kaleng = Kaleng::where('kode_kaleng', $request->kode_kaleng)->firstOrFail();
 
@@ -236,20 +340,47 @@ class KoinBagindaController extends Controller
         $templateObj = WaTemplate::firstOrCreate(
             ['key' => 'koin_scan'],
             [
-                'template' => "*_Assalamu'alaikum wr. wb._*\n\nYth. Bapak/Ibu *{nama_pemilik}*,\n\nKaleng dengan kode *{kode_kaleng}* ({nama_kaleng}) telah berhasil discan / diambil oleh petugas pada tanggal *{tanggal_ambil}*.\n\nTerima kasih atas infak dan partisipasi Anda dalam program Koin Baginda. Semoga menjadi amal jariyah dan membawa berkah bagi keluarga.\n\n*_Wassalamu'alaikum wr. wb._*"
+                'template' => "*_Assalamu'alaikum wr. wb._*\n\nYth. Bapak/Ibu *{nama_pemilik}*,\n\nKaleng dengan kode *{kode_kaleng}* ({nama_kaleng}) telah berhasil discan / diambil oleh petugas *{nama_petugas}* pada tanggal *{tanggal_ambil}*.\n\nTerima kasih atas infak dan partisipasi Anda dalam program Koin Baginda. Semoga menjadi amal jariyah dan membawa berkah bagi keluarga.\n\n*_Wassalamu'alaikum wr. wb._*"
             ]
         );
 
+        // Auto-update existing template if it doesn't contain {nama_petugas}
+        if (!str_contains($templateObj->template, '{nama_petugas}')) {
+            $newTemplate = str_replace(
+                'oleh petugas pada tanggal',
+                'oleh petugas *{nama_petugas}* pada tanggal',
+                $templateObj->template
+            );
+            if (!str_contains($newTemplate, '{nama_petugas}')) {
+                $newTemplate = str_replace(
+                    'oleh petugas',
+                    'oleh petugas *{nama_petugas}*',
+                    $templateObj->template
+                );
+            }
+            $templateObj->update(['template' => $newTemplate]);
+            $templateObj->template = $newTemplate;
+        }
+
         $templateText = $templateObj->template;
 
-        // Format variables
-        $formattedTanggal = Carbon::parse($transaksi->tanggal_ambil)->translatedFormat('d F Y');
+        // Format variables (Force Indonesian Month)
+        $formattedTanggalEn = Carbon::parse($transaksi->tanggal_ambil)->format('d F Y');
+        $monthsId = [
+            'January' => 'Januari', 'February' => 'Februari', 'March' => 'Maret', 'April' => 'April',
+            'May' => 'Mei', 'June' => 'Juni', 'July' => 'Juli', 'August' => 'Agustus',
+            'September' => 'September', 'October' => 'Oktober', 'November' => 'November', 'December' => 'Desember'
+        ];
+        $formattedTanggal = strtr($formattedTanggalEn, $monthsId);
+
+        $petugasName = Auth::user()?->name ?? 'Petugas';
 
         $message = strtr($templateText, [
             '{nama_pemilik}' => $pemilik->nama,
             '{kode_kaleng}' => $kaleng->kode_kaleng,
             '{nama_kaleng}' => $kaleng->nama_kaleng,
             '{tanggal_ambil}' => $formattedTanggal,
+            '{nama_petugas}' => $petugasName,
         ]);
 
         // Normalize phone number to international format
@@ -276,5 +407,19 @@ class KoinBagindaController extends Controller
         } catch (\Exception $e) {
             return 'Gagal menghubungkan ke server Fonnte: ' . $e->getMessage();
         }
+    }
+
+    public function qrGenerator()
+    {
+        $user = Auth::user();
+        $hakakses = $user->hakakses;
+
+        $kalengs = Kaleng::with('latestPemilik')->orderBy('kode_kaleng')->get();
+
+        foreach ($kalengs as $kaleng) {
+            $kaleng->signature = substr(hash_hmac('sha256', $kaleng->kode_kaleng, config('app.key') ?? 'default_secret'), 0, 16);
+        }
+
+        return view('koin.qr_generator', compact('user', 'hakakses', 'kalengs'));
     }
 }

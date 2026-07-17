@@ -207,4 +207,165 @@ class SettingTest extends TestCase
             'template' => 'New Koin scan template {nama_pemilik}',
         ]);
     }
+
+    public function test_admin_can_update_login_background()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $adminHak = HakAkses::where('nama_hakakses', 'administrator')->first();
+        $admin = User::factory()->create([
+            'tb_hakakses_id' => $adminHak->id,
+        ]);
+
+        $file = \Illuminate\Http\UploadedFile::fake()->image('custom_mosque.jpg');
+
+        $response = $this->actingAs($admin)->post('/settings/login-bg', [
+            'foto_masjid' => $file,
+        ]);
+
+        $response->assertRedirect('/settings?tab=login');
+        $response->assertSessionHas('success', 'Foto background login berhasil diperbarui.');
+
+        $setting = Setting::first();
+        $this->assertNotNull($setting->foto_masjid);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($setting->foto_masjid);
+    }
+
+    public function test_admin_can_reset_login_background()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $adminHak = HakAkses::where('nama_hakakses', 'administrator')->first();
+        $admin = User::factory()->create([
+            'tb_hakakses_id' => $adminHak->id,
+        ]);
+
+        $setting = Setting::first();
+        if (!$setting) {
+            $setting = Setting::create([
+                'id' => 1,
+                'midtrans_environment' => 'sandbox',
+            ]);
+        }
+        
+        $setting->foto_masjid = 'settings/custom_mosque.jpg';
+        $setting->save();
+
+        $response = $this->actingAs($admin)->post('/settings/login-bg/reset');
+
+        $response->assertRedirect('/settings?tab=login');
+        $response->assertSessionHas('success', 'Background login telah di-reset ke default.');
+
+        $setting->refresh();
+        $this->assertNull($setting->foto_masjid);
+    }
+
+    public function test_admin_can_update_logo()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $adminHak = HakAkses::where('nama_hakakses', 'administrator')->first();
+        $admin = User::factory()->create([
+            'tb_hakakses_id' => $adminHak->id,
+        ]);
+
+        $file = \Illuminate\Http\UploadedFile::fake()->image('custom_logo.png');
+
+        $response = $this->actingAs($admin)->post('/settings/logo', [
+            'logo' => $file,
+        ]);
+
+        $response->assertRedirect('/settings?tab=login');
+        $response->assertSessionHas('success', 'Logo aplikasi berhasil diperbarui.');
+
+        $setting = Setting::first();
+        $this->assertNotNull($setting->logo);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($setting->logo);
+    }
+
+    public function test_admin_can_reset_logo()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $adminHak = HakAkses::where('nama_hakakses', 'administrator')->first();
+        $admin = User::factory()->create([
+            'tb_hakakses_id' => $adminHak->id,
+        ]);
+
+        $setting = Setting::first();
+        if (!$setting) {
+            $setting = Setting::create([
+                'id' => 1,
+                'midtrans_environment' => 'sandbox',
+            ]);
+        }
+        
+        $setting->logo = 'settings/custom_logo.png';
+        $setting->save();
+
+        $response = $this->actingAs($admin)->post('/settings/logo/reset');
+
+        $response->assertRedirect('/settings?tab=login');
+        $response->assertSessionHas('success', 'Logo aplikasi telah di-reset ke default.');
+
+        $setting->refresh();
+        $this->assertNull($setting->logo);
+    }
+
+    public function test_admin_can_upload_announcement()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $adminHak = HakAkses::where('nama_hakakses', 'administrator')->first();
+        $admin = User::factory()->create([
+            'tb_hakakses_id' => $adminHak->id,
+        ]);
+
+        $file = \Illuminate\Http\UploadedFile::fake()->image('announcement.jpg');
+
+        $response = $this->actingAs($admin)->post('/settings/pengumuman', [
+            'image' => $file,
+            'title' => 'Pengumuman 1',
+        ]);
+
+        $response->assertRedirect('/settings?tab=login');
+        $response->assertSessionHas('success', 'Gambar pengumuman berhasil diunggah.');
+
+        $this->assertDatabaseHas('tb_pengumuman', [
+            'title' => 'Pengumuman 1',
+        ]);
+
+        $pengumuman = \App\Models\Pengumuman::first();
+        $this->assertNotNull($pengumuman);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($pengumuman->image_path);
+    }
+
+    public function test_admin_can_delete_announcement()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $adminHak = HakAkses::where('nama_hakakses', 'administrator')->first();
+        $admin = User::factory()->create([
+            'tb_hakakses_id' => $adminHak->id,
+        ]);
+
+        $pengumuman = \App\Models\Pengumuman::create([
+            'image_path' => 'pengumuman/test_announcement.jpg',
+            'title' => 'Pengumuman 2',
+        ]);
+
+        // Place a fake file in the storage so it gets deleted
+        \Illuminate\Support\Facades\Storage::disk('public')->put($pengumuman->image_path, 'dummy content');
+
+        $response = $this->actingAs($admin)->delete('/settings/pengumuman/' . $pengumuman->id);
+
+        $response->assertRedirect('/settings?tab=login');
+        $response->assertSessionHas('success', 'Gambar pengumuman berhasil dihapus.');
+
+        $this->assertDatabaseMissing('tb_pengumuman', [
+            'id' => $pengumuman->id,
+        ]);
+
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($pengumuman->image_path);
+    }
 }

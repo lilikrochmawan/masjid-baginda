@@ -94,6 +94,11 @@
                 <span class="nav-icon">📷</span> Scan
             </a>
 @endif
+            @if(auth()->user()->hasAccess('koin.qr.generate'))
+<a href="{{ route('koin.qr.generate') }}">
+                <span class="nav-icon">🖼️</span> Generate QR
+            </a>
+@endif
             @if(auth()->user()->hasAccess('koin.penerimaan'))
 <a href="{{ route('koin.penerimaan.create') }}">
                 <span class="nav-icon">🧾</span> Penerimaan

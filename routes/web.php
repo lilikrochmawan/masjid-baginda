@@ -33,7 +33,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/koin-baginda/pemilik/{id}', [KoinBagindaController::class, 'updatePemilik'])->name('koin.pemilik.update');
     Route::get('/koin-baginda/transaksi', [KoinBagindaController::class, 'scan'])->name('koin.scan');
     Route::post('/koin-baginda/transaksi', [KoinBagindaController::class, 'storeTransaction'])->name('koin.scan.store');
+    Route::get('/koin-baginda/qr-generator', [KoinBagindaController::class, 'qrGenerator'])->name('koin.qr.generate');
     Route::get('/koin-baginda/laporan', [KoinBagindaController::class, 'laporan'])->name('koin.laporan');
+    Route::get('/koin-baginda/laporan/print', [KoinBagindaController::class, 'printLaporan'])->name('koin.laporan.print');
     // Penerimaan kaleng
     Route::get('/koin-baginda/penerimaan', [App\Http\Controllers\PenerimaanKalengController::class, 'create'])->name('koin.penerimaan.create');
     Route::post('/koin-baginda/penerimaan', [App\Http\Controllers\PenerimaanKalengController::class, 'store'])->name('koin.penerimaan.store');
@@ -48,6 +50,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/templates', [App\Http\Controllers\SettingController::class, 'updateTemplates'])->name('settings.templates.update');
+    Route::post('/settings/login-bg', [App\Http\Controllers\SettingController::class, 'updateLoginBg'])->name('settings.login-bg.update');
+    Route::post('/settings/login-bg/reset', [App\Http\Controllers\SettingController::class, 'resetLoginBg'])->name('settings.login-bg.reset');
+    Route::post('/settings/logo', [App\Http\Controllers\SettingController::class, 'updateLogo'])->name('settings.logo.update');
+    Route::post('/settings/logo/reset', [App\Http\Controllers\SettingController::class, 'resetLogo'])->name('settings.logo.reset');
+    Route::post('/settings/pengumuman', [App\Http\Controllers\SettingController::class, 'uploadPengumuman'])->name('settings.pengumuman.upload');
+    Route::delete('/settings/pengumuman/{id}', [App\Http\Controllers\SettingController::class, 'deletePengumuman'])->name('settings.pengumuman.delete');
 
     // Modul Data Operasional
     Route::prefix('operasional')->name('operasional.')->group(function () {

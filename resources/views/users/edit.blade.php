@@ -1,3 +1,7 @@
+@php
+    $setting = \App\Models\Setting::first();
+    $logoImage = $setting && $setting->logo ? asset('storage/' . $setting->logo) : asset('images/image.png');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -338,7 +342,10 @@
 </head>
 <body>
     <div class="navbar">
-        <div class="navbar-brand"><span>🕌</span> Masjid Baginda</div>
+        <div class="navbar-brand">
+            <img src="{{ $logoImage }}" alt="Logo" style="height: 36px; width: auto; object-fit: contain; border-radius: 6px; vertical-align: middle;">
+            Masjid Baginda
+        </div>
         <div class="navbar-menu">
             <a href="{{ route('dashboard') }}">Dashboard</a>
             <a href="{{ route('users.index') }}">Manajemen User</a>
@@ -383,6 +390,11 @@
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" value="{{ $editUser->email }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="no_hp">No HP</label>
+                    <input type="text" id="no_hp" name="no_hp" value="{{ old('no_hp', $editUser->no_hp) }}" placeholder="08xxxxxxxxxx">
                 </div>
 
                 <div class="form-group">
@@ -436,6 +448,10 @@
                             <div class="permission-child">
                                 <input type="checkbox" id="sub_koin_scan" name="akses_modul[]" value="koin.scan" class="child-checkbox" {{ $editUser->hasAccess('koin.scan') ? 'checked' : '' }}>
                                 <label for="sub_koin_scan">Transaksi Scan</label>
+                            </div>
+                            <div class="permission-child">
+                                <input type="checkbox" id="sub_koin_qr" name="akses_modul[]" value="koin.qr.generate" class="child-checkbox" {{ $editUser->hasAccess('koin.qr.generate') ? 'checked' : '' }}>
+                                <label for="sub_koin_qr">Generate QR Code</label>
                             </div>
                             <div class="permission-child">
                                 <input type="checkbox" id="sub_koin_pen" name="akses_modul[]" value="koin.penerimaan" class="child-checkbox" {{ $editUser->hasAccess('koin.penerimaan') ? 'checked' : '' }}>

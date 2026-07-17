@@ -109,6 +109,11 @@
                 <span class="nav-icon">📷</span> Scan
             </a>
 @endif
+            @if(auth()->user()->hasAccess('koin.qr.generate'))
+<a href="{{ route('koin.qr.generate') }}">
+                <span class="nav-icon">🖼️</span> Generate QR
+            </a>
+@endif
             @if(auth()->user()->hasAccess('koin.penerimaan'))
 <a href="{{ route('koin.penerimaan.create') }}">
                 <span class="nav-icon">🧾</span> Penerimaan
@@ -169,6 +174,7 @@
 
                 <form action="{{ route('koin.scan.store') }}" method="POST" style="margin-top: 16px;">
                     @csrf
+                    <input type="hidden" id="qr_signature" name="qr_signature" value="{{ old('qr_signature') }}">
                     <div class="form-group">
                         <label for="kode_kaleng">Kode Kaleng</label>
                         <input type="text" id="kode_kaleng" name="kode_kaleng" value="{{ old('kode_kaleng') }}" placeholder="BGD00001" readonly style="background: #eef7f4; cursor: not-allowed;" required>
@@ -387,8 +393,13 @@
                     selection,
                     config,
                     qrCodeMessage => {
+                        const parts = qrCodeMessage.split('|');
+                        const kode = parts[0];
+                        const sig = parts.length > 1 ? parts[1] : '';
                         const input = document.getElementById('kode_kaleng');
-                        if (input) input.value = qrCodeMessage;
+                        const sigInput = document.getElementById('qr_signature');
+                        if (input) input.value = kode;
+                        if (sigInput) sigInput.value = sig;
                         setStatus('Kode terbaca.');
                         stopScanner();
                     },
@@ -410,8 +421,13 @@
                             { facingMode: { ideal: 'environment' } },
                             config,
                             qrCodeMessage => {
+                                const parts = qrCodeMessage.split('|');
+                                const kode = parts[0];
+                                const sig = parts.length > 1 ? parts[1] : '';
                                 const input = document.getElementById('kode_kaleng');
-                                if (input) input.value = qrCodeMessage;
+                                const sigInput = document.getElementById('qr_signature');
+                                if (input) input.value = kode;
+                                if (sigInput) sigInput.value = sig;
                                 setStatus('Kode terbaca.');
                                 stopScanner();
                             },

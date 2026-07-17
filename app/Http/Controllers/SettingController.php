@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\WaTemplate;
+use App\Models\Pengumuman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -42,7 +43,7 @@ class SettingController extends Controller
         // Initialize default templates if not exist in database
         $defaultTemplates = [
             'spp_kuitansi' => "*_Assalamu'alaikum wr. wb._*\n\nYth Wali Santri *{nama_santri}*\n\nTerima kasih, pembayaran SPP Ananda *{nama_santri}* untuk bulan *{bulan} {tahun}* sebesar *Rp {jumlah}* telah kami terima pada tanggal *{tanggal_bayar}*.\n\nSyukron jazakumullah khairan.",
-            'koin_scan' => "*_Assalamu'alaikum wr. wb._*\n\nYth. Bapak/Ibu *{nama_pemilik}*,\n\nKaleng dengan kode *{kode_kaleng}* ({nama_kaleng}) telah berhasil discan / diambil oleh petugas pada tanggal *{tanggal_ambil}*.\n\nTerima kasih atas infak dan partisipasi Anda dalam program Koin Baginda. Semoga menjadi amal jariyah dan membawa berkah bagi keluarga.\n\n*_Wassalamu'alaikum wr. wb._*"
+            'koin_scan' => "*_Assalamu'alaikum wr. wb._*\n\nYth. Bapak/Ibu *{nama_pemilik}*,\n\nKaleng dengan kode *{kode_kaleng}* ({nama_kaleng}) telah berhasil discan / diambil oleh petugas *{nama_petugas}* pada tanggal *{tanggal_ambil}*.\n\nTerima kasih atas infak dan partisipasi Anda dalam program Koin Baginda. Semoga menjadi amal jariyah dan membawa berkah bagi keluarga.\n\n*_Wassalamu'alaikum wr. wb._*"
         ];
 
         foreach ($defaultTemplates as $key => $defaultVal) {
@@ -52,9 +53,28 @@ class SettingController extends Controller
             );
         }
 
-        $templates = WaTemplate::all();
+        // Auto-update existing koin_scan template if it doesn't contain {nama_petugas}
+        $koinScanTemplate = WaTemplate::where('key', 'koin_scan')->first();
+        if ($koinScanTemplate && !str_contains($koinScanTemplate->template, '{nama_petugas}')) {
+            $newTemplate = str_replace(
+                'oleh petugas pada tanggal',
+                'oleh petugas *{nama_petugas}* pada tanggal',
+                $koinScanTemplate->template
+            );
+            if (!str_contains($newTemplate, '{nama_petugas}')) {
+                $newTemplate = str_replace(
+                    'oleh petugas',
+                    'oleh petugas *{nama_petugas}*',
+                    $koinScanTemplate->template
+                );
+            }
+            $koinScanTemplate->update(['template' => $newTemplate]);
+        }
 
-        return view('settings.index', compact('user', 'hakakses', 'setting', 'templates'));
+        $templates = WaTemplate::all();
+        $pengumumanList = Pengumuman::latest()->get();
+
+        return view('settings.index', compact('user', 'hakakses', 'setting', 'templates', 'pengumumanList'));
     }
 
     /**
@@ -98,5 +118,135 @@ class SettingController extends Controller
         }
 
         return redirect()->route('settings.index', ['tab' => 'templates'])->with('success', 'Template WhatsApp berhasil diperbarui.');
+    }
+
+    /**
+     * Update login background image.
+     */
+    public function updateLoginBg(Request $request)
+    {
+        $request->validate([
+            'foto_masjid' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $setting = Setting::first();
+        if (!$setting) {
+            $setting = new Setting();
+            $setting->id = 1;
+        }
+
+        if ($request->hasFile('foto_masjid')) {
+            // Delete old file if exists
+            if ($setting->foto_masjid) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($setting->foto_masjid);
+            }
+
+            $file = $request->file('foto_masjid');
+            $path = $file->store('settings', 'public');
+            $setting->foto_masjid = $path;
+            $setting->save();
+        }
+
+        return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Foto background login berhasil diperbarui.');
+    }
+
+    /**
+     * Reset login background image to default.
+     */
+    public function resetLoginBg()
+    {
+        $setting = Setting::first();
+        if ($setting && $setting->foto_masjid) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($setting->foto_masjid);
+            $setting->foto_masjid = null;
+            $setting->save();
+        }
+
+        return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Background login telah di-reset ke default.');
+    }
+
+    /**
+     * Update custom logo.
+     */
+    public function updateLogo(Request $request)
+    {
+        $request->validate([
+            'logo' => 'required|image|mimes:jpeg,png,jpg,webp,svg|max:2048',
+        ]);
+
+        $setting = Setting::first();
+        if (!$setting) {
+            $setting = new Setting();
+            $setting->id = 1;
+        }
+
+        if ($request->hasFile('logo')) {
+            // Delete old file if exists
+            if ($setting->logo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($setting->logo);
+            }
+
+            $file = $request->file('logo');
+            $path = $file->store('settings', 'public');
+            $setting->logo = $path;
+            $setting->save();
+        }
+
+        return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Logo aplikasi berhasil diperbarui.');
+    }
+
+    /**
+     * Reset custom logo to default.
+     */
+    public function resetLogo()
+    {
+        $setting = Setting::first();
+        if ($setting && $setting->logo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($setting->logo);
+            $setting->logo = null;
+            $setting->save();
+        }
+
+        return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Logo aplikasi telah di-reset ke default.');
+    }
+
+    /**
+     * Upload announcement image.
+     */
+    public function uploadPengumuman(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'title' => 'nullable|string|max:255',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $path = $file->store('pengumuman', 'public');
+
+            Pengumuman::create([
+                'image_path' => $path,
+                'title' => $request->input('title'),
+            ]);
+        }
+
+        return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Gambar pengumuman berhasil diunggah.');
+    }
+
+    /**
+     * Delete announcement image.
+     */
+    public function deletePengumuman($id)
+    {
+        $pengumuman = Pengumuman::findOrFail($id);
+        
+        // Delete image file from server
+        if ($pengumuman->image_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($pengumuman->image_path);
+        }
+
+        $pengumuman->delete();
+
+        return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Gambar pengumuman berhasil dihapus.');
     }
 }

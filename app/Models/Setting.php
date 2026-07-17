@@ -13,5 +13,7 @@ class Setting extends Model
         'midtrans_client_id',
         'midtrans_server_key',
         'midtrans_environment',
+        'foto_masjid',
+        'logo',
     ];
 }

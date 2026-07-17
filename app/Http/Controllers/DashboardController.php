@@ -15,8 +15,9 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $hakakses = $user->hakakses;
+        $pengumumanList = \App\Models\Pengumuman::all();
         
-        return view('dashboard.index', compact('user', 'hakakses'));
+        return view('dashboard.index', compact('user', 'hakakses', 'pengumumanList'));
     }
 
     /**

@@ -46,6 +46,7 @@ class UserManagementController extends Controller
             'tb_hakakses_id' => 'required|exists:tb_hakakses,id',
             'password' => 'required|string|min:8|confirmed',
             'akses_modul' => 'nullable|array',
+            'no_hp' => 'nullable|string|max:25',
         ]);
 
         User::create([
@@ -54,6 +55,7 @@ class UserManagementController extends Controller
             'tb_hakakses_id' => $validated['tb_hakakses_id'],
             'password' => Hash::make($validated['password']),
             'akses_modul' => $validated['akses_modul'] ?? [],
+            'no_hp' => $validated['no_hp'] ?? null,
             'remember_token' => null,
         ]);
 
@@ -94,11 +96,13 @@ class UserManagementController extends Controller
             'tb_hakakses_id' => 'required|exists:tb_hakakses,id',
             'password' => 'nullable|string|min:8|confirmed',
             'akses_modul' => 'nullable|array',
+            'no_hp' => 'nullable|string|max:25',
         ]);
 
         $editUser = User::findOrFail($id);
         $editUser->tb_hakakses_id = $validated['tb_hakakses_id'];
         $editUser->akses_modul = $validated['akses_modul'] ?? [];
+        $editUser->no_hp = $validated['no_hp'] ?? null;
 
         if (!empty($validated['password'])) {
             $editUser->password = Hash::make($validated['password']);

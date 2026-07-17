@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'tb_hakakses_id',
         'akses_modul',
+        'no_hp',
     ];
 
     /**

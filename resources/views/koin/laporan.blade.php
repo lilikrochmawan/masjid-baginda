@@ -84,6 +84,11 @@
                 <span class="nav-icon">📷</span> Scan
             </a>
 @endif
+            @if(auth()->user()->hasAccess('koin.qr.generate'))
+<a href="{{ route('koin.qr.generate') }}">
+                <span class="nav-icon">🖼️</span> Generate QR
+            </a>
+@endif
             @if(auth()->user()->hasAccess('koin.penerimaan'))
 <a href="{{ route('koin.penerimaan.create') }}">
                 <span class="nav-icon">🧾</span> Penerimaan
@@ -130,82 +135,199 @@
                     <strong>{{ $kalengBelum->count() }}</strong>
                 </div>
             </div>
+            
+            <div style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
+                <input type="text" id="searchKaleng" onkeyup="filterSearchKaleng()" placeholder="Cari nama kaleng, pemilik, atau alamat..." style="width: 100%; max-width: 350px; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; color: #1e293b; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#cbd5e1'">
+            </div>
+            
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Kode Kaleng</th>
-                            <th>Nama Kaleng</th>
-                            <th>Pemilik</th>
-                            <th>Alamat Pemilik</th>
-                            <th>Status</th>
+                            <th style="width: 50px;">#</th>
+                            <th onclick="sortKaleng('kode_kaleng')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Kode Kaleng 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-kaleng-kode_kaleng-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-kaleng-kode_kaleng-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortKaleng('nama_kaleng')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Nama Kaleng 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-kaleng-nama_kaleng-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-kaleng-nama_kaleng-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortKaleng('pemilik')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Pemilik 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-kaleng-pemilik-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-kaleng-pemilik-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortKaleng('alamat')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Alamat Pemilik 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-kaleng-alamat-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-kaleng-alamat-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortKaleng('status')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Status 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-kaleng-status-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-kaleng-status-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($kalengSudah as $kaleng)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $kaleng->kode_kaleng }}</td>
-                                <td>{{ $kaleng->nama_kaleng }}</td>
-                                <td>{{ $kaleng->latestPemilik?->nama ?? '-' }}</td>
-                                <td>{{ $kaleng->latestPemilik?->alamat ?? '-' }}</td>
-                                <td><span class="badge">Sudah Scan</span></td>
-                            </tr>
-                        @endforeach
-                        @foreach($kalengBelum as $kaleng)
-                            <tr>
-                                <td>{{ $kalengSudah->count() + $loop->iteration }}</td>
-                                <td>{{ $kaleng->kode_kaleng }}</td>
-                                <td>{{ $kaleng->nama_kaleng }}</td>
-                                <td>{{ $kaleng->latestPemilik?->nama ?? '-' }}</td>
-                                <td>{{ $kaleng->latestPemilik?->alamat ?? '-' }}</td>
-                                <td><span class="badge" style="background:#fef3c7;color:#92400e;">Belum Scan</span></td>
-                            </tr>
-                        @endforeach
+                    <tbody id="kalengTableBody">
                     </tbody>
                 </table>
+            </div>
+            <div id="kalengPagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:10px;">
+                <div id="paginationInfo" style="font-size:12.5px; color:#475569;"></div>
+                <div id="paginationControls" style="display:flex; gap:6px;"></div>
             </div>
         </div>
 
         <div class="section">
-            <h2>2. Laporan Pemasukan Kaleng Global</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
+                <h2 style="margin-bottom:0;">2. Laporan Pemasukan Kaleng Global</h2>
+                <button onclick="openPrintModal()" style="padding: 8px 16px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:6px; box-shadow: 0 4px 12px rgba(16,185,129,0.15); transition:background 0.2s;">
+                    <span>🖨️</span> Cetak Laporan Global
+                </button>
+            </div>
             <div class="summary-grid">
-                <div class="summary-card">
-                    <span>Total Penerimaan</span>
-                    <strong>{{ $totalPenerimaan }}</strong>
-                </div>
-                <div class="summary-card">
-                    <span>Jumlah catatan</span>
-                    <strong>{{ $penerimaan->count() }}</strong>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <span>Total Penerimaan</span>
+                        <strong>Rp {{ number_format($totalPenerimaan, 0, ',', '.') }}</strong>
+                    </div>
+                    <div class="summary-card">
+                        <span>Jumlah catatan</span>
+                        <strong>{{ $penerimaan->count() }}</strong>
+                    </div>
                 </div>
             </div>
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Tanggal</th>
-                            <th>Jumlah</th>
-                            <th>Keterangan</th>
-                            <th>User Input</th>
+                            <th style="width: 50px;">#</th>
+                            <th onclick="sortPenerimaan('tanggal_penerimaan')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Tanggal 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-penerimaan-tanggal_penerimaan-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-penerimaan-tanggal_penerimaan-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortPenerimaan('jumlah')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Jumlah 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-penerimaan-jumlah-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-penerimaan-jumlah-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortPenerimaan('keterangan')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Keterangan 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-penerimaan-keterangan-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-penerimaan-keterangan-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortPenerimaan('user_name')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                User Input 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-penerimaan-user_name-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-penerimaan-user_name-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($penerimaan as $item)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ \Illuminate\Support\Carbon::parse($item->tanggal_penerimaan)->format('d M Y') }}</td>
-                                <td>{{ $item->jumlah }}</td>
-                                <td>{{ $item->keterangan ?? '-' }}</td>
-                                <td>{{ $item->user?->nama ?? '-' }}</td>
-                            </tr>
-                        @endforeach
+                    <tbody id="penerimaanTableBody">
                     </tbody>
                 </table>
             </div>
+            <div id="penerimaanPagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:10px;">
+                <div id="penerimaanPaginationInfo" style="font-size:12.5px; color:#475569;"></div>
+                <div id="penerimaanPaginationControls" style="display:flex; gap:6px;"></div>
+            </div>
         </div>
     </main>
+
+    <!-- Modal Filter Popup -->
+    <div id="printModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.4); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+        <div style="background:white; border-radius:16px; padding:24px; width:90%; max-width:400px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); border:1px solid #e2e8f0; position:relative; animation: modalFade 0.2s ease-out;">
+            <h3 style="margin-top:0; margin-bottom:16px; color:#0f4d36; font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <span>🖨️</span> Cetak Laporan Global
+            </h3>
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:12.5px; font-weight:600; color:#334155; margin-bottom:6px;">Tipe Laporan</label>
+                <select id="filterType" onchange="toggleFilterInputs()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:13.5px; color:#1e293b; background:white;">
+                    <option value="bulanan">Laporan Bulanan</option>
+                    <option value="tahunan">Laporan Tahunan</option>
+                </select>
+            </div>
+            
+            <div id="monthGroup" style="margin-bottom:16px;">
+                <label style="display:block; font-size:12.5px; font-weight:600; color:#334155; margin-bottom:6px;">Bulan</label>
+                <select id="filterMonth" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:13.5px; color:#1e293b; background:white;">
+                    @foreach([1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'] as $num => $name)
+                        <option value="{{ $num }}" {{ now()->month == $num ? 'selected' : '' }}>{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:12.5px; font-weight:600; color:#334155; margin-bottom:6px;">Tahun</label>
+                <input type="number" id="filterYear" value="{{ now()->year }}" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; font-size:13.5px; color:#1e293b;" min="2020" max="2050">
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="closePrintModal()" style="padding:10px 16px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;">Batal</button>
+                <button onclick="submitPrint()" style="padding:10px 16px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;">Cetak</button>
+            </div>
+        </div>
+    </div>
+   
+    <style>
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pagination-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .pagination-btn:disabled {
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: #10b981;
+            color: #ffffff;
+            border-color: #10b981;
+        }
+    </style>
 
     <script>
         const sidebar = document.getElementById('sidebar');
@@ -215,6 +337,331 @@
             toggle.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
             overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
         }
+
+        // --- Data Laporan Kaleng ---
+        const allKalengs = @json($allKalengs);
+        let filteredKalengs = [...allKalengs];
+        let currentSortCol = '';
+        let currentSortDir = 'asc';
+        let currentPage = 1;
+        const rowsPerPage = 10;
+
+        function filterSearchKaleng() {
+            const query = document.getElementById('searchKaleng').value.toLowerCase().trim();
+            
+            if (query === '') {
+                filteredKalengs = [...allKalengs];
+            } else {
+                filteredKalengs = allKalengs.filter(k => {
+                    return (k.nama_kaleng || '').toLowerCase().includes(query) ||
+                           (k.pemilik || '').toLowerCase().includes(query) ||
+                           (k.alamat || '').toLowerCase().includes(query);
+                });
+            }
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        function sortKaleng(col) {
+            if (currentSortCol === col) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortCol = col;
+                currentSortDir = 'asc';
+            }
+            
+            // Reset all sort icons in Table 1
+            const cols = ['kode_kaleng', 'nama_kaleng', 'pemilik', 'alamat', 'status'];
+            cols.forEach(c => {
+                document.getElementById('sort-kaleng-' + c + '-up').setAttribute('fill', '#cbd5e1');
+                document.getElementById('sort-kaleng-' + c + '-down').setAttribute('fill', '#cbd5e1');
+            });
+
+            // Set active sort icon in Table 1
+            const activeArrowId = 'sort-kaleng-' + col + '-' + (currentSortDir === 'asc' ? 'up' : 'down');
+            document.getElementById(activeArrowId).setAttribute('fill', '#059669');
+
+            const sortFn = (a, b) => {
+                if (a.status_code !== b.status_code) {
+                    return a.status_code - b.status_code; // 0 comes before 1
+                }
+
+                let valA = (a[col] || '').toString().toLowerCase();
+                let valB = (b[col] || '').toString().toLowerCase();
+
+                if (valA < valB) return currentSortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSortDir === 'asc' ? 1 : -1;
+                return 0;
+            };
+
+            allKalengs.sort(sortFn);
+            filteredKalengs.sort(sortFn);
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('kalengTableBody');
+            tbody.innerHTML = '';
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = filteredKalengs.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">Tidak ada data kaleng.</td></tr>';
+                document.getElementById('paginationInfo').textContent = '';
+                document.getElementById('paginationControls').innerHTML = '';
+                return;
+            }
+
+            pageData.forEach((k, idx) => {
+                const tr = document.createElement('tr');
+                
+                const tdNum = document.createElement('td');
+                tdNum.textContent = start + idx + 1;
+                tr.appendChild(tdNum);
+
+                const tdKode = document.createElement('td');
+                tdKode.textContent = k.kode_kaleng;
+                tr.appendChild(tdKode);
+
+                const tdNama = document.createElement('td');
+                tdNama.textContent = k.nama_kaleng;
+                tr.appendChild(tdNama);
+
+                const tdPemilik = document.createElement('td');
+                tdPemilik.textContent = k.pemilik;
+                tr.appendChild(tdPemilik);
+
+                const tdAlamat = document.createElement('td');
+                tdAlamat.textContent = k.alamat;
+                tr.appendChild(tdAlamat);
+
+                const tdStatus = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'badge';
+                if (k.status_code === 0) {
+                    badge.textContent = 'Belum Scan';
+                    badge.style.background = '#fef3c7';
+                    badge.style.color = '#92400e';
+                } else {
+                    badge.textContent = 'Sudah Scan';
+                }
+                tdStatus.appendChild(badge);
+                tr.appendChild(tdStatus);
+
+                tbody.appendChild(tr);
+            });
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredKalengs.length / rowsPerPage);
+            const info = document.getElementById('paginationInfo');
+            const controls = document.getElementById('paginationControls');
+
+            info.textContent = `Menampilkan ${Math.min(filteredKalengs.length, (currentPage - 1) * rowsPerPage + 1)} - ${Math.min(filteredKalengs.length, currentPage * rowsPerPage)} dari ${filteredKalengs.length} kaleng`;
+
+            controls.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            // Prev button
+            const btnPrev = document.createElement('button');
+            btnPrev.className = 'pagination-btn';
+            btnPrev.textContent = 'Sebelumnya';
+            btnPrev.disabled = currentPage === 1;
+            btnPrev.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+            controls.appendChild(btnPrev);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const btnPage = document.createElement('button');
+                btnPage.className = 'pagination-btn' + (currentPage === i ? ' active' : '');
+                btnPage.textContent = i;
+                btnPage.onclick = () => { currentPage = i; renderTable(); };
+                controls.appendChild(btnPage);
+            }
+
+            // Next button
+            const btnNext = document.createElement('button');
+            btnNext.className = 'pagination-btn';
+            btnNext.textContent = 'Berikutnya';
+            btnNext.disabled = currentPage === totalPages;
+            btnNext.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTable(); } };
+            controls.appendChild(btnNext);
+        }
+
+        // --- Data Laporan Penerimaan Global ---
+        const allPenerimaans = @json($penerimaanList);
+        let filteredPenerimaans = [...allPenerimaans];
+        let currentPenerimaanSortCol = '';
+        let currentPenerimaanSortDir = 'asc';
+        let currentPenerimaanPage = 1;
+        const penerimaanRowsPerPage = 10;
+
+        function sortPenerimaan(col) {
+            if (currentPenerimaanSortCol === col) {
+                currentPenerimaanSortDir = currentPenerimaanSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentPenerimaanSortCol = col;
+                currentPenerimaanSortDir = 'asc';
+            }
+            
+            // Reset all sort icons in Table 2
+            const cols = ['tanggal_penerimaan', 'jumlah', 'keterangan', 'user_name'];
+            cols.forEach(c => {
+                document.getElementById('sort-penerimaan-' + c + '-up').setAttribute('fill', '#cbd5e1');
+                document.getElementById('sort-penerimaan-' + c + '-down').setAttribute('fill', '#cbd5e1');
+            });
+
+            // Set active sort icon in Table 2
+            const activeArrowId = 'sort-penerimaan-' + col + '-' + (currentPenerimaanSortDir === 'asc' ? 'up' : 'down');
+            document.getElementById(activeArrowId).setAttribute('fill', '#059669');
+
+            const sortFn = (a, b) => {
+                let valA = a[col];
+                let valB = b[col];
+
+                if (col === 'jumlah') {
+                    return currentPenerimaanSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+                if (valA < valB) return currentPenerimaanSortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return currentPenerimaanSortDir === 'asc' ? 1 : -1;
+                return 0;
+            };
+
+            allPenerimaans.sort(sortFn);
+            filteredPenerimaans.sort(sortFn);
+
+            currentPenerimaanPage = 1;
+            renderPenerimaanTable();
+        }
+
+        function renderPenerimaanTable() {
+            const tbody = document.getElementById('penerimaanTableBody');
+            tbody.innerHTML = '';
+
+            const start = (currentPenerimaanPage - 1) * penerimaanRowsPerPage;
+            const end = start + penerimaanRowsPerPage;
+            const pageData = filteredPenerimaans.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b; padding:20px;">Tidak ada data penerimaan.</td></tr>';
+                document.getElementById('penerimaanPaginationInfo').textContent = '';
+                document.getElementById('penerimaanPaginationControls').innerHTML = '';
+                return;
+            }
+
+            pageData.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                
+                const tdNum = document.createElement('td');
+                tdNum.textContent = start + idx + 1;
+                tr.appendChild(tdNum);
+
+                const tdTanggal = document.createElement('td');
+                tdTanggal.textContent = item.tanggal_formatted;
+                tr.appendChild(tdTanggal);
+
+                const tdJumlah = document.createElement('td');
+                tdJumlah.textContent = item.jumlah_formatted;
+                tr.appendChild(tdJumlah);
+
+                const tdKeterangan = document.createElement('td');
+                tdKeterangan.textContent = item.keterangan;
+                tr.appendChild(tdKeterangan);
+
+                const tdUser = document.createElement('td');
+                tdUser.textContent = item.user_name;
+                tr.appendChild(tdUser);
+
+                tbody.appendChild(tr);
+            });
+
+            renderPenerimaanPagination();
+        }
+
+        function renderPenerimaanPagination() {
+            const totalPages = Math.ceil(filteredPenerimaans.length / penerimaanRowsPerPage);
+            const info = document.getElementById('penerimaanPaginationInfo');
+            const controls = document.getElementById('penerimaanPaginationControls');
+
+            info.textContent = `Menampilkan ${Math.min(filteredPenerimaans.length, (currentPenerimaanPage - 1) * penerimaanRowsPerPage + 1)} - ${Math.min(filteredPenerimaans.length, currentPenerimaanPage * penerimaanRowsPerPage)} dari ${filteredPenerimaans.length} catatan`;
+
+            controls.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            // Prev button
+            const btnPrev = document.createElement('button');
+            btnPrev.className = 'pagination-btn';
+            btnPrev.textContent = 'Sebelumnya';
+            btnPrev.disabled = currentPenerimaanPage === 1;
+            btnPrev.onclick = () => { if (currentPenerimaanPage > 1) { currentPenerimaanPage--; renderPenerimaanTable(); } };
+            controls.appendChild(btnPrev);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const btnPage = document.createElement('button');
+                btnPage.className = 'pagination-btn' + (currentPenerimaanPage === i ? ' active' : '');
+                btnPage.textContent = i;
+                btnPage.onclick = () => { currentPenerimaanPage = i; renderPenerimaanTable(); };
+                controls.appendChild(btnPage);
+            }
+
+            // Next button
+            const btnNext = document.createElement('button');
+            btnNext.className = 'pagination-btn';
+            btnNext.textContent = 'Berikutnya';
+            btnNext.disabled = currentPenerimaanPage === totalPages;
+            btnNext.onclick = () => { if (currentPenerimaanPage < totalPages) { currentPenerimaanPage++; renderPenerimaanTable(); } };
+            controls.appendChild(btnNext);
+        }
+
+        // --- Print Modal Actions ---
+        function openPrintModal() {
+            document.getElementById('printModal').style.display = 'flex';
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').style.display = 'none';
+        }
+
+        function toggleFilterInputs() {
+            const type = document.getElementById('filterType').value;
+            const monthGroup = document.getElementById('monthGroup');
+            if (type === 'bulanan') {
+                monthGroup.style.display = 'block';
+            } else {
+                monthGroup.style.display = 'none';
+            }
+        }
+
+        function submitPrint() {
+            const type = document.getElementById('filterType').value;
+            const month = document.getElementById('filterMonth').value;
+            const year = document.getElementById('filterYear').value;
+            
+            let url = `{{ route('koin.laporan.print') }}?type=${type}&tahun=${year}`;
+            if (type === 'bulanan') {
+                url += `&bulan=${month}`;
+            }
+            
+            window.open(url, '_blank');
+            closePrintModal();
+        }
+
+        // Init tables
+        // "Belum Scan" is automatically sorted at the beginning initially
+        allKalengs.sort((a, b) => a.status_code - b.status_code);
+        renderTable();
+        renderPenerimaanTable();
     </script>
 </body>
 </html>

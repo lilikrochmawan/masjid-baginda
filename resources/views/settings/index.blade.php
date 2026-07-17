@@ -347,6 +347,9 @@
             <button type="button" id="link-templates" onclick="switchTab('templates')">
                 <span class="nav-icon">📝</span> Template WhatsApp
             </button>
+            <button type="button" id="link-login" onclick="switchTab('login')">
+                <span class="nav-icon">🖼️</span> Logo & Tampilan
+            </button>
             <div class="divider"></div>
             <a href="{{ route('dashboard') }}">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
@@ -475,6 +478,7 @@
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{kode_kaleng}')"><code>{kode_kaleng}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_kaleng}')"><code>{nama_kaleng}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{tanggal_ambil}')"><code>{tanggal_ambil}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_petugas}')"><code>{nama_petugas}</code></span>
                                 @endif
                             </div>
                         </div>
@@ -486,6 +490,159 @@
                     <button type="submit" class="button-primary">Simpan Template</button>
                 </div>
             </form>
+        </div>
+
+        <!-- Tab 3: Login Page Styling -->
+        <div id="tab-content-login" style="display: none;">
+            <!-- Card 1: Logo Aplikasi -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><span>🕌</span> Logo Aplikasi</h2>
+                    <div class="card-desc">Ganti logo Masjid Baginda yang muncul di header Dashboard dan Halaman Login.</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+                    <div>
+                        <strong style="display: block; font-size: 14px; color: #475569; margin-bottom: 10px;">Preview Logo Saat Ini:</strong>
+                        <div style="border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e1; height: 160px; background: #f8fafc; display: flex; align-items: center; justify-content: center; position: relative; padding: 15px;">
+                            @if($setting->logo)
+                                <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                            @else
+                                <img src="{{ asset('images/image.png') }}" alt="Default Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                            @endif
+                            <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(15, 23, 42, 0.75); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                                {{ $setting->logo ? 'Logo Kustom' : 'Logo Default' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <form action="{{ route('settings.logo.update') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="logo" style="font-weight:600; display:block; margin-bottom:8px;">Pilih Logo Baru</label>
+                                <input type="file" id="logo" name="logo" accept="image/*" required style="padding: 10px; border: 1px dashed #cbd5e1; width: 100%; border-radius: 10px; background: #f8fafc; font-family: inherit;">
+                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Format yang didukung: PNG, JPG, JPEG, SVG, WEBP (Maksimal 2MB).</p>
+                            </div>
+                            <button type="submit" class="button-primary" style="width:100%; padding:14px; font-weight:700;">Unggah Logo Baru</button>
+                        </form>
+
+                        @if($setting->logo)
+                            <form action="{{ route('settings.logo.reset') }}" method="POST" style="margin-top: 12px;">
+                                @csrf
+                                <button type="submit" class="button-secondary" style="width:100%; padding:14px; font-weight:700; background:#dc2626; color:white; border:none;" onclick="return confirm('Apakah Anda yakin ingin mengembalikan logo ke default?')">Reset ke Logo Default</button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Desain Background Halaman Login -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><span>🖼️</span> Desain Background Halaman Login</h2>
+                    <div class="card-desc">Ganti foto background masjid pada halaman login atau kembalikan ke background default bawaan sistem.</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+                    <div>
+                        <strong style="display: block; font-size: 14px; color: #475569; margin-bottom: 10px;">Preview Background Saat Ini:</strong>
+                        <div style="border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e1; height: 220px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative;">
+                            @if($setting->foto_masjid)
+                                <img src="{{ asset('storage/' . $setting->foto_masjid) }}" alt="Login Background" style="width: 100%; height: 100%; object-fit: cover;">
+                            @else
+                                <img src="{{ asset('images/default_mosque_bg.png') }}" alt="Default Background" style="width: 100%; height: 100%; object-fit: cover;">
+                            @endif
+                            <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(15, 23, 42, 0.75); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                                {{ $setting->foto_masjid ? 'Gambar Kustom' : 'Gambar Default' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <form action="{{ route('settings.login-bg.update') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="foto_masjid" style="font-weight:600; display:block; margin-bottom:8px;">Pilih Foto Masjid Baru</label>
+                                <input type="file" id="foto_masjid" name="foto_masjid" accept="image/*" required style="padding: 10px; border: 1px dashed #cbd5e1; width: 100%; border-radius: 10px; background: #f8fafc; font-family: inherit;">
+                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Format yang didukung: JPG, JPEG, PNG, WEBP (Maksimal 5MB).</p>
+                            </div>
+                            <button type="submit" class="button-primary" style="width:100%; padding:14px; font-weight:700;">Unggah Background Baru</button>
+                        </form>
+
+                        @if($setting->foto_masjid)
+                            <form action="{{ route('settings.login-bg.reset') }}" method="POST" style="margin-top: 12px;">
+                                @csrf
+                                <button type="submit" class="button-secondary" style="width:100%; padding:14px; font-weight:700; background:#dc2626; color:white; border:none;" onclick="return confirm('Apakah Anda yakin ingin mengembalikan background ke default?')">Reset ke Background Default</button>
+                            </form>
+                        @endif
+                    </div>
+            </div>
+
+            <!-- Card 3: Gambar Pengumuman Slideshow -->
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-header">
+                    <h2><span>📢</span> Slideshow Pengumuman Dashboard</h2>
+                    <div class="card-desc">Unggah gambar pengumuman atau pamflet kegiatan masjid yang akan ditampilkan pada slideshow di halaman utama.</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;">
+                    <!-- Left: Upload Form -->
+                    <div>
+                        <form action="{{ route('settings.pengumuman.upload') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="image" style="font-weight:600; display:block; margin-bottom:8px;">Pilih Gambar Pengumuman</label>
+                                <input type="file" id="image" name="image" accept="image/*" required style="padding: 10px; border: 1px dashed #cbd5e1; width: 100%; border-radius: 10px; background: #f8fafc; font-family: inherit;">
+                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Rekomendasi rasio 16:9. Format: JPG, JPEG, PNG, WEBP (Maksimal 5MB).</p>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="title" style="font-weight:600; display:block; margin-bottom:8px;">Judul / Keterangan Singkat (Opsional)</label>
+                                <input type="text" id="title" name="title" placeholder="Contoh: Kajian Rutin Ahad Pagi" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: inherit;">
+                            </div>
+                            <button type="submit" class="button-primary" style="width:100%; padding:14px; font-weight:700;">Unggah Pengumuman</button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Current Announcements List -->
+                    <div>
+                        <strong style="display: block; font-size: 14px; color: #475569; margin-bottom: 12px;">Daftar Pengumuman Aktif:</strong>
+                        
+                        @if($pengumumanList->isEmpty())
+                            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; color: #64748b; font-size: 13.5px;">
+                                Belum ada gambar pengumuman yang diunggah. Slideshow akan menggunakan gambar default.
+                            </div>
+                        @else
+                            <div style="display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding-right: 5px;">
+                                @foreach($pengumumanList as $item)
+                                    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px; gap: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                                            <div style="width: 80px; height: 45px; border-radius: 6px; overflow: hidden; background: #e2e8f0; flex-shrink: 0; border: 1px solid #cbd5e1;">
+                                                <img src="{{ asset('storage/' . $item->image_path) }}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                                            </div>
+                                            <div style="min-width: 0; flex: 1;">
+                                                <div style="font-size: 13px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                    {{ $item->title ?? 'Pengumuman #' . $item->id }}
+                                                </div>
+                                                <div style="font-size: 11px; color: #64748b;">
+                                                    Diunggah: {{ $item->created_at->format('d M Y') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <form action="{{ route('settings.pengumuman.delete', $item->id) }}" method="POST" style="margin:0;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 16px; padding: 6px; border-radius: 8px; transition: background 0.2s;" onclick="return confirm('Hapus gambar pengumuman ini?')" title="Hapus Pengumuman">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -506,6 +663,7 @@
             // Hide all tab contents
             document.getElementById('tab-content-api').style.display = 'none';
             document.getElementById('tab-content-templates').style.display = 'none';
+            document.getElementById('tab-content-login').style.display = 'none';
 
             // Show current tab content
             document.getElementById('tab-content-' + tabName).style.display = 'block';
@@ -513,6 +671,7 @@
             // Remove active class from all sidebar links
             document.getElementById('link-api').classList.remove('active');
             document.getElementById('link-templates').classList.remove('active');
+            document.getElementById('link-login').classList.remove('active');
 
             // Add active class to clicked link
             document.getElementById('link-' + tabName).classList.add('active');
@@ -521,8 +680,10 @@
             const headerTitle = document.getElementById('page-header-title');
             if (tabName === 'api') {
                 headerTitle.textContent = 'Konfigurasi API';
-            } else {
+            } else if (tabName === 'templates') {
                 headerTitle.textContent = 'Template WhatsApp';
+            } else {
+                headerTitle.textContent = 'Logo & Tampilan';
             }
 
             // Save active tab in URL query param without full page reload
