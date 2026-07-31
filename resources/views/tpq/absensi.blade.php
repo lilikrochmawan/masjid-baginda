@@ -49,9 +49,16 @@
         .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
         .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrapper {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            display: block;
+        }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
         th, td { padding: 14px 12px; border-bottom: 1px solid #e6f4ed; text-align: left; font-size: 13.5px; color: #164a3f; }
+        .table-wrapper th, .table-wrapper td { white-space: nowrap; }
         th { background: #f0fdf4; font-weight: 700; }
         tr:hover { background: #f3fff8; }
 
@@ -120,6 +127,14 @@
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
 @endif
+            <a href="{{ route('tpq.prestasi.index') }}">
+                <span class="nav-icon">📖</span> Kartu Prestasi
+            </a>
+            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
+            <a href="{{ route('tpq.master-hafalan.index') }}">
+                <span class="nav-icon">⚙️</span> Master Hafalan
+            </a>
+            @endif
             @if(auth()->user()->hasAccess('tpq.keuangan'))
             <a href="{{ route('tpq.keuangan.spp.index') }}" class="{{ request()->routeIs('tpq.keuangan.*') ? 'active' : '' }}">
                 <span class="nav-icon">💰</span> Keuangan TPQ

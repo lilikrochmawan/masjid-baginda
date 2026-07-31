@@ -21,7 +21,18 @@ class Santri extends Model
         'tanggal_lahir',
         'nama_orang_tua',
         'no_hp_orang_tua',
+        'prestasi_token',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->prestasi_token)) {
+                $model->prestasi_token = bin2hex(random_bytes(16));
+            }
+        });
+    }
 
     /**
      * Get the class associated with the student.
@@ -45,5 +56,13 @@ class Santri extends Model
     public function sppPembayaran(): HasMany
     {
         return $this->hasMany(SppPembayaran::class, 'tb_santri_id');
+    }
+
+    /**
+     * Get the prestasi records of the student.
+     */
+    public function prestasi(): HasMany
+    {
+        return $this->hasMany(PrestasiSantri::class, 'tb_santri_id');
     }
 }

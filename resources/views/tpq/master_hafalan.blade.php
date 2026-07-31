@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Kelas TPQ - Baginda</title>
+    <title>Master Data Hafalan TPQ - Baginda</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3faf7; }
@@ -41,7 +41,8 @@
 
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 8px; color: #164a3f; font-weight: 600; font-size: 13px; }
-        .form-group input, .form-group select { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1e7dd; font-size: 14px; color: #103a2d; background: #fbfffe; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #d1e7dd; font-size: 14px; color: #103a2d; background: #fbfffe; outline: none; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #10b981; }
         
         .button-primary { display: inline-block; padding: 12px 20px; border-radius: 12px; background: #10b981; color: white; border: none; font-weight: 700; cursor: pointer; transition: transform .2s ease; font-size: 13.5px; }
         .button-primary:hover { transform: translateY(-1px); }
@@ -53,7 +54,7 @@
         .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 500px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid #e6f4ed; text-align: left; font-size: 13px; color: #164a3f; }
         th { background: #f0fdf4; font-weight: 700; }
         tr:hover { background: #f3fff8; }
@@ -62,6 +63,10 @@
         .btn-action:hover { background: #f0fcf5; border-color: #a7f3d0; }
         .btn-danger { color: #dc2626; border-color: #fecaca; }
         .btn-danger:hover { background: #fef2f2; border-color: #fca5a5; }
+
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-surah { background: #e0f2fe; color: #0369a1; }
+        .badge-doa { background: #fef3c7; color: #d97706; }
 
         @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) {
@@ -87,43 +92,38 @@
                 <span class="nav-icon">🏠</span> Beranda
             </a>
             @if(auth()->user()->hasAccess('tpq.guru'))
-<a href="{{ route('tpq.guru.index') }}">
+            <a href="{{ route('tpq.guru.index') }}">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.kelas'))
-<a href="{{ route('tpq.kelas.index') }}" class="active">
+            <a href="{{ route('tpq.kelas.index') }}">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.santri'))
-<a href="{{ route('tpq.santri.index') }}">
+            <a href="{{ route('tpq.santri.index') }}">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.absensi'))
-<a href="{{ route('tpq.absensi.index') }}">
+            <a href="{{ route('tpq.absensi.index') }}">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.laporan'))
-<a href="{{ route('tpq.laporan.index') }}">
+            <a href="{{ route('tpq.laporan.index') }}">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-@endif
+            @endif
+            @if(auth()->user()->hasAccess('tpq.prestasi'))
             <a href="{{ route('tpq.prestasi.index') }}">
                 <span class="nav-icon">📖</span> Kartu Prestasi
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
+            @endif
+            <a href="{{ route('tpq.master-hafalan.index') }}" class="active">
                 <span class="nav-icon">⚙️</span> Master Hafalan
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.keuangan'))
-            <a href="{{ route('tpq.keuangan.spp.index') }}" class="{{ request()->routeIs('tpq.keuangan.*') ? 'active' : '' }}">
-                <span class="nav-icon">💰</span> Keuangan TPQ
-            </a>
-            @endif
             <div class="divider"></div>
             <a href="{{ route('dashboard') }}">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
@@ -140,85 +140,83 @@
 
     <!-- Topbar (mobile only) -->
     <div class="topbar">
-        <span class="topbar-brand">Data Kelas TPQ</span>
+        <span class="topbar-brand">Master Hafalan</span>
         <button class="topbar-toggle" id="sidebar-toggle">☰</button>
     </div>
 
     <!-- Main Content -->
     <main class="main">
         <div class="page-title">
-            <h1>Manajemen Data Kelas</h1>
+            <h1>Master Data Hafalan TPQ</h1>
         </div>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul style="padding-left: 16px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
         <div class="grid">
-            <!-- Left Side: Form -->
-            <div class="section" id="form-container">
-                <h2 id="form-title">Tambah Kelas Baru</h2>
-                <form id="kelas-form" action="{{ route('tpq.kelas.store') }}" method="POST">
+            <!-- Left Side: Form Tambah/Ubah -->
+            <div class="section">
+                <h2 id="formTitle">Tambah Master Hafalan</h2>
+                
+                <form id="hafalanForm" action="{{ route('tpq.master-hafalan.store') }}" method="POST">
                     @csrf
-                    <input type="hidden" id="method-field" name="_method" value="POST">
+                    <input type="hidden" name="_method" id="formMethod" value="POST">
 
                     <div class="form-group">
-                        <label for="nama_kelas">Nama Kelas</label>
-                        <input type="text" id="nama_kelas" name="nama_kelas" required placeholder="Masukkan nama kelas (contoh: Kelas Alif)">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tb_guru_id">Guru Pengampu</label>
-                        <select id="tb_guru_id" name="tb_guru_id">
-                            <option value="">Pilih Guru Pengampu</option>
-                            @foreach($gurus as $g)
-                                <option value="{{ $g->id }}">{{ $g->nama_guru }}</option>
-                            @endforeach
+                        <label for="kategori">Kategori Hafalan</label>
+                        <select name="kategori" id="kategori" required>
+                            <option value="surah_pendek">Surah Pendek</option>
+                            <option value="doa_harian">Doa Sehari-hari</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="button-primary" id="btn-submit">Simpan Kelas</button>
-                    <button type="button" class="button-secondary" id="btn-cancel" style="display:none;" onclick="resetForm()">Batal</button>
+                    <div class="form-group">
+                        <label for="nama">Nama Hafalan</label>
+                        <input type="text" name="nama" id="nama" placeholder="Contoh: Surah An-Nas, Doa Keluar Rumah" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="keterangan">Keterangan (Opsional)</label>
+                        <textarea name="keterangan" id="keterangan" rows="4" placeholder="Detail ayat atau keterangan lainnya..."></textarea>
+                    </div>
+
+                    <button type="submit" class="button-primary" id="btnSubmit">Simpan Data</button>
+                    <button type="button" class="button-secondary" id="btnReset" style="display: none;" onclick="resetForm()">Batal</button>
                 </form>
             </div>
 
-            <!-- Right Side: Table -->
+            <!-- Right Side: Daftar Master Data -->
             <div class="section">
-                <h2>Daftar Kelas</h2>
+                <h2>Daftar Hafalan</h2>
+                
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Nama Kelas</th>
-                                <th>Guru Pengampu</th>
-                                <th>Aksi</th>
+                                <th style="width: 50px;">#</th>
+                                <th>Kategori</th>
+                                <th>Nama</th>
+                                <th>Keterangan</th>
+                                <th style="width: 140px; text-align: center;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($kelas as $item)
+                            @forelse($items as $item)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td><strong>{{ $item->nama_kelas }}</strong></td>
                                     <td>
-                                        @if($item->guru)
-                                            <span style="color:#0f766e; font-weight:600;">👨‍🏫 {{ $item->guru->nama_guru }}</span>
+                                        @if($item->kategori === 'surah_pendek')
+                                            <span class="badge badge-surah">Surah Pendek</span>
                                         @else
-                                            <span style="color:#9ca3af; font-style:italic;">Belum ditentukan</span>
+                                            <span class="badge badge-doa">Doa Harian</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <button class="btn-action" onclick='editKelas(@json($item))'>Ubah</button>
-                                        <form action="{{ route('tpq.kelas.destroy', $item->id) }}" method="POST" style="display:inline; margin-left: 4px;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini? Santri di kelas ini akan dipindahkan ke tanpa kelas.')">
+                                    <td><strong>{{ $item->nama }}</strong></td>
+                                    <td>{{ $item->keterangan ?? '-' }}</td>
+                                    <td style="text-align: center;">
+                                        <button class="btn-action" onclick="editHafalan({{ json_encode($item) }})">Edit</button>
+                                        <form action="{{ route('tpq.master-hafalan.destroy', $item->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data master ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action btn-danger">Hapus</button>
@@ -227,7 +225,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" style="text-align:center; color:#9ca3af;">Belum ada data kelas.</td>
+                                    <td colspan="5" style="text-align: center; color:#6b7280; padding:20px;">Belum ada master data hafalan.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -247,41 +245,41 @@
             overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
         }
 
-        // Edit Kelas function
-        const formContainer = document.getElementById('form-container');
-        const formTitle = document.getElementById('form-title');
-        const form = document.getElementById('kelas-form');
-        const methodField = document.getElementById('method-field');
-        const submitBtn = document.getElementById('btn-submit');
-        const cancelBtn = document.getElementById('btn-cancel');
+        // Form handling
+        const form = document.getElementById('hafalanForm');
+        const formTitle = document.getElementById('formTitle');
+        const formMethod = document.getElementById('formMethod');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnReset = document.getElementById('btnReset');
 
-        const namaKelasInput = document.getElementById('nama_kelas');
-        const guruIdSelect = document.getElementById('tb_guru_id');
+        const inputKategori = document.getElementById('kategori');
+        const inputNama = document.getElementById('nama');
+        const inputKeterangan = document.getElementById('keterangan');
 
-        function editKelas(kelas) {
-            // Scroll to form
-            formContainer.scrollIntoView({ behavior: 'smooth' });
+        function editHafalan(item) {
+            formTitle.textContent = 'Ubah Master Hafalan';
+            form.action = `/tpq/master-hafalan/${item.id}`;
+            formMethod.value = 'PUT';
+            btnSubmit.textContent = 'Perbarui Data';
+            btnReset.style.display = 'inline-block';
 
-            formTitle.textContent = "Edit Data Kelas";
-            form.action = "{{ route('tpq.kelas.update', ':id') }}".replace(':id', kelas.id);
-            methodField.value = "PUT";
-            submitBtn.textContent = "Simpan Perubahan";
-            cancelBtn.style.display = "inline-block";
-
-            // Fill inputs
-            namaKelasInput.value = kelas.nama_kelas;
-            guruIdSelect.value = kelas.tb_guru_id || "";
+            inputKategori.value = item.kategori;
+            inputNama.value = item.nama;
+            inputKeterangan.value = item.keterangan || '';
+            
+            inputNama.focus();
         }
 
         function resetForm() {
-            formTitle.textContent = "Tambah Kelas Baru";
-            form.action = "{{ route('tpq.kelas.store') }}";
-            methodField.value = "POST";
-            submitBtn.textContent = "Simpan Kelas";
-            cancelBtn.style.display = "none";
+            formTitle.textContent = 'Tambah Master Hafalan';
+            form.action = "{{ route('tpq.master-hafalan.store') }}";
+            formMethod.value = 'POST';
+            btnSubmit.textContent = 'Simpan Data';
+            btnReset.style.display = 'none';
 
-            // Reset inputs
-            form.reset();
+            inputKategori.value = 'surah_pendek';
+            inputNama.value = '';
+            inputKeterangan.value = '';
         }
     </script>
 </body>

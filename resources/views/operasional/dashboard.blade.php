@@ -88,12 +88,15 @@
             @endif
             @if(auth()->user()->hasAccess('operasional.inventaris'))
             <a href="{{ route('operasional.inventaris.index') }}">
-                <span class="nav-icon">🥫</span> Inventarisasi Barang
+                <span class="nav-icon">📦</span> Inventarisasi Barang
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.surat'))
             <a href="{{ route('operasional.surat.index') }}">
-                <span class="nav-icon">✉️</span> Surat & Proposal
+                <span class="nav-icon">✉️</span> Persuratan
+            </a>
+            <a href="{{ route('operasional.broadcast.index') }}">
+                <span class="nav-icon">📢</span> Pengumuman
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.rencana'))
@@ -141,11 +144,11 @@
                     <h3>Total Unit Aset</h3>
                     <div class="value">{{ $totalInventaris }} <span style="font-size:14px; color:#64748b; font-weight:normal;">Unit</span></div>
                 </div>
-                <div class="card-icon" style="background:#fef3c7; color:#d97706;">🥫</div>
+                <div class="card-icon" style="background:#fef3c7; color:#d97706;">📦</div>
             </div>
             <div class="card">
                 <div class="card-info">
-                    <h3>Proposal & Surat</h3>
+                    <h3>Persuratan</h3>
                     <div class="value">{{ $totalSurat }} <span style="font-size:14px; color:#64748b; font-weight:normal;">Dokumen</span></div>
                 </div>
                 <div class="card-icon" style="background:#dcfce7; color:#15803d;">✉️</div>
@@ -224,14 +227,18 @@
             @endif
             @if(auth()->user()->hasAccess('operasional.inventaris'))
             <a href="{{ route('operasional.inventaris.index') }}" class="module-link-btn">
-                <span class="module-link-icon">🥫</span>
+                <span class="module-link-icon">📦</span>
                 <span>Inventarisasi Barang</span>
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.surat'))
             <a href="{{ route('operasional.surat.index') }}" class="module-link-btn">
                 <span class="module-link-icon">✉️</span>
-                <span>Administrasi Persuratan</span>
+                <span>Persuratan</span>
+            </a>
+            <a href="{{ route('operasional.broadcast.index') }}" class="module-link-btn">
+                <span class="module-link-icon">📢</span>
+                <span>Pengumuman Takmir</span>
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.rencana'))

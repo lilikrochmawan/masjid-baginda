@@ -451,7 +451,21 @@
                 @foreach($templates as $template)
                     <div class="card">
                         <div class="card-header">
-                            <h2><span>📝</span> {{ $template->key === 'spp_kuitansi' ? 'Kuitansi SPP TPQ' : 'Kuitansi Scan Koin Baginda' }}</h2>
+                            <h2><span>📝</span> 
+                                @if($template->key === 'spp_kuitansi')
+                                    Kuitansi SPP TPQ
+                                @elseif($template->key === 'koin_scan')
+                                    Kuitansi Scan Koin Baginda
+                                @elseif($template->key === 'tpq_absensi')
+                                    Notifikasi Absensi TPQ
+                                @elseif($template->key === 'tpq_prestasi_sorogan')
+                                    Notifikasi Prestasi Sorogan
+                                @elseif($template->key === 'tpq_prestasi_hafalan')
+                                    Notifikasi Prestasi Hafalan
+                                @else
+                                    {{ $template->key }}
+                                @endif
+                            </h2>
                             <div class="card-desc">Edit format pesan WhatsApp yang dikirim otomatis untuk modul ini.</div>
                         </div>
 
@@ -473,12 +487,35 @@
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{tanggal_bayar}')"><code>{tanggal_bayar}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_wali}')"><code>{nama_wali}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{penerima}')"><code>{penerima}</code></span>
-                                @else
+                                @elseif($template->key === 'koin_scan')
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_pemilik}')"><code>{nama_pemilik}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{kode_kaleng}')"><code>{kode_kaleng}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_kaleng}')"><code>{nama_kaleng}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{tanggal_ambil}')"><code>{tanggal_ambil}</code></span>
                                     <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_petugas}')"><code>{nama_petugas}</code></span>
+                                @elseif($template->key === 'tpq_absensi')
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_santri}')"><code>{nama_santri}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{tanggal}')"><code>{tanggal}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{status}')"><code>{status}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{keterangan}')"><code>{keterangan}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_wali}')"><code>{nama_wali}</code></span>
+                                @elseif($template->key === 'tpq_prestasi_sorogan')
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_santri}')"><code>{nama_santri}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{tanggal}')"><code>{tanggal}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{materi_detail}')"><code>{materi_detail}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{keterangan}')"><code>{keterangan}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_petugas}')"><code>{nama_petugas}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_wali}')"><code>{nama_wali}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{link_prestasi}')"><code>{link_prestasi}</code></span>
+                                @elseif($template->key === 'tpq_prestasi_hafalan')
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_santri}')"><code>{nama_santri}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{tanggal}')"><code>{tanggal}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_hafalan}')"><code>{nama_hafalan}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{kategori}')"><code>{kategori}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{keterangan}')"><code>{keterangan}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_petugas}')"><code>{nama_petugas}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{nama_wali}')"><code>{nama_wali}</code></span>
+                                    <span class="placeholder-tag" onclick="insertPlaceholder('template_{{ $template->key }}', '{link_prestasi}')"><code>{link_prestasi}</code></span>
                                 @endif
                             </div>
                         </div>

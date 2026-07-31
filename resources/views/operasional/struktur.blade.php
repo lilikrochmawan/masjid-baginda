@@ -122,12 +122,15 @@
             @endif
             @if(auth()->user()->hasAccess('operasional.inventaris'))
             <a href="{{ route('operasional.inventaris.index') }}">
-                <span class="nav-icon">🥫</span> Inventarisasi Barang
+                <span class="nav-icon">📦</span> Inventarisasi Barang
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.surat'))
             <a href="{{ route('operasional.surat.index') }}">
-                <span class="nav-icon">✉️</span> Surat & Proposal
+                <span class="nav-icon">✉️</span> Persuratan
+            </a>
+            <a href="{{ route('operasional.broadcast.index') }}">
+                <span class="nav-icon">📢</span> Pengumuman
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.rencana'))
@@ -181,6 +184,16 @@
                 <form id="takmir-form" action="{{ route('operasional.struktur.store') }}" method="POST">
                     @csrf
                     <input type="hidden" id="method-field" name="_method" value="POST">
+
+                    <div class="form-group">
+                        <label for="tb_user_id">Tautkan ke Akun Pengguna (tb_user)</label>
+                        <select id="tb_user_id" name="tb_user_id" onchange="autoFillNama()">
+                            <option value="">-- Belum Ditautkan ke Akun --</option>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}" data-name="{{ $u->name }}">{{ $u->name }} ({{ $u->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <div class="form-group">
                         <label for="nama">Nama Lengkap</label>
@@ -297,7 +310,14 @@
                                 @forelse($takmirs as $takmir)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td><strong>{{ $takmir->nama }}</strong></td>
+                                        <td>
+                                             <strong>{{ $takmir->nama }}</strong>
+                                             @if($takmir->user)
+                                                 <div style="font-size:11px; color:#10b981; margin-top:2px;">🔗 User: {{ $takmir->user->name }}</div>
+                                             @else
+                                                 <div style="font-size:11px; color:#94a3b8; margin-top:2px; font-style:italic;">Belum ditautkan</div>
+                                             @endif
+                                         </td>
                                         <td>{{ $takmir->jabatan }}</td>
                                         <td>
                                             @if($takmir->parent)
@@ -366,11 +386,20 @@
         const submitBtn = document.getElementById('btn-submit');
         const cancelBtn = document.getElementById('btn-cancel');
 
+        const userIdSelect = document.getElementById('tb_user_id');
         const namaInput = document.getElementById('nama');
         const jabatanInput = document.getElementById('jabatan');
         const parentSelect = document.getElementById('parent_id');
         const noHpInput = document.getElementById('no_hp');
         const statusSelect = document.getElementById('status');
+
+        function autoFillNama() {
+            const selectedOpt = userIdSelect.options[userIdSelect.selectedIndex];
+            const name = selectedOpt.getAttribute('data-name');
+            if (name) {
+                namaInput.value = name;
+            }
+        }
 
         function editTakmir(takmir) {
             formContainer.scrollIntoView({ behavior: 'smooth' });
@@ -381,6 +410,7 @@
             submitBtn.textContent = "Simpan Perubahan";
             cancelBtn.style.display = "inline-block";
 
+            userIdSelect.value = takmir.tb_user_id || "";
             namaInput.value = takmir.nama;
             jabatanInput.value = takmir.jabatan;
             parentSelect.value = takmir.parent_id || "";
@@ -404,6 +434,7 @@
             submitBtn.textContent = "Simpan Anggota";
             cancelBtn.style.display = "none";
             form.reset();
+            userIdSelect.value = "";
             
             Array.from(parentSelect.options).forEach(opt => opt.disabled = false);
         }

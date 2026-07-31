@@ -108,12 +108,15 @@
             @endif
             @if(auth()->user()->hasAccess('operasional.inventaris'))
             <a href="{{ route('operasional.inventaris.index') }}">
-                <span class="nav-icon">🥫</span> Inventarisasi Barang
+                <span class="nav-icon">📦</span> Inventarisasi Barang
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.surat'))
             <a href="{{ route('operasional.surat.index') }}">
-                <span class="nav-icon">✉️</span> Surat & Proposal
+                <span class="nav-icon">✉️</span> Persuratan
+            </a>
+            <a href="{{ route('operasional.broadcast.index') }}">
+                <span class="nav-icon">📢</span> Pengumuman
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.rencana'))
@@ -173,7 +176,7 @@
                         <select id="tb_takmir_id" name="tb_takmir_id" required>
                             <option value="">Pilih pengurus...</option>
                             @foreach($takmirs as $t)
-                                <option value="{{ $t->id }}">{{ $t->nama }} ({{ $t->jabatan }})</option>
+                                <option value="{{ $t->id }}" {{ isset($userTakmir) && $userTakmir->id === $t->id ? 'selected' : '' }}>{{ $t->nama }} ({{ $t->jabatan }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -215,10 +218,18 @@
 
             <!-- Right: List / Cards -->
             <div class="section">
-                <h2>Daftar Program Kerja Seksi</h2>
-                <div style="margin-top: 15px; max-height: 70vh; overflow-y: auto; padding-right: 6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e6f4ed; padding-bottom:12px; margin-bottom: 15px; flex-wrap: wrap; gap:10px;">
+                    <h2>Daftar Program Kerja Seksi</h2>
+                    @if(isset($userTakmir))
+                    <select id="filter-rencana" onchange="filterRencana()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #d1e7dd; font-size:13px; background:#fafafa; color:#0f766e; outline:none; cursor:pointer;">
+                        <option value="semua">Tampilkan: Semua Program</option>
+                        <option value="saya">Tampilkan: Hanya Seksi Saya</option>
+                    </select>
+                    @endif
+                </div>
+                <div style="max-height: 70vh; overflow-y: auto; padding-right: 6px;">
                     @forelse($rencanas as $r)
-                        <div class="rencana-card">
+                        <div class="rencana-card" data-pic-id="{{ $r->tb_takmir_id }}">
                             <div class="rencana-header">
                                 <div>
                                     <div class="rencana-title">{{ $r->nama_program }}</div>
@@ -323,6 +334,25 @@
             form.reset();
             targetInput.value = "{{ date('Y-m-d') }}";
             anggaranInput.value = "0";
+        }
+
+        function filterRencana() {
+            const filter = document.getElementById('filter-rencana').value;
+            const myTakmirId = "{{ $userTakmir?->id ?? '' }}";
+            const cards = document.querySelectorAll('.rencana-card');
+
+            cards.forEach(card => {
+                const picId = card.getAttribute('data-pic-id');
+                if (filter === 'semua') {
+                    card.style.display = 'block';
+                } else {
+                    if (picId === myTakmirId) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
         }
     </script>
 </body>

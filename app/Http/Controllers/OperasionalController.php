@@ -8,9 +8,14 @@ use App\Models\Barang;
 use App\Models\Inventaris;
 use App\Models\Surat;
 use App\Models\RencanaKerja;
+use App\Models\SuratBuat;
+use App\Models\TakmirBroadcast;
+use App\Models\TakmirBroadcastTemplate;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
 
 class OperasionalController extends Controller
@@ -31,8 +36,8 @@ class OperasionalController extends Controller
                 if ((str_starts_with($route, 'operasional.inventaris') || str_starts_with($route, 'operasional.jenis') || str_starts_with($route, 'operasional.barang')) && !$user->hasAccess('operasional.inventaris')) {
                     abort(403, 'Anda tidak memiliki akses untuk submodule Inventarisasi Barang.');
                 }
-                if (str_starts_with($route, 'operasional.surat') && !$user->hasAccess('operasional.surat')) {
-                    abort(403, 'Anda tidak memiliki akses untuk submodule Administrasi Persuratan.');
+                if ((str_starts_with($route, 'operasional.surat') || str_starts_with($route, 'operasional.broadcast')) && !$user->hasAccess('operasional.surat')) {
+                    abort(403, 'Anda tidak memiliki akses untuk submodule Persuratan.');
                 }
                 if (str_starts_with($route, 'operasional.rencana') && !$user->hasAccess('operasional.rencana')) {
                     abort(403, 'Anda tidak memiliki akses untuk submodule Rencana Kerja Seksi.');
@@ -83,15 +88,17 @@ class OperasionalController extends Controller
     {
         $user = Auth::user();
         $hakakses = $user->hakakses;
-        $takmirs = Takmir::with('parent')->get();
+        $takmirs = Takmir::with(['parent', 'user'])->get();
         $parentOptions = Takmir::where('status', 'aktif')->get();
+        $users = \App\Models\User::orderBy('name')->get();
 
-        return view('operasional.struktur', compact('user', 'hakakses', 'takmirs', 'parentOptions'));
+        return view('operasional.struktur', compact('user', 'hakakses', 'takmirs', 'parentOptions', 'users'));
     }
 
     public function strukturStore(Request $request)
     {
         $request->validate([
+            'tb_user_id' => 'nullable|exists:tb_user,id',
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:tb_takmir,id',
@@ -107,6 +114,7 @@ class OperasionalController extends Controller
     public function strukturUpdate(Request $request, $id)
     {
         $request->validate([
+            'tb_user_id' => 'nullable|exists:tb_user,id',
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:tb_takmir,id',
@@ -288,8 +296,22 @@ class OperasionalController extends Controller
         $user = Auth::user();
         $hakakses = $user->hakakses;
         $surats = Surat::orderBy('tanggal_surat', 'desc')->get();
+        $suratBuats = SuratBuat::with('creator')->orderBy('created_at', 'desc')->get();
 
-        return view('operasional.surat', compact('user', 'hakakses', 'surats'));
+        // Auto number generator for new letters
+        $currentYear = date('Y');
+        $countThisYear = SuratBuat::whereYear('tanggal_surat', $currentYear)->count();
+        $nextNum = str_pad($countThisYear + 1, 3, '0', STR_PAD_LEFT);
+        $monthsRoman = [
+            1=>'I', 2=>'II', 3=>'III', 4=>'IV', 5=>'V', 6=>'VI',
+            7=>'VII', 8=>'VIII', 9=>'IX', 10=>'X', 11=>'XI', 12=>'XII'
+        ];
+        $currentMonthRoman = $monthsRoman[(int)date('n')];
+        $autoNomorSurat = "{$nextNum}/TKM-MB/{$currentMonthRoman}/{$currentYear}";
+
+        $userTakmir = $user->takmir;
+
+        return view('operasional.surat', compact('user', 'hakakses', 'surats', 'suratBuats', 'autoNomorSurat', 'userTakmir'));
     }
 
     public function suratStore(Request $request)
@@ -380,8 +402,9 @@ class OperasionalController extends Controller
         $hakakses = $user->hakakses;
         $rencanas = RencanaKerja::with('penanggungJawab')->orderBy('target_selesai', 'asc')->get();
         $takmirs = Takmir::where('status', 'aktif')->get();
+        $userTakmir = $user->takmir;
 
-        return view('operasional.rencana', compact('user', 'hakakses', 'rencanas', 'takmirs'));
+        return view('operasional.rencana', compact('user', 'hakakses', 'rencanas', 'takmirs', 'userTakmir'));
     }
 
     public function rencanaStore(Request $request)
@@ -423,5 +446,251 @@ class OperasionalController extends Controller
         $rencana->delete();
 
         return redirect()->route('operasional.rencana.index')->with('success', 'Rencana kerja berhasil dihapus.');
+    }
+
+    /* ── Submodul 3b: Pembuatan Surat Resmi ── */
+
+    public function suratBuatStore(Request $request)
+    {
+        $request->validate([
+            'nomor_surat' => 'required|string|max:100',
+            'perihal' => 'required|string|max:255',
+            'tanggal_surat' => 'required|date',
+            'template_key' => 'required|string',
+            'header_title' => 'required|string|max:255',
+            'header_subtitle' => 'nullable|string',
+            'tujuan_surat' => 'nullable|string',
+            'isi_surat' => 'nullable|string',
+            'nama_sekretaris' => 'nullable|string',
+            'nama_ketua' => 'nullable|string',
+            'nama_penasehat' => 'nullable|string',
+        ]);
+
+        $data = $request->all();
+        $data['created_by'] = Auth::id();
+
+        SuratBuat::create($data);
+
+        return redirect()->route('operasional.surat.index', ['tab' => 'buat-surat'])->with('success', 'Surat resmi berhasil dibuat.');
+    }
+
+    public function suratBuatUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'nomor_surat' => 'required|string|max:100',
+            'perihal' => 'required|string|max:255',
+            'tanggal_surat' => 'required|date',
+            'template_key' => 'required|string',
+            'header_title' => 'required|string|max:255',
+            'header_subtitle' => 'nullable|string',
+            'tujuan_surat' => 'nullable|string',
+            'isi_surat' => 'nullable|string',
+            'nama_sekretaris' => 'nullable|string',
+            'nama_ketua' => 'nullable|string',
+            'nama_penasehat' => 'nullable|string',
+        ]);
+
+        $surat = SuratBuat::findOrFail($id);
+        $surat->update($request->all());
+
+        return redirect()->route('operasional.surat.index', ['tab' => 'buat-surat'])->with('success', 'Surat resmi berhasil diperbarui.');
+    }
+
+    public function suratBuatDestroy($id)
+    {
+        $surat = SuratBuat::findOrFail($id);
+        $surat->delete();
+
+        return redirect()->route('operasional.surat.index', ['tab' => 'buat-surat'])->with('success', 'Surat resmi berhasil dihapus.');
+    }
+
+    public function suratBuatSign(Request $request, $id)
+    {
+        $request->validate([
+            'role' => 'required|in:sekretaris,ketua,penasehat',
+            'nama_penandatangan' => 'required|string|max:255',
+        ]);
+
+        $surat = SuratBuat::findOrFail($id);
+        $role = $request->role;
+        
+        $verifyUrl = route('tte.verify', ['id' => $id, 'role' => $role]);
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($verifyUrl);
+        
+        if ($role === 'sekretaris') {
+            $surat->status_sekretaris = 'signed';
+            $surat->ttd_sekretaris = $qrCodeUrl;
+            $surat->nama_sekretaris = $request->nama_penandatangan;
+        } elseif ($role === 'ketua') {
+            $surat->status_ketua = 'signed';
+            $surat->ttd_ketua = $qrCodeUrl;
+            $surat->nama_ketua = $request->nama_penandatangan;
+        } elseif ($role === 'penasehat') {
+            $surat->status_penasehat = 'signed';
+            $surat->ttd_penasehat = $qrCodeUrl;
+            $surat->nama_penasehat = $request->nama_penandatangan;
+        }
+        
+        $surat->save();
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Tanda tangan elektronik (QR Code) berhasil disematkan.',
+            'qr_code_url' => $qrCodeUrl
+        ]);
+    }
+
+    public function tteVerify(Request $request, $id)
+    {
+        $surat = SuratBuat::findOrFail($id);
+        $role = $request->query('role');
+        
+        $signerName = '-';
+        $signerRole = '-';
+        $tanggalSign = $surat->updated_at->format('d M Y');
+        
+        if ($role === 'sekretaris') {
+            $signerName = $surat->nama_sekretaris;
+            $signerRole = 'Sekretaris';
+        } elseif ($role === 'ketua') {
+            $signerName = $surat->nama_ketua;
+            $signerRole = 'Ketua Takmir';
+        } elseif ($role === 'penasehat') {
+            $signerName = $surat->nama_penasehat;
+            $signerRole = 'Penasehat Takmir';
+        }
+        
+        return view('operasional.tte_verify', compact('surat', 'role', 'signerName', 'signerRole', 'tanggalSign'));
+    }
+
+    public function suratBuatPrint($id)
+    {
+        $surat = SuratBuat::findOrFail($id);
+        return view('operasional.surat_print', compact('surat'));
+    }
+
+    /* ── Submodul 5: Broadcast Pengumuman Takmir ── */
+
+    public function broadcastIndex()
+    {
+        $user = Auth::user();
+        $hakakses = $user->hakakses;
+        $broadcasts = TakmirBroadcast::with('creator')->orderBy('created_at', 'desc')->get();
+        $templates = TakmirBroadcastTemplate::orderBy('nama_template')->get();
+        $takmirs = Takmir::where('status', 'aktif')->get();
+
+        return view('operasional.broadcast', compact('user', 'hakakses', 'broadcasts', 'templates', 'takmirs'));
+    }
+
+    public function broadcastStore(Request $request)
+    {
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'isi_pengumuman' => 'required|string',
+            'target_type' => 'required|in:semua_takmir,grup_wa,custom',
+            'target_detail' => 'nullable|string',
+        ]);
+
+        $setting = Setting::first();
+        $token = ($setting && $setting->fonnte_token) ? $setting->fonnte_token : env('FONNTE_TOKEN');
+        
+        if (empty($token)) {
+            return redirect()->route('operasional.broadcast.index')->with('error', 'Token Fonnte belum dikonfigurasi di Pengaturan Sistem.');
+        }
+
+        $isi = $request->isi_pengumuman;
+        $targetType = $request->target_type;
+        $targets = [];
+
+        if ($targetType === 'semua_takmir') {
+            $targets = Takmir::where('status', 'aktif')->whereNotNull('no_hp')->pluck('no_hp')->toArray();
+        } elseif ($targetType === 'grup_wa') {
+            $targets = [$request->target_detail]; // Group ID
+        } elseif ($targetType === 'custom') {
+            // Split by comma or newline
+            $raw = preg_split('/[\s,]+/', $request->target_detail);
+            $targets = array_filter(array_map('trim', $raw));
+        }
+
+        if (empty($targets)) {
+            return redirect()->route('operasional.broadcast.index')->with('error', 'Tidak ada nomor target pengiriman.');
+        }
+
+        // Clean & normalize phone numbers
+        $normalizedTargets = [];
+        foreach ($targets as $t) {
+            $num = preg_replace('/[^0-9]/', '', $t);
+            if (empty($num)) continue;
+            if (str_starts_with($num, '0')) {
+                $num = '62' . substr($num, 1);
+            }
+            $normalizedTargets[] = $num;
+        }
+
+        $totalSent = 0;
+
+        // Send to each target
+        foreach ($normalizedTargets as $phone) {
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => $token
+                ])->asForm()->post('https://api.fonnte.com/send', [
+                    'target' => $phone,
+                    'message' => $isi,
+                ]);
+
+                $resData = $response->json();
+                if ($response->successful() && isset($resData['status']) && $resData['status'] == true) {
+                    $totalSent++;
+                }
+            } catch (\Exception $e) {
+                // Keep trying other numbers
+            }
+        }
+
+        TakmirBroadcast::create([
+            'judul' => $request->judul,
+            'isi_pengumuman' => $isi,
+            'target_type' => $targetType,
+            'target_detail' => $request->target_detail,
+            'status' => $totalSent > 0 ? 'success' : 'failed',
+            'total_sent' => $totalSent,
+            'created_by' => Auth::id()
+        ]);
+
+        return redirect()->route('operasional.broadcast.index')->with('success', "Pengumuman berhasil diproses. Berhasil mengirim ke {$totalSent} nomor.");
+    }
+
+    public function broadcastTemplateStore(Request $request)
+    {
+        $request->validate([
+            'nama_template' => 'required|string|max:255',
+            'isi_template' => 'required|string',
+        ]);
+
+        TakmirBroadcastTemplate::create($request->all());
+
+        return redirect()->route('operasional.broadcast.index', ['tab' => 'templates'])->with('success', 'Template pengumuman berhasil disimpan.');
+    }
+
+    public function broadcastTemplateUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'nama_template' => 'required|string|max:255',
+            'isi_template' => 'required|string',
+        ]);
+
+        $template = TakmirBroadcastTemplate::findOrFail($id);
+        $template->update($request->all());
+
+        return redirect()->route('operasional.broadcast.index', ['tab' => 'templates'])->with('success', 'Template pengumuman berhasil diperbarui.');
+    }
+
+    public function broadcastTemplateDestroy($id)
+    {
+        $template = TakmirBroadcastTemplate::findOrFail($id);
+        $template->delete();
+
+        return redirect()->route('operasional.broadcast.index', ['tab' => 'templates'])->with('success', 'Template pengumuman berhasil dihapus.');
     }
 }

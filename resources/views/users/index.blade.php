@@ -540,7 +540,7 @@
                                 </div>
                                 <div class="permission-child">
                                     <input type="checkbox" id="sub_op_surat" name="akses_modul[]" value="operasional.surat" class="child-checkbox">
-                                    <label for="sub_op_surat">Administrasi Persuratan</label>
+                                    <label for="sub_op_surat">Persuratan</label>
                                 </div>
                                 <div class="permission-child">
                                     <input type="checkbox" id="sub_op_rencana" name="akses_modul[]" value="operasional.rencana" class="child-checkbox">

@@ -114,6 +114,14 @@
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
             @endif
+            <a href="{{ route('tpq.prestasi.index') }}">
+                <span class="nav-icon">📖</span> Kartu Prestasi
+            </a>
+            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
+            <a href="{{ route('tpq.master-hafalan.index') }}">
+                <span class="nav-icon">⚙️</span> Master Hafalan
+            </a>
+            @endif
             @if(auth()->user()->hasAccess('tpq.keuangan'))
             <a href="{{ route('tpq.keuangan.spp.index') }}" class="active">
                 <span class="nav-icon">💰</span> Keuangan TPQ

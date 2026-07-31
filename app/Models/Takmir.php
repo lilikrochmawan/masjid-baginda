@@ -14,12 +14,18 @@ class Takmir extends Model
     protected $table = 'tb_takmir';
 
     protected $fillable = [
+        'tb_user_id',
         'nama',
         'jabatan',
         'parent_id',
         'no_hp',
         'status',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'tb_user_id');
+    }
 
     public function parent(): BelongsTo
     {

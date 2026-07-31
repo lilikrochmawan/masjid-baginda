@@ -110,14 +110,17 @@
             @endif
             @if(auth()->user()->hasAccess('operasional.inventaris'))
             <a href="{{ route('operasional.inventaris.index') }}" class="active">
-                <span class="nav-icon">🥫</span> Inventarisasi Barang
+                <span class="nav-icon">📦</span> Inventarisasi Barang
             </a>
             @endif
             @if(auth()->user()->hasAccess('operasional.surat'))
-            <a href="{{ route('operasional.surat.index') }}">
-                <span class="nav-icon">✉️</span> Surat & Proposal
-            </a>
-            @endif
+             <a href="{{ route('operasional.surat.index') }}">
+                 <span class="nav-icon">✉️</span> Persuratan
+             </a>
+             <a href="{{ route('operasional.broadcast.index') }}">
+                 <span class="nav-icon">📢</span> Pengumuman
+             </a>
+             @endif
             @if(auth()->user()->hasAccess('operasional.rencana'))
             <a href="{{ route('operasional.rencana.index') }}">
                 <span class="nav-icon">📅</span> Rencana Kerja

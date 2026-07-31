@@ -87,6 +87,20 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/surat/{id}', [App\Http\Controllers\OperasionalController::class, 'suratUpdate'])->name('surat.update');
         Route::delete('/surat/{id}', [App\Http\Controllers\OperasionalController::class, 'suratDestroy'])->name('surat.destroy');
 
+        // Pembuatan Surat Resmi & TTE
+        Route::post('/surat-buat', [App\Http\Controllers\OperasionalController::class, 'suratBuatStore'])->name('surat-buat.store');
+        Route::put('/surat-buat/{id}', [App\Http\Controllers\OperasionalController::class, 'suratBuatUpdate'])->name('surat-buat.update');
+        Route::delete('/surat-buat/{id}', [App\Http\Controllers\OperasionalController::class, 'suratBuatDestroy'])->name('surat-buat.destroy');
+        Route::post('/surat-buat/{id}/sign', [App\Http\Controllers\OperasionalController::class, 'suratBuatSign'])->name('surat-buat.sign');
+        Route::get('/surat-buat/{id}/print', [App\Http\Controllers\OperasionalController::class, 'suratBuatPrint'])->name('surat-buat.print');
+
+        // Broadcast Pengumuman Takmir
+        Route::get('/broadcast', [App\Http\Controllers\OperasionalController::class, 'broadcastIndex'])->name('broadcast.index');
+        Route::post('/broadcast', [App\Http\Controllers\OperasionalController::class, 'broadcastStore'])->name('broadcast.store');
+        Route::post('/broadcast-template', [App\Http\Controllers\OperasionalController::class, 'broadcastTemplateStore'])->name('broadcast-template.store');
+        Route::put('/broadcast-template/{id}', [App\Http\Controllers\OperasionalController::class, 'broadcastTemplateUpdate'])->name('broadcast-template.update');
+        Route::delete('/broadcast-template/{id}', [App\Http\Controllers\OperasionalController::class, 'broadcastTemplateDestroy'])->name('broadcast-template.destroy');
+
         // Rencana Kerja
         Route::get('/rencana-kerja', [App\Http\Controllers\OperasionalController::class, 'rencanaIndex'])->name('rencana.index');
         Route::post('/rencana-kerja', [App\Http\Controllers\OperasionalController::class, 'rencanaStore'])->name('rencana.store');
@@ -123,6 +137,22 @@ Route::middleware(['auth'])->group(function () {
         // Laporan Absensi
         Route::get('/laporan', [App\Http\Controllers\TpqController::class, 'laporanIndex'])->name('laporan.index');
 
+        // Master Hafalan CRUD
+        Route::prefix('master-hafalan')->name('master-hafalan.')->group(function () {
+            Route::get('/', [App\Http\Controllers\TpqMasterHafalanController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\TpqMasterHafalanController::class, 'store'])->name('store');
+            Route::put('/{id}', [App\Http\Controllers\TpqMasterHafalanController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\TpqMasterHafalanController::class, 'destroy'])->name('destroy');
+        });
+
+        // Kartu Prestasi
+        Route::prefix('prestasi')->name('prestasi.')->group(function () {
+            Route::get('/', [App\Http\Controllers\TpqPrestasiController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\TpqPrestasiController::class, 'store'])->name('store');
+            Route::delete('/{id}', [App\Http\Controllers\TpqPrestasiController::class, 'destroy'])->name('destroy');
+            Route::get('/last-progress', [App\Http\Controllers\TpqPrestasiController::class, 'getLastProgress'])->name('last-progress');
+        });
+
         // Keuangan TPQ
         Route::prefix('keuangan')->name('keuangan.')->group(function () {
             // SPP Pembayaran
@@ -142,3 +172,8 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 });
+
+// Route Publik Tanpa Login (Wali Santri & Verifikasi TTE)
+Route::get('/tpq/prestasi/santri/{token}', [App\Http\Controllers\TpqPrestasiController::class, 'publicShow'])->name('tpq.prestasi.public');
+Route::get('/verifikasi-tte/{id}', [App\Http\Controllers\OperasionalController::class, 'tteVerify'])->name('tte.verify');
+

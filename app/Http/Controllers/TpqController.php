@@ -7,9 +7,12 @@ use App\Models\Kelas;
 use App\Models\Santri;
 use App\Models\AbsensiSantri;
 use App\Models\User;
+use App\Models\WaTemplate;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class TpqController extends Controller
 {
@@ -380,10 +383,96 @@ class TpqController extends Controller
             );
         }
 
+        // WhatsApp Broadcast to parents
+        $santris = Santri::whereIn('id', array_keys($absensiData))->get();
+        $setting = Setting::first();
+        $token = ($setting && $setting->fonnte_token) ? $setting->fonnte_token : env('FONNTE_TOKEN');
+
+        $waSuccessCount = 0;
+        $waErrorCount = 0;
+
+        if (!empty($token)) {
+            $templateObj = WaTemplate::firstOrCreate(
+                ['key' => 'tpq_absensi'],
+                [
+                    'template' => "*_Assalamu'alaikum wr. wb._*\n\nYth. Orang Tua/Wali dari *{nama_santri}*,\n\nKami menginfokan bahwa Ananda *{nama_santri}* pada hari ini, *{tanggal}*, dinyatakan *{status}* dalam kegiatan pembelajaran TPQ Baginda.\n\nKeterangan: {keterangan}\n\nTerima kasih atas perhatiannya.\n\n*_Wassalamu'alaikum wr. wb._*"
+                ]
+            );
+            $templateText = $templateObj->template;
+
+            // Format tanggal ke Bahasa Indonesia
+            $formattedTanggalEn = Carbon::parse($tanggal)->format('d F Y');
+            $monthsId = [
+                'January' => 'Januari', 'February' => 'Februari', 'March' => 'Maret', 'April' => 'April',
+                'May' => 'Mei', 'June' => 'Juni', 'July' => 'Juli', 'August' => 'Agustus',
+                'September' => 'September', 'October' => 'Oktober', 'November' => 'November', 'December' => 'Desember'
+            ];
+            $formattedTanggal = strtr($formattedTanggalEn, $monthsId);
+
+            $statusMap = [
+                'H' => 'HADIR',
+                'S' => 'SAKIT',
+                'I' => 'IZIN',
+                'A' => 'TIDAK HADIR'
+            ];
+
+            foreach ($santris as $santri) {
+                $phone = $santri->no_hp_orang_tua;
+                if (empty($phone)) continue;
+
+                $status = $absensiData[$santri->id] ?? 'H';
+                $ket = $keteranganData[$santri->id] ?? '-';
+                $statusText = $statusMap[$status] ?? 'HADIR';
+
+                $message = strtr($templateText, [
+                    '{nama_santri}' => $santri->nama_santri,
+                    '{tanggal}' => $formattedTanggal,
+                    '{status}' => $statusText,
+                    '{keterangan}' => $ket,
+                    '{nama_wali}' => $santri->nama_orang_tua ?? '-',
+                ]);
+
+                // Normalisasi nomor telepon
+                $phone = preg_replace('/[^0-9]/', '', $phone);
+                if (str_starts_with($phone, '0')) {
+                    $phone = '62' . substr($phone, 1);
+                }
+
+                try {
+                    $response = Http::withHeaders([
+                        'Authorization' => $token
+                    ])->asForm()->post('https://api.fonnte.com/send', [
+                        'target' => $phone,
+                        'message' => $message,
+                    ]);
+
+                    $resData = $response->json();
+                    if ($response->successful() && isset($resData['status']) && $resData['status'] == true) {
+                        $waSuccessCount++;
+                    } else {
+                        $waErrorCount++;
+                    }
+                } catch (\Exception $e) {
+                    $waErrorCount++;
+                }
+            }
+        }
+
+        $waMsg = '';
+        if (!empty($token)) {
+            if ($waSuccessCount > 0 && $waErrorCount == 0) {
+                $waMsg = " WhatsApp notifikasi berhasil dikirim ke {$waSuccessCount} wali santri.";
+            } elseif ($waSuccessCount > 0 || $waErrorCount > 0) {
+                $waMsg = " WhatsApp notifikasi dikirim ke {$waSuccessCount} wali santri (gagal: {$waErrorCount}).";
+            }
+        } else {
+            $waMsg = " (Notifikasi WA tidak terkirim karena Fonnte token belum dikonfigurasi).";
+        }
+
         return redirect()->route('tpq.absensi.index', [
             'tb_kelas_id' => $kelasId,
             'tanggal' => $tanggal
-        ])->with('success', 'Data absensi berhasil disimpan.');
+        ])->with('success', 'Data absensi berhasil disimpan.' . $waMsg);
     }
 
     /**

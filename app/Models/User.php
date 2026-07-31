@@ -71,6 +71,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the takmir record associated with the user.
+     */
+    public function takmir(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Takmir::class, 'tb_user_id');
+    }
+
+    /**
      * Check if user has access to a specific module or submodule.
      */
     public function hasAccess(string $permission): bool
