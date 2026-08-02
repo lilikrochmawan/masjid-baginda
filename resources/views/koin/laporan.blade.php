@@ -123,15 +123,42 @@
     <main class="main">
         <div class="page-title"><h1>Laporan Koin Baginda</h1></div>
 
-        <div class="section">
-            <h2>1. Laporan Kaleng Bulan Ini</h2>
+            @php
+                $namaBulan = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+            @endphp
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <h2 style="margin: 0;">1. Status Pemindaian Kaleng (Periode: {{ $namaBulan[$month] }} {{ $year }})</h2>
+                
+                <form action="{{ route('koin.laporan') }}" method="GET" style="display: flex; gap: 8px; align-items: center;">
+                    <select name="month" onchange="this.form.submit()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size:13px; outline:none; background: #fff; cursor: pointer; color:#1e293b;">
+                        @foreach($namaBulan as $num => $name)
+                            <option value="{{ $num }}" {{ $month == $num ? 'selected' : '' }}>
+                                {{ $name }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <select name="year" onchange="this.form.submit()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size:13px; outline:none; background: #fff; cursor: pointer; color:#1e293b;">
+                        @foreach(range(now()->year, now()->year - 5) as $y)
+                            <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>
+                                {{ $y }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+            
             <div class="summary-grid">
                 <div class="summary-card">
-                    <span>Sudah discan bulan ini</span>
+                    <span>Sudah discan pada periode ini</span>
                     <strong>{{ $kalengSudah->count() }}</strong>
                 </div>
                 <div class="summary-card">
-                    <span>Belum discan bulan ini</span>
+                    <span>Belum discan pada periode ini</span>
                     <strong>{{ $kalengBelum->count() }}</strong>
                 </div>
             </div>
@@ -171,6 +198,13 @@
                                 <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
                                     <path id="sort-kaleng-alamat-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
                                     <path id="sort-kaleng-alamat-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
+                                </svg>
+                            </th>
+                            <th onclick="sortKaleng('petugas')" style="cursor:pointer; user-select:none; white-space:nowrap;">
+                                Petugas 
+                                <svg class="sort-icon" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-left: 4px; display: inline-block;">
+                                    <path id="sort-kaleng-petugas-up" d="M5 1L9 5H1L5 1Z" fill="#cbd5e1"/>
+                                    <path id="sort-kaleng-petugas-down" d="M5 11L1 7H9L5 11Z" fill="#cbd5e1"/>
                                 </svg>
                             </th>
                             <th onclick="sortKaleng('status')" style="cursor:pointer; user-select:none; white-space:nowrap;">
@@ -372,7 +406,7 @@
             }
             
             // Reset all sort icons in Table 1
-            const cols = ['kode_kaleng', 'nama_kaleng', 'pemilik', 'alamat', 'status'];
+            const cols = ['kode_kaleng', 'nama_kaleng', 'pemilik', 'alamat', 'petugas', 'status'];
             cols.forEach(c => {
                 document.getElementById('sort-kaleng-' + c + '-up').setAttribute('fill', '#cbd5e1');
                 document.getElementById('sort-kaleng-' + c + '-down').setAttribute('fill', '#cbd5e1');
@@ -411,7 +445,7 @@
             const pageData = filteredKalengs.slice(start, end);
 
             if (pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">Tidak ada data kaleng.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px;">Tidak ada data kaleng.</td></tr>';
                 document.getElementById('paginationInfo').textContent = '';
                 document.getElementById('paginationControls').innerHTML = '';
                 return;
@@ -439,6 +473,10 @@
                 const tdAlamat = document.createElement('td');
                 tdAlamat.textContent = k.alamat;
                 tr.appendChild(tdAlamat);
+
+                const tdPetugas = document.createElement('td');
+                tdPetugas.textContent = k.petugas || '-';
+                tr.appendChild(tdPetugas);
 
                 const tdStatus = document.createElement('td');
                 const badge = document.createElement('span');

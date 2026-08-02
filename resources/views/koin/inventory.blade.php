@@ -83,6 +83,15 @@
             .table-wrapper { -webkit-overflow-scrolling: touch; }
             table th, table td { padding: 10px 8px; font-size: 12px; }
         }
+
+        /* ── Pagination Styling ── */
+        .pagination { display: flex; list-style: none; padding: 0; margin: 15px 0 0; justify-content: center; gap: 6px; }
+        .page-item .page-link { display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid #cfe9dd; color: #059669; text-decoration: none; font-size: 13px; font-weight: 600; background: white; transition: all 0.2s; cursor: pointer; }
+        .page-item:hover .page-link { background: #e6f4ed; color: #047857; border-color: #a7f3d0; }
+        .page-item.active .page-link { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-color: #059669; font-weight: 700; cursor: default; }
+        .page-item.disabled .page-link { color: #94a3b8; background: #f8fafc; border-color: #e2e8f0; cursor: not-allowed; }
+        
+        .pagination-info { text-align: center; margin-top: 15px; font-size: 12px; color: #64748b; }
     </style>
 </head>
 <body>
@@ -174,12 +183,18 @@
             </div>
 
             <div class="card">
-                <h2>Daftar Kaleng</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e6f4ed; padding-bottom: 12px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                     <h2 style="margin: 0;">Daftar Kaleng</h2>
+                     <form action="{{ route('koin.inventory') }}" method="GET" style="display: flex; gap: 6px; width: 100%; max-width: 300px;">
+                         <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari kode, nama, pemilik..." style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; outline: none; background: #fff;" onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#cbd5e1'">
+                         <button type="submit" class="btn-primary" style="padding: 8px 14px; font-size: 13px; margin: 0; border-radius: 8px; cursor: pointer;">Cari</button>
+                     </form>
+                </div>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>No</th>
                                 <th>Kode</th>
                                 <th>Nama</th>
                                 <th>Pemilik</th>
@@ -190,9 +205,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($kalengs as $kaleng)
+                            @forelse($kalengs as $kaleng)
                                 <tr>
-                                    <td>{{ $kaleng->id }}</td>
+                                    <td>{{ $loop->iteration + ($kalengs->firstItem() - 1) }}</td>
                                     <td><span class="badge">{{ $kaleng->kode_kaleng }}</span></td>
                                     <td>{{ $kaleng->nama_kaleng }}</td>
                                     <td>{{ $kaleng->latestPemilik?->nama ?? '-' }}</td>
@@ -215,10 +230,21 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px 0;">Tidak ada data kaleng yang ditemukan.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
+
+                @if($kalengs->total() > 0)
+                     <div class="pagination-info">
+                         Menampilkan {{ $kalengs->firstItem() }} - {{ $kalengs->lastItem() }} dari {{ $kalengs->total() }} kaleng
+                     </div>
+                     {{ $kalengs->links('pagination::bootstrap-4') }}
+                @endif
             </div>
         </div>
     </main>

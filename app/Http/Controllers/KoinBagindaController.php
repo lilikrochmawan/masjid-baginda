@@ -61,13 +61,29 @@ class KoinBagindaController extends Controller
         return view('koin.index', compact('user', 'hakakses', 'stats'));
     }
 
-    public function inventory()
+    public function inventory(Request $request)
     {
         $user = Auth::user();
         $hakakses = $user->hakakses;
-        $kalengs = Kaleng::with('latestPemilik')->orderBy('id', 'desc')->get();
+        $search = $request->query('search');
 
-        return view('koin.inventory', compact('user', 'hakakses', 'kalengs'));
+        $query = Kaleng::with('latestPemilik');
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('kode_kaleng', 'like', "%{$search}%")
+                  ->orWhere('nama_kaleng', 'like', "%{$search}%")
+                  ->orWhereHas('latestPemilik', function($qp) use ($search) {
+                      $qp->where('nama', 'like', "%{$search}%")
+                        ->orWhere('no_wa', 'like', "%{$search}%")
+                        ->orWhere('alamat', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $kalengs = $query->orderBy('id', 'asc')->paginate(10)->withQueryString();
+
+        return view('koin.inventory', compact('user', 'hakakses', 'kalengs', 'search'));
     }
 
     public function storeKaleng(Request $request)
@@ -136,24 +152,27 @@ class KoinBagindaController extends Controller
     {
         $user = Auth::user();
         $hakakses = $user->hakakses;
-        $transactions = TransaksiKaleng::with('kaleng.latestPemilik')->orderBy('tanggal_ambil', 'desc')->get();
+        $transactions = TransaksiKaleng::with(['kaleng.latestPemilik', 'user'])->orderBy('tanggal_ambil', 'desc')->get();
 
         return view('koin.scan', compact('user', 'hakakses', 'transactions'));
     }
 
-    public function laporan()
+    public function laporan(Request $request)
     {
         $user = Auth::user();
         $hakakses = $user->hakakses;
 
-        $year = now()->year;
-        $month = now()->month;
+        $year = (int) $request->query('year', now()->year);
+        $month = (int) $request->query('month', now()->month);
 
-        $scannedIds = TransaksiKaleng::whereYear('tanggal_ambil', $year)
+        // Fetch transactions in this period to get the scanning officer
+        $transactionsInPeriod = TransaksiKaleng::with('user')
+            ->whereYear('tanggal_ambil', $year)
             ->whereMonth('tanggal_ambil', $month)
-            ->pluck('tb_kaleng_id')
-            ->unique()
-            ->toArray();
+            ->get()
+            ->keyBy('tb_kaleng_id');
+
+        $scannedIds = $transactionsInPeriod->keys()->toArray();
 
         $kalengSudah = Kaleng::with('latestPemilik')
             ->whereIn('id', $scannedIds)
@@ -165,7 +184,7 @@ class KoinBagindaController extends Controller
             ->orderBy('kode_kaleng')
             ->get();
 
-        // Gabungkan seluruh kaleng dengan menyematkan status
+        // Gabungkan seluruh kaleng dengan menyematkan status dan petugas
         $allKalengs = [];
         foreach ($kalengBelum as $k) {
             $allKalengs[] = [
@@ -175,10 +194,12 @@ class KoinBagindaController extends Controller
                 'pemilik' => $k->latestPemilik?->nama ?? '-',
                 'alamat' => $k->latestPemilik?->alamat ?? '-',
                 'status' => 'Belum Scan',
-                'status_code' => 0
+                'status_code' => 0,
+                'petugas' => '-'
             ];
         }
         foreach ($kalengSudah as $k) {
+            $t = $transactionsInPeriod->get($k->id);
             $allKalengs[] = [
                 'id' => $k->id,
                 'kode_kaleng' => $k->kode_kaleng,
@@ -186,7 +207,8 @@ class KoinBagindaController extends Controller
                 'pemilik' => $k->latestPemilik?->nama ?? '-',
                 'alamat' => $k->latestPemilik?->alamat ?? '-',
                 'status' => 'Sudah Scan',
-                'status_code' => 1
+                'status_code' => 1,
+                'petugas' => $t?->user?->name ?? '-'
             ];
         }
 
@@ -214,7 +236,9 @@ class KoinBagindaController extends Controller
             'allKalengs',
             'penerimaan',
             'penerimaanList',
-            'totalPenerimaan'
+            'totalPenerimaan',
+            'year',
+            'month'
         ));
     }
 
@@ -302,6 +326,7 @@ class KoinBagindaController extends Controller
 
         $transaksi = TransaksiKaleng::create([
             'tb_kaleng_id' => $kaleng->id,
+            'tb_user_id' => Auth::id(),
             'tanggal_ambil' => $request->tanggal_ambil,
             'keterangan' => 'Pengambilan isi kaleng bulanan',
         ]);

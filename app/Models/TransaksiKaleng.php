@@ -14,6 +14,7 @@ class TransaksiKaleng extends Model
 
     protected $fillable = [
         'tb_kaleng_id',
+        'tb_user_id',
         'tanggal_ambil',
         'keterangan',
     ];
@@ -25,5 +26,10 @@ class TransaksiKaleng extends Model
     public function kaleng(): BelongsTo
     {
         return $this->belongsTo(Kaleng::class, 'tb_kaleng_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'tb_user_id');
     }
 }

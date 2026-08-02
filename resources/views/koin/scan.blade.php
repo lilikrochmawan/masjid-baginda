@@ -200,17 +200,19 @@
                                 <th>Nama</th>
                                 <th>Pemilik</th>
                                 <th>Tgl</th>
+                                <th>Petugas</th>
                                 <th>Ket</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($transactions as $transaction)
                                 <tr>
-                                    <td>{{ $transaction->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td><span class="badge">{{ $transaction->kaleng->kode_kaleng }}</span></td>
                                     <td>{{ $transaction->kaleng->nama_kaleng }}</td>
                                     <td>{{ $transaction->kaleng->latestPemilik?->nama ?? '-' }}</td>
                                     <td>{{ $transaction->tanggal_ambil->format('d M') }}</td>
+                                    <td>{{ $transaction->user?->name ?? '-' }}</td>
                                     <td>{{ $transaction->keterangan ?? '-' }}</td>
                                 </tr>
                             @endforeach
