@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Setting;
 use App\Models\WaTemplate;
 use App\Models\Pengumuman;
+use App\Models\WhatsappGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -76,8 +77,9 @@ class SettingController extends Controller
 
         $templates = WaTemplate::all();
         $pengumumanList = Pengumuman::latest()->get();
+        $whatsappGroups = WhatsappGroup::all();
 
-        return view('settings.index', compact('user', 'hakakses', 'setting', 'templates', 'pengumumanList'));
+        return view('settings.index', compact('user', 'hakakses', 'setting', 'templates', 'pengumumanList', 'whatsappGroups'));
     }
 
     /**
@@ -251,5 +253,25 @@ class SettingController extends Controller
         $pengumuman->delete();
 
         return redirect()->route('settings.index', ['tab' => 'login'])->with('success', 'Gambar pengumuman berhasil dihapus.');
+    }
+
+    public function waGroupsStore(Request $request)
+    {
+        $validated = $request->validate([
+            'group_name' => 'required|string|max:255',
+            'group_id' => 'required|string|max:255',
+        ]);
+
+        WhatsappGroup::create($validated);
+
+        return redirect()->route('settings.index', ['tab' => 'wagroups'])->with('success', 'Grup WhatsApp berhasil ditambahkan.');
+    }
+
+    public function waGroupsDestroy($id)
+    {
+        $group = WhatsappGroup::findOrFail($id);
+        $group->delete();
+
+        return redirect()->route('settings.index', ['tab' => 'wagroups'])->with('success', 'Grup WhatsApp berhasil dihapus.');
     }
 }

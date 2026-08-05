@@ -56,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/logo/reset', [App\Http\Controllers\SettingController::class, 'resetLogo'])->name('settings.logo.reset');
     Route::post('/settings/pengumuman', [App\Http\Controllers\SettingController::class, 'uploadPengumuman'])->name('settings.pengumuman.upload');
     Route::delete('/settings/pengumuman/{id}', [App\Http\Controllers\SettingController::class, 'deletePengumuman'])->name('settings.pengumuman.delete');
+    Route::post('/settings/whatsapp-groups', [App\Http\Controllers\SettingController::class, 'waGroupsStore'])->name('settings.wa-groups.store');
+    Route::delete('/settings/whatsapp-groups/{id}', [App\Http\Controllers\SettingController::class, 'waGroupsDestroy'])->name('settings.wa-groups.destroy');
 
     // Modul Data Operasional
     Route::prefix('operasional')->name('operasional.')->group(function () {
@@ -99,6 +101,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Broadcast Pengumuman Takmir
         Route::get('/broadcast', [App\Http\Controllers\OperasionalController::class, 'broadcastIndex'])->name('broadcast.index');
+        Route::get('/broadcast/wa-groups', [App\Http\Controllers\OperasionalController::class, 'fetchWaGroups'])->name('broadcast.wa-groups');
         Route::post('/broadcast', [App\Http\Controllers\OperasionalController::class, 'broadcastStore'])->name('broadcast.store');
         Route::post('/broadcast-template', [App\Http\Controllers\OperasionalController::class, 'broadcastTemplateStore'])->name('broadcast-template.store');
         Route::put('/broadcast-template/{id}', [App\Http\Controllers\OperasionalController::class, 'broadcastTemplateUpdate'])->name('broadcast-template.update');

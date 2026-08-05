@@ -351,6 +351,9 @@
             <button type="button" id="link-login" onclick="switchTab('login')">
                 <span class="nav-icon">🖼️</span> Logo & Tampilan
             </button>
+            <button type="button" id="link-wagroups" onclick="switchTab('wagroups')">
+                <span class="nav-icon">👥</span> Master Grup WA
+            </button>
             <div class="divider"></div>
             <a href="{{ route('dashboard') }}">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
@@ -615,6 +618,7 @@
                             </form>
                         @endif
                     </div>
+                </div>
             </div>
 
             <!-- Card 3: Gambar Pengumuman Slideshow -->
@@ -682,6 +686,88 @@
                 </div>
             </div>
         </div>
+
+        <!-- Tab 4: Master WhatsApp Groups -->
+        <div id="tab-content-wagroups" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start;">
+                <!-- Left Column: Fonnte Sync & Manual Add -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Fetch Live Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span>📲</span> Tarik dari Fonnte</h2>
+                            <div class="card-desc">Ambil daftar grup WhatsApp secara live dari Fonnte untuk langsung disimpan.</div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button type="button" class="button-primary" style="width: 100%; background: #0f766e; color: white;" onclick="syncFonnteGroups()">🔍 Ambil Grup Live</button>
+                            
+                            <div id="fonnte-sync-container" style="margin-top: 15px; display: none; max-height: 250px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; background: #f8fafc;">
+                                <div id="fonnte-sync-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Group Card (Manual) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span>➕</span> Tambah Manual</h2>
+                            <div class="card-desc">Masukkan ID grup secara manual jika Anda memilikinya.</div>
+                        </div>
+                        <form action="{{ route('settings.wa-groups.store') }}" method="POST" style="margin-top: 15px;">
+                            @csrf
+                            <div class="form-group">
+                                <label for="group_name">Nama Grup</label>
+                                <input type="text" id="group_name" name="group_name" placeholder="Contoh: Keluarga Takmir" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="group_id">ID Grup WhatsApp</label>
+                                <input type="text" id="group_id" name="group_id" placeholder="Contoh: 120363412998841695@g.us" required>
+                                <p style="font-size: 11px; color: #64748b; margin-top: 4px;">ID Grup Fonnte biasanya diakhiri dengan `@g.us`</p>
+                            </div>
+                            <button type="submit" class="button-primary" style="width: 100%; margin-top: 10px;">Simpan Grup</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Group List Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><span>📋</span> Daftar Grup WhatsApp</h2>
+                        <div class="card-desc">Master grup WhatsApp takmir yang tersimpan di sistem.</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        @if($whatsappGroups->isEmpty())
+                            <div style="text-align: center; color: #64748b; padding: 30px 0;">Belum ada grup WhatsApp yang didaftarkan.</div>
+                        @else
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #e2e8f0; text-align: left;">
+                                        <th style="padding: 10px; font-weight: bold; color: #0f4d36;">Nama Grup</th>
+                                        <th style="padding: 10px; font-weight: bold; color: #0f4d36;">ID Grup (Fonnte)</th>
+                                        <th style="padding: 10px; font-weight: bold; color: #0f4d36; text-align: center;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($whatsappGroups as $group)
+                                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                                            <td style="padding: 10px; font-weight: bold; color: #334155;">{{ $group->group_name }}</td>
+                                            <td style="padding: 10px; color: #64748b; font-family: monospace;">{{ $group->group_id }}</td>
+                                            <td style="padding: 10px; text-align: center;">
+                                                <form action="{{ route('settings.wa-groups.destroy', $group->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus grup ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" style="background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">Hapus</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -702,6 +788,7 @@
             document.getElementById('tab-content-api').style.display = 'none';
             document.getElementById('tab-content-templates').style.display = 'none';
             document.getElementById('tab-content-login').style.display = 'none';
+            document.getElementById('tab-content-wagroups').style.display = 'none';
 
             // Show current tab content
             document.getElementById('tab-content-' + tabName).style.display = 'block';
@@ -710,6 +797,7 @@
             document.getElementById('link-api').classList.remove('active');
             document.getElementById('link-templates').classList.remove('active');
             document.getElementById('link-login').classList.remove('active');
+            document.getElementById('link-wagroups').classList.remove('active');
 
             // Add active class to clicked link
             document.getElementById('link-' + tabName).classList.add('active');
@@ -720,6 +808,8 @@
                 headerTitle.textContent = 'Konfigurasi API';
             } else if (tabName === 'templates') {
                 headerTitle.textContent = 'Template WhatsApp';
+            } else if (tabName === 'wagroups') {
+                headerTitle.textContent = 'Master Grup WhatsApp';
             } else {
                 headerTitle.textContent = 'Logo & Tampilan';
             }
@@ -740,6 +830,81 @@
             textarea.value = before + placeholder + after;
             textarea.focus();
             textarea.selectionStart = textarea.selectionEnd = start + placeholder.length;
+        }
+
+        function syncFonnteGroups() {
+            const container = document.getElementById('fonnte-sync-container');
+            const list = document.getElementById('fonnte-sync-list');
+            
+            container.style.display = 'block';
+            list.innerHTML = '<div style="font-size:12px; color:#64748b; text-align:center; padding:10px 0;">⏳ Menghubungkan ke Fonnte...</div>';
+
+            const url = "{{ route('operasional.broadcast.wa-groups') }}";
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        list.innerHTML = '';
+                        
+                        let groups = [];
+                        if (Array.isArray(data.groups)) {
+                            groups = data.groups;
+                        } else if (data.groups && typeof data.groups === 'object') {
+                            let rawGroups = data.groups;
+                            if (typeof rawGroups === 'string') {
+                                try { rawGroups = JSON.parse(rawGroups); } catch(e) {}
+                            }
+                            if (rawGroups && Array.isArray(rawGroups.data)) {
+                                groups = rawGroups.data;
+                            } else if (rawGroups && Array.isArray(rawGroups)) {
+                                groups = rawGroups;
+                            }
+                        }
+
+                        if (groups.length === 0) {
+                            list.innerHTML = '<div style="font-size:12px; color:#ef4444; text-align:center; padding:10px 0;">⚠️ Tidak ada grup ditemukan. Pastikan HP aktif dan jalankan /fetch-group.</div>';
+                            return;
+                        }
+
+                        groups.forEach(g => {
+                            const gId = g.id || g.jid || '';
+                            const gName = g.name || g.subject || 'Grup Tanpa Nama';
+
+                            if (!gId) return;
+
+                            const item = document.createElement('div');
+                            item.style.display = 'flex';
+                            item.style.justifyContent = 'space-between';
+                            item.style.alignItems = 'center';
+                            item.style.padding = '8px';
+                            item.style.background = 'white';
+                            item.style.border = '1px solid #cbd5e1';
+                            item.style.borderRadius = '6px';
+                            item.style.fontSize = '12px';
+                            
+                            item.innerHTML = `
+                                <div style="flex:1; padding-right:10px; text-align:left;">
+                                    <strong style="color:#0f4d36;">${gName}</strong>
+                                    <div style="font-size:10px; color:#64748b; font-family:monospace; word-break:break-all;">${gId}</div>
+                                </div>
+                                <form action="{{ route('settings.wa-groups.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="group_name" value="${gName}">
+                                    <input type="hidden" name="group_id" value="${gId}">
+                                    <button type="submit" class="button-primary" style="font-size:10px; padding:4px 8px; border-radius:4px; background:#059669; border:none; color:white; cursor:pointer; font-weight:bold;">📥 Simpan</button>
+                                </form>
+                            `;
+                            list.appendChild(item);
+                        });
+                    } else {
+                        list.innerHTML = `<div style="font-size:12px; color:#ef4444; text-align:center; padding:10px 0;">❌ ${data.message || 'Gagal memuat grup.'}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    list.innerHTML = '<div style="font-size:12px; color:#ef4444; text-align:center; padding:10px 0;">❌ Gagal menghubungi API atau Token Fonnte belum disetel.</div>';
+                });
         }
 
         // Initialize active tab from query parameter on page load

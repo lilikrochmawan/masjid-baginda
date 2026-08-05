@@ -14,6 +14,7 @@ use App\Models\EDokumen;
 use App\Models\TakmirBroadcast;
 use App\Models\TakmirBroadcastTemplate;
 use App\Models\Setting;
+use App\Models\WhatsappGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -623,8 +624,9 @@ class OperasionalController extends Controller
         $broadcasts = TakmirBroadcast::with('creator')->orderBy('created_at', 'desc')->get();
         $templates = TakmirBroadcastTemplate::orderBy('nama_template')->get();
         $takmirs = Takmir::where('status', 'aktif')->get();
+        $whatsappGroups = WhatsappGroup::orderBy('group_name')->get();
 
-        return view('operasional.broadcast', compact('user', 'hakakses', 'broadcasts', 'templates', 'takmirs'));
+        return view('operasional.broadcast', compact('user', 'hakakses', 'broadcasts', 'templates', 'takmirs', 'whatsappGroups'));
     }
 
     public function broadcastStore(Request $request)
@@ -661,15 +663,19 @@ class OperasionalController extends Controller
             return redirect()->route('operasional.broadcast.index')->with('error', 'Tidak ada nomor target pengiriman.');
         }
 
-        // Clean & normalize phone numbers
+        // Clean & normalize phone numbers if not group_wa
         $normalizedTargets = [];
-        foreach ($targets as $t) {
-            $num = preg_replace('/[^0-9]/', '', $t);
-            if (empty($num)) continue;
-            if (str_starts_with($num, '0')) {
-                $num = '62' . substr($num, 1);
+        if ($targetType === 'grup_wa') {
+            $normalizedTargets = $targets; // Keep group ID exactly as-is!
+        } else {
+            foreach ($targets as $t) {
+                $num = preg_replace('/[^0-9]/', '', $t);
+                if (empty($num)) continue;
+                if (str_starts_with($num, '0')) {
+                    $num = '62' . substr($num, 1);
+                }
+                $normalizedTargets[] = $num;
             }
-            $normalizedTargets[] = $num;
         }
 
         $totalSent = 0;
@@ -822,5 +828,48 @@ class OperasionalController extends Controller
         $dokumen->delete();
 
         return redirect()->route('operasional.surat.index', ['tab' => 'edokumen-tab'])->with('success', 'Dokumen berhasil dihapus.');
+    }
+
+    public function fetchWaGroups()
+    {
+        $setting = Setting::first();
+        $token = $setting?->fonnte_token;
+
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token Fonnte belum dikonfigurasi di Pengaturan Aplikasi.'
+            ], 422);
+        }
+
+        try {
+            // Step 1: Sync groups from device
+            Http::withHeaders([
+                'Authorization' => $token
+            ])->post('https://api.fonnte.com/fetch-group');
+
+            // Step 2: Retrieve the list of groups
+            $response = Http::withHeaders([
+                'Authorization' => $token
+            ])->post('https://api.fonnte.com/get-whatsapp-group');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return response()->json([
+                    'success' => true,
+                    'groups' => $data
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data grup dari Fonnte. Silakan periksa koneksi internet.'
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

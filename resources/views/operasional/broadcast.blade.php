@@ -222,7 +222,29 @@
                         <!-- Target Detail Input (Hidden for Semua Takmir) -->
                         <div class="form-group" id="target-detail-group" style="display:none;">
                             <label id="target-label" for="target_detail">Target Detail</label>
-                            <input type="text" id="target_detail" name="target_detail" placeholder="">
+                            
+                            <!-- Dropdown for registered Master WA Groups -->
+                            <div id="wa-groups-select-wrapper" style="display: none; margin-bottom: 10px;">
+                                <select id="wa_group_select" onchange="handleWaGroupSelectChange()" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; cursor: pointer;">
+                                    <option value="" disabled selected>-- Pilih Grup WhatsApp --</option>
+                                    @foreach($whatsappGroups as $group)
+                                        <option value="{{ $group->group_id }}">{{ $group->group_name }}</option>
+                                    @endforeach
+                                    <option value="custom_id">-- Input ID Grup Kustom / Cari Live Fonnte --</option>
+                                </select>
+                            </div>
+
+                            <!-- Text input (used for custom numbers or custom group IDs) -->
+                            <div id="target-detail-input-wrapper">
+                                <input type="text" id="target_detail" name="target_detail" placeholder="">
+                                <div id="wa-groups-container" style="margin-top: 10px; display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; max-height: 250px; overflow-y: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                    <h4 style="font-size:12px; margin-top:0; color:#0f4d36; margin-bottom:8px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Pilih dari Grup WhatsApp Anda (Fonnte):</span>
+                                        <button type="button" style="border:none; background:transparent; color:#ef4444; font-size:10px; cursor:pointer; font-weight:bold;" onclick="document.getElementById('wa-groups-container').style.display='none'">Tutup [X]</button>
+                                    </h4>
+                                    <div id="wa-groups-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -242,6 +264,7 @@
                             <thead>
                                 <tr>
                                     <th>Tanggal & Judul</th>
+                                    <th>Pengirim</th>
                                     <th>Target</th>
                                     <th>Terkirim</th>
                                     <th>Status</th>
@@ -253,8 +276,11 @@
                                         <td>
                                             <div style="font-weight:700; color:#0f4d36;">{{ $b->judul }}</div>
                                             <div style="font-size:11px; color:#64748b; margin-top:2px;">
-                                                {{ $b->created_at->format('d M Y H:i') }} | oleh: {{ $b->creator?->name ?? 'Admin' }}
+                                                {{ $b->created_at->format('d M Y H:i') }}
                                             </div>
+                                        </td>
+                                        <td>
+                                            <strong>{{ $b->creator?->name ?? 'Admin' }}</strong>
                                         </td>
                                         <td>
                                             @if($b->target_type === 'semua_takmir')
@@ -278,7 +304,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" style="text-align:center; color:#64748b; padding:30px 0;">Belum ada riwayat broadcast.</td>
+                                        <td colspan="5" style="text-align:center; color:#64748b; padding:30px 0;">Belum ada riwayat broadcast.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -425,21 +451,135 @@
             const detailGroup = document.getElementById('target-detail-group');
             const label = document.getElementById('target-label');
             const input = document.getElementById('target_detail');
+            const selectWrapper = document.getElementById('wa-groups-select-wrapper');
+            const inputWrapper = document.getElementById('target-detail-input-wrapper');
+
+            // Hide select dropdown by default
+            selectWrapper.style.display = 'none';
+            inputWrapper.style.display = 'block';
+            document.getElementById('wa-groups-container').style.display = 'none';
 
             if (targetType === 'semua_takmir') {
                 detailGroup.style.display = 'none';
                 input.required = false;
             } else if (targetType === 'grup_wa') {
                 detailGroup.style.display = 'block';
-                label.innerText = 'ID Grup WhatsApp (Fonnte)';
+                label.innerHTML = 'Grup WhatsApp Target';
                 input.placeholder = 'Contoh: 1203630238128@g.us';
                 input.required = true;
+
+                // Show select dropdown if there are groups
+                @if(!$whatsappGroups->isEmpty())
+                    selectWrapper.style.display = 'block';
+                    inputWrapper.style.display = 'none';
+                    document.getElementById('wa_group_select').value = "";
+                    input.value = "";
+                    input.required = false;
+                @else
+                    label.innerHTML = 'ID Grup WhatsApp (Fonnte) <button type="button" class="button-secondary" style="font-size: 11px; padding: 2px 8px; margin-left: 10px; display: inline-block; border-radius: 4px; cursor: pointer; background: #0f766e; color: white;" onclick="fetchWaGroups()">🔍 Cari Live Fonnte</button>';
+                @endif
             } else if (targetType === 'custom') {
                 detailGroup.style.display = 'block';
                 label.innerText = 'Daftar Nomor WhatsApp (Pisahkan dengan koma atau baris baru)';
                 input.placeholder = 'Contoh: 081234567890, 089876543210';
                 input.required = true;
             }
+        }
+
+        function handleWaGroupSelectChange() {
+            const select = document.getElementById('wa_group_select');
+            const input = document.getElementById('target_detail');
+            const inputWrapper = document.getElementById('target-detail-input-wrapper');
+            const label = document.getElementById('target-label');
+
+            if (select.value === 'custom_id') {
+                inputWrapper.style.display = 'block';
+                input.value = "";
+                input.required = true;
+                input.placeholder = 'Masukkan ID Grup (Contoh: 120363412998841695@g.us)';
+                label.innerHTML = 'ID Grup WhatsApp (Fonnte) <button type="button" class="button-secondary" style="font-size: 11px; padding: 2px 8px; margin-left: 10px; display: inline-block; border-radius: 4px; cursor: pointer; background: #0f766e; color: white;" onclick="fetchWaGroups()">🔍 Cari Live Fonnte</button>';
+                input.focus();
+            } else {
+                inputWrapper.style.display = 'none';
+                input.value = select.value;
+                input.required = false;
+                label.innerHTML = 'Grup WhatsApp Target';
+            }
+        }
+
+        function fetchWaGroups() {
+            const container = document.getElementById('wa-groups-container');
+            const list = document.getElementById('wa-groups-list');
+            
+            list.innerHTML = '<div style="font-size:12px; color:#64748b;">⏳ Sedang mengambil data grup dari Fonnte...</div>';
+            container.style.display = 'block';
+
+            const url = "{{ route('operasional.broadcast.wa-groups') }}";
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        list.innerHTML = '';
+                        
+                        let groups = [];
+                        if (Array.isArray(data.groups)) {
+                            groups = data.groups;
+                        } else if (data.groups && typeof data.groups === 'object') {
+                            let rawGroups = data.groups;
+                            if (typeof rawGroups === 'string') {
+                                try { rawGroups = JSON.parse(rawGroups); } catch(e) {}
+                            }
+                            if (rawGroups && Array.isArray(rawGroups.data)) {
+                                groups = rawGroups.data;
+                            } else if (rawGroups && Array.isArray(rawGroups)) {
+                                groups = rawGroups;
+                            }
+                        }
+
+                        if (groups.length === 0) {
+                            list.innerHTML = '<div style="font-size:12px; color:#ef4444;">⚠️ Tidak ditemukan grup WhatsApp aktif pada akun Fonnte Anda. Pastikan HP terkoneksi dan jalankan /fetch-group.</div>';
+                            return;
+                        }
+
+                        groups.forEach(g => {
+                            const gId = g.id || g.jid || '';
+                            const gName = g.name || g.subject || 'Grup Tanpa Nama';
+
+                            if (!gId) return;
+
+                            const item = document.createElement('div');
+                            item.style.display = 'flex';
+                            item.style.justifyContent = 'space-between';
+                            item.style.alignItems = 'center';
+                            item.style.padding = '8px';
+                            item.style.background = 'white';
+                            item.style.border = '1px solid #cbd5e1';
+                            item.style.borderRadius = '6px';
+                            item.style.fontSize = '12px';
+                            
+                            item.innerHTML = `
+                                <div>
+                                    <strong>${gName}</strong>
+                                    <div style="font-size:10px; color:#64748b;">${gId}</div>
+                                </div>
+                                <button type="button" class="button-primary" style="font-size:10px; padding:3px 8px; border-radius:4px; background:#059669; cursor:pointer;" onclick="selectWaGroup('${gId}')">Pilih</button>
+                            `;
+                            list.appendChild(item);
+                        });
+                    } else {
+                        list.innerHTML = `<div style="font-size:12px; color:#ef4444;">❌ ${data.message || 'Gagal memuat grup.'}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    list.innerHTML = '<div style="font-size:12px; color:#ef4444;">❌ Terjadi kesalahan koneksi atau Token Fonnte tidak valid.</div>';
+                });
+        }
+
+        function selectWaGroup(id) {
+            document.getElementById('target_detail').value = id;
+            document.getElementById('wa-groups-container').style.display = 'none';
         }
 
         // --- TEMPLATE CRUD FUNCTIONS ---

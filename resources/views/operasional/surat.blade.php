@@ -98,7 +98,7 @@
 
         /* WPS / Word Office Look-alike styles */
         .wps-editor-container { display: grid; grid-template-columns: 350px 1fr; gap: 24px; margin-top: 15px; }
-        .wps-paper-wrapper { background-color: #e2e8f0; min-height: 100vh; padding: 30px 10px; overflow-y: auto; display: block; }
+        .wps-paper-wrapper { background-color: #e2e8f0; min-height: 100vh; padding: 30px 10px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
         .editor-header-bar { 
             position: sticky; 
             top: 0; 
@@ -123,7 +123,69 @@
         .zoom-control { display: flex; align-items: center; gap: 8px; background: white; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .zoom-control select { border: none; outline: none; font-weight: 700; color: #0f4d36; cursor: pointer; background: transparent; font-size: 13px; }
         .zoom-control label { font-size: 12px; color: #64748b; font-weight: 700; }
-        .wps-paper { margin: 0 auto; width: 100%; max-width: 210mm; min-height: 297mm; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 25mm 20mm; position: relative; border-radius: 4px; box-sizing: border-box; transition: zoom 0.2s ease, max-width 0.3s ease; text-align: left; }
+        .wps-paper { margin: 0 auto; width: 100%; max-width: 210mm; min-height: 297mm; background: white; background-image: linear-gradient(to bottom, transparent 296.5mm, rgba(148, 163, 184, 0.4) 296.5mm, rgba(148, 163, 184, 0.4) 297mm); background-size: 100% 297mm; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 15mm 20mm 25mm 20mm; position: relative; border-radius: 4px; box-sizing: border-box; transition: zoom 0.2s ease, max-width 0.3s ease; text-align: left; font-family: 'Times New Roman', Times, serif !important; font-size: 12pt !important; line-height: 1.5 !important; }
+        
+        #quill-editor {
+            font-family: 'Times New Roman', Times, serif !important;
+            font-size: 12pt !important;
+            line-height: 1.5 !important;
+            outline: none;
+            border: none;
+            width: 100%;
+            padding-top: 10px;
+        }
+        #quill-editor p {
+            margin-bottom: 12px !important;
+            text-indent: 30px; 
+            text-align: justify;
+            font-family: 'Times New Roman', Times, serif !important;
+            font-size: 12pt !important;
+            line-height: 1.5 !important;
+        }
+        #quill-editor p[style*="text-align: center"],
+        #quill-editor p[style*="text-align: right"],
+        #quill-editor p[style*="text-align:center"],
+        #quill-editor p[style*="text-align:right"] {
+            text-indent: 0 !important;
+        }
+        #quill-editor ul, #quill-editor ol {
+            margin-left: 40px !important;
+            margin-bottom: 12px !important;
+            font-family: 'Times New Roman', Times, serif !important;
+            font-size: 12pt !important;
+        }
+        #quill-editor li, #quill-editor td, #quill-editor span, #quill-editor strong, #quill-editor th {
+            font-family: 'Times New Roman', Times, serif !important;
+            font-size: 12pt !important;
+            line-height: 1.5 !important;
+        }
+        
+        /* ── TinyMCE Pagebreak styling inside inline editor ── */
+        .wps-paper .mce-pagebreak {
+            border: none !important;
+            border-top: 1px solid #cbd5e1 !important;
+            border-bottom: 1px solid #cbd5e1 !important;
+            background: #e2e8f0 !important; /* Warna abu-abu background wrapper */
+            display: block !important;
+            height: 35px !important;
+            margin: 20mm -20mm 20mm -20mm !important; /* Margin atas-bawah sebagai margin halaman, kiri-kanan menarik ke tepi */
+            position: relative !important;
+            cursor: default !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+        }
+        .wps-paper .mce-pagebreak::after {
+            content: "✂️ PEMBATAS HALAMAN CETAK (PAGE BREAK)";
+            display: block;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #64748b;
+            letter-spacing: 1px;
+            line-height: 33px;
+        }
         
         .wps-kop { display: flex; align-items: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 20px; }
         .wps-kop-logo { flex: 0 0 80px; text-align: left; }
@@ -786,14 +848,14 @@
             </div>
 
             <div class="tte-grid">
-                <!-- TTD Sekretaris -->
+                <!-- TTD Penasehat -->
                 <div class="tte-card">
-                    <h4>Sekretaris</h4>
-                    <div class="tte-status" id="status-sekretaris-box">
+                    <h4>Penasehat</h4>
+                    <div class="tte-status" id="status-penasehat-box">
                         <span class="badge badge-pending">Belum TTD</span>
                     </div>
-                    <div id="img-sekretaris-container"></div>
-                    <button class="btn-action" style="width:100%; margin-top:10px;" id="btn-sign-sekretaris" onclick="startSigning('sekretaris')">Tanda Tangani</button>
+                    <div id="img-penasehat-container"></div>
+                    <button class="btn-action" style="width:100%; margin-top:10px;" id="btn-sign-penasehat" onclick="startSigning('penasehat')">Tanda Tangani</button>
                 </div>
 
                 <!-- TTD Ketua Takmir -->
@@ -806,14 +868,14 @@
                     <button class="btn-action" style="width:100%; margin-top:10px;" id="btn-sign-ketua" onclick="startSigning('ketua')">Tanda Tangani</button>
                 </div>
 
-                <!-- TTD Penasehat -->
+                <!-- TTD Sekretaris -->
                 <div class="tte-card">
-                    <h4>Penasehat</h4>
-                    <div class="tte-status" id="status-penasehat-box">
+                    <h4>Sekretaris</h4>
+                    <div class="tte-status" id="status-sekretaris-box">
                         <span class="badge badge-pending">Belum TTD</span>
                     </div>
-                    <div id="img-penasehat-container"></div>
-                    <button class="btn-action" style="width:100%; margin-top:10px;" id="btn-sign-penasehat" onclick="startSigning('penasehat')">Tanda Tangani</button>
+                    <div id="img-sekretaris-container"></div>
+                    <button class="btn-action" style="width:100%; margin-top:10px;" id="btn-sign-sekretaris" onclick="startSigning('sekretaris')">Tanda Tangani</button>
                 </div>
             </div>
         </div>
@@ -1025,26 +1087,31 @@
                     menubar: false,
                     branding: false,
                     placeholder: 'Mulai menulis isi surat di sini...',
-                    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount pagebreak code',
+                    plugins: 'accordion anchor autolink charmap code codesample directionality emoticons fullscreen help image insertdatetime link lists media nonbreaking pagebreak preview quickbars searchreplace table visualblocks visualchars wordcount',
                     toolbar_mode: 'wrap',
                     toolbar: [
-                        'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | align lineheight',
-                        'numlist bullist indent outdent | link image media table | emoticons charmap | pagebreak removeformat | code'
+                        'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | align lineheight | ltr rtl searchreplace',
+                        'numlist bullist indent outdent | link image media table | emoticons charmap | pagebreak insertdatetime | removeformat | code fullscreen preview'
                     ],
-                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    content_style: 'body { font-family:\"Times New Roman\", Times, serif; font-size:12pt; line-height:1.5; }',
                     setup: function (editor) {
                         editor.on('init', function () {
                             editor.setContent(window.pendingEditorContent || '');
+                            syncEditorKops();
                             editor.focus();
                             setTimeout(() => {
                                 const wrapper = document.querySelector('.wps-paper-wrapper');
                                 if(wrapper) wrapper.scrollTop = 0;
                             }, 50);
                         });
+                        editor.on('NodeChange keyup paste change', function () {
+                            syncEditorKops();
+                        });
                     }
                 });
             } else {
                 tinymce.get('quill-editor').setContent(window.pendingEditorContent || '');
+                syncEditorKops();
                 tinymce.get('quill-editor').focus();
                 setTimeout(() => {
                     const wrapper = document.querySelector('.wps-paper-wrapper');
@@ -1075,6 +1142,45 @@
         function syncLiveKop() {
             document.getElementById('live-kop-title').innerText = document.getElementById('sb_header_title').value;
             document.getElementById('live-kop-subtitle').innerText = document.getElementById('sb_header_subtitle').value;
+            syncEditorKops();
+        }
+
+        function syncEditorKops() {
+            const editor = document.getElementById('quill-editor');
+            if (!editor) return;
+
+            // Remove existing editor page kops to rebuild them
+            editor.querySelectorAll('.editor-page-kop').forEach(el => el.remove());
+
+            // Find all page breaks
+            const pageBreaks = editor.querySelectorAll('.mce-pagebreak');
+            
+            pageBreaks.forEach(pb => {
+                const logoUrl = "{{ $logoUrl }}";
+                const title = document.getElementById('sb_header_title').value;
+                const subtitle = document.getElementById('sb_header_subtitle').value;
+
+                const kopDiv = document.createElement('div');
+                kopDiv.className = 'editor-page-kop';
+                kopDiv.setAttribute('contenteditable', 'false');
+                kopDiv.style.marginTop = '20mm';
+                kopDiv.style.marginBottom = '20px';
+                
+                kopDiv.innerHTML = `
+                    <div class="wps-kop" style="margin-bottom: 20px; display: flex; align-items: center; border-bottom: 3px double #000; padding-bottom: 12px;">
+                        <div class="wps-kop-logo" style="flex: 0 0 80px; text-align: left;">
+                            ${logoUrl ? `<img src="${logoUrl}" alt="Logo" style="width:75px; height:auto;">` : ''}
+                        </div>
+                        <div class="wps-kop-text" style="flex: 1; text-align: center; padding-right: 80px;">
+                            <h2 style="font-size:20px; font-weight:800; text-transform:uppercase; margin-bottom:4px; color:#000 !important; margin-top:0;">${title}</h2>
+                            <p style="font-size:12px; color:#334155; line-height:1.4; margin:0; white-space:pre-line;">${subtitle}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Insert after page break
+                pb.parentNode.insertBefore(kopDiv, pb.nextSibling);
+            });
         }
 
         function changePaperZoom() {
@@ -1140,7 +1246,12 @@
         if (sbForm) {
             sbForm.addEventListener('submit', function(e) {
                 if (tinymce.get('quill-editor')) {
-                    document.getElementById('sb-isi-surat').value = tinymce.get('quill-editor').getContent();
+                    // Create a temporary element to strip the read-only kops
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = tinymce.get('quill-editor').getContent();
+                    tempDiv.querySelectorAll('.editor-page-kop').forEach(el => el.remove());
+                    
+                    document.getElementById('sb-isi-surat').value = tempDiv.innerHTML;
                 }
             });
         }

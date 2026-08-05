@@ -65,8 +65,21 @@
     <div class="container">
         <!-- Header Info -->
         <div class="card-header">
-            <h1>Kartu Kontrol Prestasi Santri</h1>
-            <p>TPQ Masjid Baginda - Cerdas, Berprestasi, Berakhlaqul Karimah</p>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                @php
+                    $setting = \App\Models\Setting::first();
+                    $logoUrl = $setting && $setting->logo ? asset('storage/' . $setting->logo) : null;
+                @endphp
+                @if($logoUrl)
+                    <div style="flex: 0 0 60px; background: white; padding: 6px; border-radius: 12px; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                        <img src="{{ $logoUrl }}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                    </div>
+                @endif
+                <div style="flex: 1;">
+                    <h1>Kartu Kontrol Prestasi Santri</h1>
+                    <p>TPQ Masjid Baginda - Cerdas, Berprestasi, Berakhlaqul Karimah</p>
+                </div>
+            </div>
             
             <div class="profile-grid">
                 <div class="profile-item">
