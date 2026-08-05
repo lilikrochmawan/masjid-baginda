@@ -9,6 +9,8 @@ use App\Models\Inventaris;
 use App\Models\Surat;
 use App\Models\RencanaKerja;
 use App\Models\SuratBuat;
+use App\Models\SuratTemplate;
+use App\Models\EDokumen;
 use App\Models\TakmirBroadcast;
 use App\Models\TakmirBroadcastTemplate;
 use App\Models\Setting;
@@ -311,7 +313,19 @@ class OperasionalController extends Controller
 
         $userTakmir = $user->takmir;
 
-        return view('operasional.surat', compact('user', 'hakakses', 'surats', 'suratBuats', 'autoNomorSurat', 'userTakmir'));
+        // Fetch names from Takmir structure dynamically
+        $sekretarisNama = Takmir::where('jabatan', 'like', '%sekretaris%')->where('status', 'aktif')->value('nama') ?? 'Amel';
+        $ketuaNama = Takmir::where('jabatan', 'like', '%ketua%')->where('jabatan', 'not like', '%wakil%')->where('status', 'aktif')->value('nama') ?? 'Ahmad Khoirudin';
+        $penasehatNama = Takmir::where('jabatan', 'like', '%penasehat%')->where('status', 'aktif')->value('nama') ?? 'H. Daryanto';
+
+        // Fetch templates and e-dokumens
+        $templates = SuratTemplate::orderBy('nama_template')->get();
+        $edokumens = EDokumen::with('user')->orderBy('created_at', 'desc')->get();
+
+        return view('operasional.surat', compact(
+            'user', 'hakakses', 'surats', 'suratBuats', 'autoNomorSurat', 'userTakmir',
+            'sekretarisNama', 'ketuaNama', 'penasehatNama', 'templates', 'edokumens'
+        ));
     }
 
     public function suratStore(Request $request)
@@ -515,6 +529,35 @@ class OperasionalController extends Controller
 
         $surat = SuratBuat::findOrFail($id);
         $role = $request->role;
+
+        // Enforce role-based signing auth on the backend
+        $user = Auth::user();
+        $takmir = $user->takmir;
+        
+        if (!$takmir) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda tidak terhubung dengan jabatan pengurus Takmir mana pun.'
+            ], 403);
+        }
+        
+        $jabatan = strtolower($takmir->jabatan);
+        $hasPermission = false;
+        
+        if ($role === 'sekretaris' && str_contains($jabatan, 'sekretaris')) {
+            $hasPermission = true;
+        } elseif ($role === 'ketua' && str_contains($jabatan, 'ketua')) {
+            $hasPermission = true;
+        } elseif ($role === 'penasehat' && (str_contains($jabatan, 'penasehat') || str_contains($jabatan, 'penasihat'))) {
+            $hasPermission = true;
+        }
+        
+        if (!$hasPermission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki wewenang untuk menandatangani sebagai ' . ucfirst($role) . '.'
+            ], 403);
+        }
         
         $verifyUrl = route('tte.verify', ['id' => $id, 'role' => $role]);
         $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($verifyUrl);
@@ -694,5 +737,90 @@ class OperasionalController extends Controller
         $template->delete();
 
         return redirect()->route('operasional.broadcast.index', ['tab' => 'templates'])->with('success', 'Template pengumuman berhasil dihapus.');
+    }
+
+    public function suratTemplateStore(Request $request)
+    {
+        $request->validate([
+            'nama_template' => 'required|string|max:255',
+            'konten' => 'required|string',
+            'header_title' => 'nullable|string|max:255',
+            'header_subtitle' => 'nullable|string',
+        ]);
+
+        $template = SuratTemplate::create([
+            'nama_template' => $request->nama_template,
+            'konten' => $request->konten,
+            'header_title' => $request->header_title,
+            'header_subtitle' => $request->header_subtitle,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Template surat berhasil disimpan.',
+            'template' => $template
+        ]);
+    }
+
+    public function edokumenStore(Request $request)
+    {
+        $request->validate([
+            'nama_dokumen' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'file_dokumen' => 'required|file|mimes:pdf,jpg,jpeg,png,mp4,mov,avi|max:20480', // 20 MB max
+        ]);
+
+        if ($request->hasFile('file_dokumen')) {
+            $file = $request->file('file_dokumen');
+            $extension = strtolower($file->getClientOriginalExtension());
+            
+            // Determine file type category
+            $fileType = 'file';
+            if (in_array($extension, ['pdf'])) {
+                $fileType = 'pdf';
+            } elseif (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+                $fileType = 'image';
+            } elseif (in_array($extension, ['mp4', 'mov', 'avi'])) {
+                $fileType = 'video';
+            }
+
+            // Save file
+            $path = $file->store('edokumen', 'public');
+            
+            // Format size
+            $bytes = $file->getSize();
+            if ($bytes >= 1048576) {
+                $fileSize = number_format($bytes / 1048576, 2) . ' MB';
+            } else {
+                $fileSize = number_format($bytes / 1024, 2) . ' KB';
+            }
+
+            EDokumen::create([
+                'nama_dokumen' => $request->nama_dokumen,
+                'deskripsi' => $request->deskripsi,
+                'file_path' => $path,
+                'file_type' => $fileType,
+                'file_size' => $fileSize,
+                'tb_user_id' => Auth::id(),
+            ]);
+
+            return redirect()->route('operasional.surat.index', ['tab' => 'edokumen-tab'])->with('success', 'Dokumen berhasil diunggah.');
+        }
+
+        return redirect()->route('operasional.surat.index', ['tab' => 'edokumen-tab'])->with('error', 'Gagal mengunggah dokumen.');
+    }
+
+    public function edokumenDestroy($id)
+    {
+        $dokumen = EDokumen::findOrFail($id);
+        
+        // Delete file from storage
+        if (Storage::disk('public')->exists($dokumen->file_path)) {
+            Storage::disk('public')->delete($dokumen->file_path);
+        }
+
+        $dokumen->delete();
+
+        return redirect()->route('operasional.surat.index', ['tab' => 'edokumen-tab'])->with('success', 'Dokumen berhasil dihapus.');
     }
 }

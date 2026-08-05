@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="{{ $logoFavicon }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -239,6 +240,7 @@
         <div class="tabs-header">
             <button class="tab-btn active" onclick="switchTab('arsip-tab')">Arsip Surat & Proposal</button>
             <button class="tab-btn" onclick="switchTab('buat-surat-tab')">Pembuatan Surat Resmi</button>
+            <button class="tab-btn" onclick="switchTab('edokumen-tab')">E-Dokumen</button>
         </div>
 
         <!-- System Alerts -->
@@ -517,6 +519,13 @@
                                     <option value="undangan">Surat Undangan Takmir</option>
                                     <option value="tugas">Surat Tugas</option>
                                     <option value="keputusan">Surat Keputusan (SK)</option>
+                                    @if($templates->count() > 0)
+                                        <optgroup label="Template Saya">
+                                            @foreach($templates as $t)
+                                                <option value="db-{{ $t->id }}">{{ $t->nama_template }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
                                 </select>
                             </div>
 
@@ -572,6 +581,7 @@
                                 <button type="submit" class="button-secondary" style="flex: 1; padding: 10px 0; font-weight:700;" onclick="document.getElementById('sb_is_draft').value = '1'">Simpan Draf</button>
                                 <button type="submit" class="button-primary" style="flex: 1; padding: 10px 0; font-weight:700;" onclick="document.getElementById('sb_is_draft').value = '0'">Simpan & Terbitkan</button>
                             </div>
+                            <button type="button" class="button-secondary" onclick="openSaveTemplateModal()" style="width: 100%; margin-top: 10px; background: #0f766e; color: white; display: flex; align-items: center; justify-content: center; gap: 6px;">💾 Simpan Sebagai Template</button>
                         </div>
 
                         <!-- Right Panel: WPS Paper Sheet and TinyMCE Inline Editor -->
@@ -627,9 +637,143 @@
                 </form>
             </div>
         </div>
+
+        <!-- TAB 3: E-DOKUMEN -->
+        <div id="edokumen-tab" class="tab-content">
+            <div class="page-title">
+                <h1>E-Dokumen Takmir</h1>
+            </div>
+
+            <div class="grid">
+                <!-- Left Column: Upload Form -->
+                <div class="section">
+                    <h2>Unggah Dokumen Baru</h2>
+                    <form action="{{ route('operasional.edokumen.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="form-group">
+                            <label for="ed_nama_dokumen">Nama Dokumen</label>
+                            <input type="text" id="ed_nama_dokumen" name="nama_dokumen" required placeholder="Contoh: Laporan Keuangan Ramadhan 2026">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ed_deskripsi">Deskripsi Singkat</label>
+                            <textarea id="ed_deskripsi" name="deskripsi" placeholder="Masukkan detail informasi dokumen" rows="3" style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px;"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ed_file_dokumen">Pilih Berkas (Gambar, Video, atau PDF)</label>
+                            <input type="file" id="ed_file_dokumen" name="file_dokumen" required accept="image/*,video/*,application/pdf" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px;">
+                            <small style="color: #64748b; margin-top: 4px; display: block;">Maksimal ukuran file: 20 MB</small>
+                        </div>
+
+                        <button type="submit" class="button-primary" style="width:100%; margin-top: 10px;">Unggah Dokumen</button>
+                    </form>
+                </div>
+
+                <!-- Right Column: Document List -->
+                <div class="section">
+                    <h2>Daftar Dokumen Penting</h2>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; text-align:left;">
+                            <thead>
+                                <tr style="border-bottom:2px solid #e2e8f0; color:#475569;">
+                                    <th style="padding:12px 8px;">No</th>
+                                    <th style="padding:12px 8px;">Nama Dokumen</th>
+                                    <th style="padding:12px 8px;">Tipe</th>
+                                    <th style="padding:12px 8px;">Ukuran</th>
+                                    <th style="padding:12px 8px;">Pengunggah</th>
+                                    <th style="padding:12px 8px; text-align:center;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($edokumens as $idx => $dok)
+                                    <tr style="border-bottom:1px solid #e2e8f0;">
+                                        <td style="padding:12px 8px;">{{ $idx + 1 }}</td>
+                                        <td style="padding:12px 8px;">
+                                            <strong style="color:#0f4d36;">{{ $dok->nama_dokumen }}</strong>
+                                            @if($dok->deskripsi)
+                                                <div style="font-size:12px; color:#64748b; margin-top:2px;">{{ $dok->deskripsi }}</div>
+                                            @endif
+                                        </td>
+                                        <td style="padding:12px 8px;">
+                                            @if($dok->file_type === 'pdf')
+                                                <span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold;">PDF</span>
+                                            @elseif($dok->file_type === 'image')
+                                                <span class="badge" style="background:#3b82f6; color:white; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold;">Gambar</span>
+                                            @elseif($dok->file_type === 'video')
+                                                <span class="badge" style="background:#f59e0b; color:white; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold;">Video</span>
+                                            @else
+                                                <span class="badge" style="background:#6b7280; color:white; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold;">Berkas</span>
+                                            @endif
+                                        </td>
+                                        <td style="padding:12px 8px;">{{ $dok->file_size }}</td>
+                                        <td style="padding:12px 8px;">{{ $dok->user?->name ?? '-' }}</td>
+                                        <td style="padding:12px 8px; text-align:center;">
+                                            <div style="display:flex; justify-content:center; gap:8px; align-items:center;">
+                                                <button type="button" class="button-primary" style="padding:6px 12px; font-size:12px; background:#059669; border-radius:6px;" onclick="previewDocument('{{ asset('storage/' . $dok->file_path) }}', '{{ $dok->file_type }}', '{{ $dok->nama_dokumen }}')">👁️ Buka</button>
+                                                
+                                                <form action="{{ route('operasional.edokumen.destroy', $dok->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus dokumen ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="button-secondary" style="padding:6px 12px; font-size:12px; background:#ef4444; color:white; border:none; border-radius:6px; cursor:pointer;">🗑️</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" style="padding:20px; text-align:center; color:#64748b; font-style:italic;">Belum ada dokumen yang diunggah.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- Modal Tanda Tangan Elektronik (TTE) -->
+    <!-- Modal Preview Dokumen -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content" style="max-width: 850px; width: 90%;">
+            <div class="modal-header">
+                <h3 id="preview-modal-title">Pratinjau Dokumen</h3>
+                <button class="modal-close" onclick="closePreviewModal()">&times;</button>
+            </div>
+            
+            <div id="preview-modal-body" style="display: flex; justify-content: center; align-items: center; min-height: 300px; background: #fafafa; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px; overflow: hidden;">
+                <!-- Content injected dynamically via JS -->
+            </div>
+
+            <div class="sig-buttons" style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button type="button" class="button-secondary" onclick="closePreviewModal()" style="margin:0; background:#64748b; color:white;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Simpan Template Surat -->
+    <div id="save-template-modal" class="modal" style="z-index: 1100;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Simpan Sebagai Template</h3>
+                <button class="modal-close" onclick="closeSaveTemplateModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="template_name_input">Nama Template</label>
+                <input type="text" id="template_name_input" placeholder="Contoh: Surat Undangan Rapat Umum" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            </div>
+
+            <div style="font-size: 13px; color: #475569; margin-bottom: 20px; line-height: 1.4;">
+                Konten surat dan konfigurasi kop surat saat ini akan disimpan sebagai template baru agar dapat langsung digunakan kembali nanti.
+            </div>
+
+            <div class="sig-buttons" style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="button-secondary" onclick="closeSaveTemplateModal()" style="margin:0;">Batal</button>
+                <button type="button" class="button-primary" onclick="submitSaveTemplate()">Simpan Template</button>
+            </div>
+        </div>
+    </div>
     <div id="tte-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -733,7 +877,10 @@
 
             // Save tab state in URL
             const url = new URL(window.location);
-            url.searchParams.set('tab', tabId === 'arsip-tab' ? 'arsip' : 'buat-surat');
+            let tabParamVal = 'arsip';
+            if (tabId === 'buat-surat-tab') tabParamVal = 'buat-surat';
+            else if (tabId === 'edokumen-tab') tabParamVal = 'edokumen';
+            url.searchParams.set('tab', tabParamVal);
             window.history.pushState({}, '', url);
         }
 
@@ -743,6 +890,8 @@
             const tabParam = urlParams.get('tab');
             if (tabParam === 'buat-surat') {
                 switchTab('buat-surat-tab');
+            } else if (tabParam === 'edokumen' || tabParam === 'edokumen-tab') {
+                switchTab('edokumen-tab');
             } else {
                 switchTab('arsip-tab');
             }
@@ -999,6 +1148,24 @@
         // Predefined templates injection
         function applyLetterTemplate() {
             const tempKey = document.getElementById('sb_template_key').value;
+            
+            // Check if it's a database template
+            if (tempKey.startsWith('db-')) {
+                const templateId = parseInt(tempKey.split('-')[1]);
+                const template = dbTemplates.find(t => t.id === templateId);
+                if (template && tinymce.get('quill-editor')) {
+                    tinymce.get('quill-editor').setContent(template.konten);
+                    if (template.header_title) {
+                        document.getElementById('sb_header_title').value = template.header_title;
+                    }
+                    if (template.header_subtitle) {
+                        document.getElementById('sb_header_subtitle').value = template.header_subtitle;
+                    }
+                    syncLiveKop();
+                }
+                return;
+            }
+
             let content = '';
 
             if (tempKey === 'undangan') {
@@ -1081,16 +1248,12 @@
 
             // Enforce signing permission based on position link
             let hasSignPermission = false;
-            if (loggedInUserRole === 'administrator') {
+            if (role === 'sekretaris' && loggedInUserPosition.includes('sekretaris')) {
                 hasSignPermission = true;
-            } else {
-                if (role === 'sekretaris' && loggedInUserPosition.includes('sekretaris')) {
-                    hasSignPermission = true;
-                } else if (role === 'ketua' && loggedInUserPosition.includes('ketua')) {
-                    hasSignPermission = true;
-                } else if (role === 'penasehat' && (loggedInUserPosition.includes('penasehat') || loggedInUserPosition.includes('penasihat'))) {
-                    hasSignPermission = true;
-                }
+            } else if (role === 'ketua' && loggedInUserPosition.includes('ketua')) {
+                hasSignPermission = true;
+            } else if (role === 'penasehat' && (loggedInUserPosition.includes('penasehat') || loggedInUserPosition.includes('penasihat'))) {
+                hasSignPermission = true;
             }
 
             if (status === 'signed') {
@@ -1172,6 +1335,82 @@
                 console.error(err);
                 alert('Terjadi kesalahan koneksi.');
             });
+        }
+
+        // --- TEMPLATE SURAT SAVE/LOAD LOGIC ---
+        const dbTemplates = @json($templates);
+
+        function openSaveTemplateModal() {
+            document.getElementById('template_name_input').value = '';
+            document.getElementById('save-template-modal').classList.add('open');
+        }
+
+        function closeSaveTemplateModal() {
+            document.getElementById('save-template-modal').classList.remove('open');
+        }
+
+        function submitSaveTemplate() {
+            const name = document.getElementById('template_name_input').value.trim();
+            if (!name) {
+                alert('Nama template wajib diisi!');
+                return;
+            }
+
+            const payload = {
+                nama_template: name,
+                konten: tinymce.get('quill-editor') ? tinymce.get('quill-editor').getContent() : '',
+                header_title: document.getElementById('sb_header_title').value,
+                header_subtitle: document.getElementById('sb_header_subtitle').value
+            };
+
+            const storeUrl = "{{ route('operasional.surat-buat-template.store') }}";
+
+            fetch(storeUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    closeSaveTemplateModal();
+                    window.location.reload();
+                } else {
+                    alert('Gagal menyimpan template.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan koneksi.');
+            });
+        }
+
+        // --- PREVIEW E-DOKUMEN LOGIC ---
+        function previewDocument(filePath, fileType, fileName) {
+            document.getElementById('preview-modal-title').innerText = fileName;
+            const container = document.getElementById('preview-modal-body');
+            
+            if (fileType === 'pdf') {
+                container.innerHTML = `<iframe src="${filePath}" style="width:100%; height:550px; border:none;"></iframe>`;
+            } else if (fileType === 'image') {
+                container.innerHTML = `<img src="${filePath}" style="max-width:100%; max-height:550px; object-fit:contain; border-radius:6px; display:block;">`;
+            } else if (fileType === 'video') {
+                container.innerHTML = `<video src="${filePath}" controls style="width:100%; max-height:550px; outline:none; border-radius:6px;"></video>`;
+            } else {
+                container.innerHTML = `<div style="text-align:center; padding:40px;"><p style="font-size:16px; color:#475569; margin-bottom:15px;">Berkas ini tidak didukung untuk pratinjau langsung.</p><a href="${filePath}" target="_blank" class="button-primary" style="text-decoration:none; display:inline-block;">Unduh Berkas</a></div>`;
+            }
+            
+            document.getElementById('preview-modal').classList.add('open');
+        }
+
+        function closePreviewModal() {
+            const container = document.getElementById('preview-modal-body');
+            container.innerHTML = ''; // Stop video audio if playing
+            document.getElementById('preview-modal').classList.remove('open');
         }
     </script>
 

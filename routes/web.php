@@ -93,6 +93,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/surat-buat/{id}', [App\Http\Controllers\OperasionalController::class, 'suratBuatDestroy'])->name('surat-buat.destroy');
         Route::post('/surat-buat/{id}/sign', [App\Http\Controllers\OperasionalController::class, 'suratBuatSign'])->name('surat-buat.sign');
         Route::get('/surat-buat/{id}/print', [App\Http\Controllers\OperasionalController::class, 'suratBuatPrint'])->name('surat-buat.print');
+        Route::post('/surat-buat-template', [App\Http\Controllers\OperasionalController::class, 'suratTemplateStore'])->name('surat-buat-template.store');
+        Route::post('/edokumen', [App\Http\Controllers\OperasionalController::class, 'edokumenStore'])->name('edokumen.store');
+        Route::delete('/edokumen/{id}', [App\Http\Controllers\OperasionalController::class, 'edokumenDestroy'])->name('edokumen.destroy');
 
         // Broadcast Pengumuman Takmir
         Route::get('/broadcast', [App\Http\Controllers\OperasionalController::class, 'broadcastIndex'])->name('broadcast.index');
