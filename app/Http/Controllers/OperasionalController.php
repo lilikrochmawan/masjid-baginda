@@ -464,6 +464,7 @@ class OperasionalController extends Controller
             'nama_sekretaris' => 'nullable|string',
             'nama_ketua' => 'nullable|string',
             'nama_penasehat' => 'nullable|string',
+            'is_draft' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
@@ -488,6 +489,7 @@ class OperasionalController extends Controller
             'nama_sekretaris' => 'nullable|string',
             'nama_ketua' => 'nullable|string',
             'nama_penasehat' => 'nullable|string',
+            'is_draft' => 'nullable|boolean',
         ]);
 
         $surat = SuratBuat::findOrFail($id);

@@ -185,12 +185,15 @@
                     @csrf
                     <input type="hidden" id="method-field" name="_method" value="POST">
 
+                    @php
+                        $linkedUserIds = $takmirs->pluck('tb_user_id')->filter()->toArray();
+                    @endphp
                     <div class="form-group">
                         <label for="tb_user_id">Tautkan ke Akun Pengguna (tb_user)</label>
                         <select id="tb_user_id" name="tb_user_id" onchange="autoFillNama()">
                             <option value="">-- Belum Ditautkan ke Akun --</option>
                             @foreach($users as $u)
-                                <option value="{{ $u->id }}" data-name="{{ $u->name }}">{{ $u->name }} ({{ $u->email }})</option>
+                                <option value="{{ $u->id }}" data-name="{{ $u->name }}" data-linked="{{ in_array($u->id, $linkedUserIds) ? 'true' : 'false' }}">{{ $u->name }} ({{ $u->email }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -202,7 +205,17 @@
 
                     <div class="form-group">
                         <label for="jabatan">Jabatan</label>
-                        <input type="text" id="jabatan" name="jabatan" required placeholder="Contoh: Ketua, Bendahara, Seksi Ibadah">
+                        <select id="jabatan" name="jabatan" required>
+                            <option value="">-- Pilih Jabatan --</option>
+                            <option value="Penasehat">Penasehat</option>
+                            <option value="Ketua">Ketua</option>
+                            <option value="Wakil Ketua">Wakil Ketua</option>
+                            <option value="Sekretaris">Sekretaris</option>
+                            <option value="Bendahara">Bendahara</option>
+                            <option value="Sie Ibadah">Sie Ibadah</option>
+                            <option value="Sie Sarana dan Prasarana">Sie Sarana dan Prasarana</option>
+                            <option value="Sie Humas">Sie Humas</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -401,6 +414,31 @@
             }
         }
 
+        function filterUserOptions(currentUserId = null) {
+            const options = userIdSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                const opt = options[i];
+                if (opt.value === "") continue;
+
+                const isLinked = opt.getAttribute('data-linked') === 'true';
+                if (isLinked) {
+                    if (currentUserId && opt.value == currentUserId) {
+                        opt.style.display = "";
+                        opt.disabled = false;
+                    } else {
+                        opt.style.display = "none";
+                        opt.disabled = true;
+                    }
+                } else {
+                    opt.style.display = "";
+                    opt.disabled = false;
+                }
+            }
+        }
+
+        // Filter initially on page load
+        filterUserOptions();
+
         function editTakmir(takmir) {
             formContainer.scrollIntoView({ behavior: 'smooth' });
 
@@ -410,6 +448,7 @@
             submitBtn.textContent = "Simpan Perubahan";
             cancelBtn.style.display = "inline-block";
 
+            filterUserOptions(takmir.tb_user_id);
             userIdSelect.value = takmir.tb_user_id || "";
             namaInput.value = takmir.nama;
             jabatanInput.value = takmir.jabatan;
@@ -434,6 +473,8 @@
             submitBtn.textContent = "Simpan Anggota";
             cancelBtn.style.display = "none";
             form.reset();
+            
+            filterUserOptions();
             userIdSelect.value = "";
             
             Array.from(parentSelect.options).forEach(opt => opt.disabled = false);

@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Persuratan - Baginda</title>
-    <!-- Include Quill.js for Rich Text Editing -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
+        .tox-tinymce {
+            border: none !important;
+            box-shadow: none !important;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3faf7; }
 
@@ -95,12 +97,54 @@
 
         /* WPS / Word Office Look-alike styles */
         .wps-editor-container { display: grid; grid-template-columns: 350px 1fr; gap: 24px; margin-top: 15px; }
-        .wps-paper-wrapper { background: #e2e8f0; border-radius: 12px; padding: 30px 10px; display: flex; justify-content: center; overflow-y: auto; max-height: calc(100vh - 200px); border: 1px solid #cbd5e1; }
-        .wps-paper { width: 100%; max-width: 210mm; min-height: 297mm; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 25mm 20mm; position: relative; border-radius: 4px; box-sizing: border-box; }
+        .wps-paper-wrapper { background-color: #e2e8f0; min-height: 100vh; padding: 30px 10px; overflow-y: auto; display: block; }
+        .editor-header-bar { 
+            position: sticky; 
+            top: 0; 
+            padding: 15px 20px 10px 20px; 
+            background: #f8fafc; 
+            z-index: 100; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            border-bottom: 1px solid #cbd5e1; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); 
+            margin: -30px -10px 30px -10px; 
+            width: calc(100% + 20px); 
+            box-sizing: border-box;
+        }
+        .editor-header-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        #editor-toolbar-container { display: flex; justify-content: center; width: 100%; min-height: 45px; }
+        .zoom-control { display: flex; align-items: center; gap: 8px; background: white; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .zoom-control select { border: none; outline: none; font-weight: 700; color: #0f4d36; cursor: pointer; background: transparent; font-size: 13px; }
+        .zoom-control label { font-size: 12px; color: #64748b; font-weight: 700; }
+        .wps-paper { margin: 0 auto; width: 100%; max-width: 210mm; min-height: 297mm; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 25mm 20mm; position: relative; border-radius: 4px; box-sizing: border-box; transition: zoom 0.2s ease, max-width 0.3s ease; text-align: left; }
         
-        .wps-kop { text-align: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 20px; }
-        .wps-kop h2 { font-size: 20px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; color: #000 !important; }
-        .wps-kop p { font-size: 12px; color: #334155; line-height: 1.4; }
+        .wps-kop { display: flex; align-items: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 20px; }
+        .wps-kop-logo { flex: 0 0 80px; text-align: left; }
+        .wps-kop-logo img { width: 75px; height: auto; }
+        .wps-kop-text { flex: 1; text-align: center; padding-right: 80px; }
+        .wps-kop-text h2 { font-size: 20px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; color: #000 !important; margin-top: 0; }
+        .wps-kop-text p { font-size: 12px; color: #334155; line-height: 1.4; margin: 0; }
+        
+        /* Simulating Physical Page Breaks for TinyMCE */
+        .wps-paper img.mce-pagebreak, .wps-paper hr.mce-pagebreak {
+            display: block !important;
+            width: calc(100% + 40mm) !important;
+            height: 35px !important;
+            margin: 30px -20mm !important;
+            background-color: #e2e8f0 !important;
+            border: none !important;
+            border-top: 1px solid #cbd5e1 !important;
+            border-bottom: 1px solid #cbd5e1 !important;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.04), inset 0 -3px 6px rgba(0,0,0,0.04) !important;
+            page-break-before: always !important;
+            cursor: default !important;
+        }
 
         /* Modal Styles */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
@@ -411,7 +455,12 @@
                                             <div style="font-size: 12px; color: #475569; margin-top:2px;">{{ $sb->perihal }}</div>
                                             <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Dibuat oleh: {{ $sb->creator?->name ?? 'Admin' }}</div>
                                         </td>
-                                        <td><span class="badge badge-keluar">{{ strtoupper($sb->template_key) }}</span></td>
+                                        <td>
+                                            <span class="badge badge-keluar">{{ strtoupper($sb->template_key) }}</span>
+                                            @if($sb->is_draft)
+                                                <span class="badge" style="background: #cbd5e1; color: #334155; margin-left: 4px; font-weight:700;">DRAF</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $sb->tanggal_surat->format('d M Y') }}</td>
                                         <td>{{ $sb->tujuan_surat ?? '-' }}</td>
                                         <td>
@@ -454,6 +503,7 @@
                     @csrf
                     <input type="hidden" id="sb-method-field" name="_method" value="POST">
                     <input type="hidden" id="sb-isi-surat" name="isi_surat">
+                    <input type="hidden" id="sb_is_draft" name="is_draft" value="0">
 
                     <div class="wps-editor-container">
                         <!-- Left Panel: Configurations -->
@@ -477,7 +527,7 @@
 
                             <div class="form-group">
                                 <label for="sb_header_subtitle">Kop Surat: Sub-title / Alamat</label>
-                                <textarea id="sb_header_subtitle" name="header_subtitle" required oninput="syncLiveKop()">Jl. Masjid Baginda No. 12, Kota Baginda&#10;Telp: 0812-3456-7890 | Email: takmir@masjidbaginda.org</textarea>
+                                <textarea id="sb_header_subtitle" name="header_subtitle" required oninput="syncLiveKop()">Perum Taman Harmoni Jeruk Sawit, Mojorejo, Gondangrejo, Karanganyar&#10;Telp: 0812-3456-7890 | Email: takmir@masjidbaginda.org</textarea>
                             </div>
 
                             <div class="form-group">
@@ -505,33 +555,72 @@
 
                             <div class="form-group">
                                 <label for="sb_nama_sekretaris">Nama Sekretaris</label>
-                                <input type="text" id="sb_nama_sekretaris" name="nama_sekretaris" value="Amel">
+                                <input type="text" id="sb_nama_sekretaris" name="nama_sekretaris" value="{{ \App\Models\Takmir::where('jabatan', 'Sekretaris')->first()->nama ?? '' }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="sb_nama_ketua">Nama Ketua Takmir</label>
-                                <input type="text" id="sb_nama_ketua" name="nama_ketua" value="Ahmad Khoirudin">
+                                <input type="text" id="sb_nama_ketua" name="nama_ketua" value="{{ \App\Models\Takmir::where('jabatan', 'Ketua')->first()->nama ?? '' }}">
                             </div>
 
                             <div class="form-group">
                                 <label for="sb_nama_penasehat">Nama Penasehat</label>
-                                <input type="text" id="sb_nama_penasehat" name="nama_penasehat" value="H. Daryanto">
+                                <input type="text" id="sb_nama_penasehat" name="nama_penasehat" value="{{ \App\Models\Takmir::where('jabatan', 'Penasehat')->first()->nama ?? '' }}">
                             </div>
 
-                            <button type="submit" class="button-primary" style="width: 100%; margin-top: 10px;">Simpan Surat Resmi</button>
+                            <div style="display: flex; gap: 8px; margin-top: 15px;">
+                                <button type="submit" class="button-secondary" style="flex: 1; padding: 10px 0; font-weight:700;" onclick="document.getElementById('sb_is_draft').value = '1'">Simpan Draf</button>
+                                <button type="submit" class="button-primary" style="flex: 1; padding: 10px 0; font-weight:700;" onclick="document.getElementById('sb_is_draft').value = '0'">Simpan & Terbitkan</button>
+                            </div>
                         </div>
 
-                        <!-- Right Panel: WPS Paper Sheet and Quill Editor -->
+                        <!-- Right Panel: WPS Paper Sheet and TinyMCE Inline Editor -->
                         <div class="wps-paper-wrapper">
-                            <div class="wps-paper">
+                            <div class="editor-header-bar">
+                                <div class="editor-header-controls">
+                                    <div class="zoom-control">
+                                        <label for="paper-size">Kertas:</label>
+                                        <select id="paper-size" onchange="changePaperSize()">
+                                            <option value="A4" selected>A4</option>
+                                            <option value="F4">F4 / Folio</option>
+                                            <option value="Letter">Letter</option>
+                                        </select>
+                                    </div>
+                                    <div class="zoom-control">
+                                        <label for="paper-zoom">Zoom:</label>
+                                        <select id="paper-zoom" onchange="changePaperZoom()">
+                                            <option value="0.5">50%</option>
+                                            <option value="0.75">75%</option>
+                                            <option value="0.9">90%</option>
+                                            <option value="1" selected>100%</option>
+                                            <option value="1.25">125%</option>
+                                            <option value="1.5">150%</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="editor-toolbar-container"></div>
+                            </div>
+
+                            <div class="wps-paper" id="wps-paper-sheet">
                                 <!-- Kop Surat (Sync live with configuration inputs) -->
+                                @php
+                                    $setting = \App\Models\Setting::first();
+                                    $logoUrl = $setting && $setting->logo ? asset('storage/' . $setting->logo) : null;
+                                @endphp
                                 <div class="wps-kop">
-                                    <h2 id="live-kop-title">TAKMIR MASJID BAGINDA</h2>
-                                    <p id="live-kop-subtitle" style="white-space: pre-line;">Jl. Masjid Baginda No. 12, Kota Baginda<br>Telp: 0812-3456-7890 | Email: takmir@masjidbaginda.org</p>
+                                    <div class="wps-kop-logo">
+                                        @if($logoUrl)
+                                            <img src="{{ $logoUrl }}" alt="Logo">
+                                        @endif
+                                    </div>
+                                    <div class="wps-kop-text">
+                                        <h2 id="live-kop-title">TAKMIR MASJID BAGINDA</h2>
+                                        <p id="live-kop-subtitle" style="white-space: pre-line;">Perum Taman Harmoni Jeruk Sawit, Mojorejo, Gondangrejo, Karanganyar<br>Telp: 0812-3456-7890 | Email: takmir@masjidbaginda.org</p>
+                                    </div>
                                 </div>
 
-                                <!-- Quill Editor Container -->
-                                <div id="quill-editor" style="height: 600px; border: none;"></div>
+                                <!-- TinyMCE Inline Editor Container -->
+                                <div id="quill-editor" contenteditable="true" style="min-height: 600px; outline: none; border: none; width: 100%; padding-top: 10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -610,9 +699,27 @@
         </div>
     </div>
 
-    <!-- Include Quill Editor Javascript -->
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <!-- Include TinyMCE Editor Javascript -->
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
+        // Global error listener for debugging
+        window.addEventListener('error', function(e) {
+            let errorDiv = document.createElement('div');
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.top = '10px';
+            errorDiv.style.left = '50%';
+            errorDiv.style.transform = 'translateX(-50%)';
+            errorDiv.style.background = '#fecaca';
+            errorDiv.style.color = '#991b1b';
+            errorDiv.style.padding = '15px 25px';
+            errorDiv.style.borderRadius = '8px';
+            errorDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            errorDiv.style.zIndex = '99999';
+            errorDiv.style.fontWeight = 'bold';
+            errorDiv.innerHTML = 'JS Error: ' + e.message + ' (line ' + e.lineno + ')';
+            document.body.appendChild(errorDiv);
+        });
+
         // Tab switching logic
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -751,22 +858,50 @@
         }
 
         // --- PEMBUATAN SURAT RESMI WORKSPACE LOGIC ---
-        let quill;
-        
-        // Initialize Quill Editor
-        if (document.getElementById('quill-editor')) {
-            quill = new Quill('#quill-editor', {
-                theme: 'snow',
-                modules: {
+        window.pendingEditorContent = '';
+
+        function initTinyMCE() {
+            if (typeof tinymce === 'undefined') {
+                console.warn('TinyMCE is not loaded yet. Retrying in 200ms...');
+                setTimeout(initTinyMCE, 200);
+                return;
+            }
+            if (!tinymce.get('quill-editor')) {
+                tinymce.init({
+                    selector: '#quill-editor',
+                    inline: true,
+                    fixed_toolbar_container: '#editor-toolbar-container',
+                    base_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.8.3',
+                    suffix: '.min',
+                    menubar: false,
+                    branding: false,
+                    placeholder: 'Mulai menulis isi surat di sini...',
+                    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount pagebreak code',
+                    toolbar_mode: 'wrap',
                     toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['clean']
-                    ]
-                }
-            });
+                        'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | align lineheight',
+                        'numlist bullist indent outdent | link image media table | emoticons charmap | pagebreak removeformat | code'
+                    ],
+                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                    setup: function (editor) {
+                        editor.on('init', function () {
+                            editor.setContent(window.pendingEditorContent || '');
+                            editor.focus();
+                            setTimeout(() => {
+                                const wrapper = document.querySelector('.wps-paper-wrapper');
+                                if(wrapper) wrapper.scrollTop = 0;
+                            }, 50);
+                        });
+                    }
+                });
+            } else {
+                tinymce.get('quill-editor').setContent(window.pendingEditorContent || '');
+                tinymce.get('quill-editor').focus();
+                setTimeout(() => {
+                    const wrapper = document.querySelector('.wps-paper-wrapper');
+                    if(wrapper) wrapper.scrollTop = 0;
+                }, 50);
+            }
         }
 
         function showEditor() {
@@ -776,7 +911,10 @@
             document.getElementById('surat-buat-form').action = "{{ route('operasional.surat-buat.store') }}";
             document.getElementById('sb-method-field').value = 'POST';
             document.getElementById('surat-buat-form').reset();
-            quill.setContents([]);
+            document.getElementById('sb_is_draft').value = '0';
+            
+            window.pendingEditorContent = '';
+            initTinyMCE();
             syncLiveKop();
         }
 
@@ -788,6 +926,34 @@
         function syncLiveKop() {
             document.getElementById('live-kop-title').innerText = document.getElementById('sb_header_title').value;
             document.getElementById('live-kop-subtitle').innerText = document.getElementById('sb_header_subtitle').value;
+        }
+
+        function changePaperZoom() {
+            const zoomLevel = document.getElementById('paper-zoom').value;
+            document.getElementById('wps-paper-sheet').style.zoom = zoomLevel;
+            
+            // Re-focus editor so the toolbar reappears automatically
+            if (typeof tinymce !== 'undefined' && tinymce.get('quill-editor')) {
+                tinymce.get('quill-editor').focus();
+            }
+        }
+
+        function changePaperSize() {
+            const size = document.getElementById('paper-size').value;
+            const paper = document.getElementById('wps-paper-sheet');
+            let height = '297mm';
+            let width = '210mm';
+            
+            if (size === 'F4') { height = '330mm'; width = '215.9mm'; }
+            if (size === 'Letter') { height = '279.4mm'; width = '215.9mm'; }
+            
+            paper.style.maxWidth = width;
+            paper.style.minHeight = height;
+            paper.style.backgroundImage = 'none';
+            
+            if (typeof tinymce !== 'undefined' && tinymce.get('quill-editor')) {
+                tinymce.get('quill-editor').focus();
+            }
         }
 
         function editSuratBuat(sb) {
@@ -812,17 +978,21 @@
             document.getElementById('sb_nama_sekretaris').value = sb.nama_sekretaris || '';
             document.getElementById('sb_nama_ketua').value = sb.nama_ketua || '';
             document.getElementById('sb_nama_penasehat').value = sb.nama_penasehat || '';
+            document.getElementById('sb_is_draft').value = sb.is_draft ? '1' : '0';
 
-            // Load HTML content into Quill
-            quill.root.innerHTML = sb.isi_surat || '';
+            // Load HTML content into TinyMCE
+            window.pendingEditorContent = sb.isi_surat || '';
+            initTinyMCE();
             syncLiveKop();
         }
 
-        // On submitting the letter creation form, pull html from Quill
+        // On submitting the letter creation form, pull html from TinyMCE
         const sbForm = document.getElementById('surat-buat-form');
         if (sbForm) {
             sbForm.addEventListener('submit', function(e) {
-                document.getElementById('sb-isi-surat').value = quill.root.innerHTML;
+                if (tinymce.get('quill-editor')) {
+                    document.getElementById('sb-isi-surat').value = tinymce.get('quill-editor').getContent();
+                }
             });
         }
 
@@ -868,13 +1038,15 @@
                 `;
             }
 
-            if (content !== '') {
-                // Replace placeholder [Nomor_Surat] with actual input
-                const currentNo = document.getElementById('sb_nomor_surat').value;
-                content = content.replaceAll('[Nomor_Surat]', currentNo);
-                quill.root.innerHTML = content;
-            } else {
-                quill.root.innerHTML = '';
+            if (tinymce.get('quill-editor')) {
+                if (content !== '') {
+                    // Replace placeholder [Nomor_Surat] with actual input
+                    const currentNo = document.getElementById('sb_nomor_surat').value;
+                    content = content.replaceAll('[Nomor_Surat]', currentNo);
+                    tinymce.get('quill-editor').setContent(content);
+                } else {
+                    tinymce.get('quill-editor').setContent('');
+                }
             }
         }
 

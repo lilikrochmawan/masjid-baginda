@@ -36,10 +36,12 @@ class SuratBuat extends Model
         'ttd_penasehat',
         
         'created_by',
+        'is_draft',
     ];
 
     protected $casts = [
         'tanggal_surat' => 'date',
+        'is_draft' => 'boolean',
     ];
 
     public function creator(): BelongsTo

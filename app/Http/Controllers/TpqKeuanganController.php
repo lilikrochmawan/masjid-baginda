@@ -171,7 +171,7 @@ class TpqKeuanganController extends Controller
             '{tahun}' => $pembayaran->tahun,
             '{jumlah}' => $formattedJumlah,
             '{tanggal_bayar}' => $formattedTanggal,
-            '{nama_wali}' => $santri->nama_orang_tua ?? '-',
+            '{nama_wali}' => $santri->nama_ayah ?: ($santri->nama_ibu ?: '-'),
             '{penerima}' => Auth::user()->name,
         ]);
 

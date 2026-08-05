@@ -112,14 +112,6 @@
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
 @endif
-            <a href="{{ route('tpq.prestasi.index') }}">
-                <span class="nav-icon">📖</span> Kartu Prestasi
-            </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
-                <span class="nav-icon">⚙️</span> Master Hafalan
-            </a>
-            @endif
             @if(auth()->user()->hasAccess('tpq.keuangan'))
             <a href="{{ route('tpq.keuangan.spp.index') }}" class="{{ request()->routeIs('tpq.keuangan.*') ? 'active' : '' }}">
                 <span class="nav-icon">💰</span> Keuangan TPQ
@@ -207,12 +199,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="nama_orang_tua">Nama Orang Tua / Wali</label>
-                        <input type="text" id="nama_orang_tua" name="nama_orang_tua" placeholder="Masukkan nama orang tua">
+                        <label for="alamat_rumah">Alamat Rumah</label>
+                        <input type="text" id="alamat_rumah" name="alamat_rumah" placeholder="Masukkan alamat rumah">
                     </div>
 
                     <div class="form-group">
-                        <label for="no_hp_orang_tua">No. HP Orang Tua</label>
+                        <label for="nama_ayah">Nama Ayah</label>
+                        <input type="text" id="nama_ayah" name="nama_ayah" placeholder="Masukkan nama ayah">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nama_ibu">Nama Ibu</label>
+                        <input type="text" id="nama_ibu" name="nama_ibu" placeholder="Masukkan nama ibu">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="no_hp_orang_tua">No. HP Orang Tua / Wali</label>
                         <input type="text" id="no_hp_orang_tua" name="no_hp_orang_tua" placeholder="Masukkan nomor handphone orang tua">
                     </div>
 
@@ -248,7 +250,9 @@
                                 <th>Kelas</th>
                                 <th>L/P</th>
                                 <th>Tgl. Lahir</th>
-                                <th>Orang Tua</th>
+                                <th>Alamat</th>
+                                <th>Ayah</th>
+                                <th>Ibu</th>
                                 <th>No. HP Wali</th>
                                 <th>Aksi</th>
                             </tr>
@@ -268,7 +272,9 @@
                                     </td>
                                     <td>{{ $santri->jenis_kelamin }}</td>
                                     <td>{{ $santri->tanggal_lahir ? date('d M Y', strtotime($santri->tanggal_lahir)) : '-' }}</td>
-                                    <td>{{ $santri->nama_orang_tua ?? '-' }}</td>
+                                    <td>{{ $santri->alamat_rumah ?? '-' }}</td>
+                                    <td>{{ $santri->nama_ayah ?? '-' }}</td>
+                                    <td>{{ $santri->nama_ibu ?? '-' }}</td>
                                     <td>{{ $santri->no_hp_orang_tua ?? '-' }}</td>
                                     <td>
                                         <button class="btn-action" onclick='editSantri(@json($santri))'>Ubah</button>
@@ -281,7 +287,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" style="text-align:center; color:#9ca3af;">Belum ada data santri terdaftar.</td>
+                                    <td colspan="11" style="text-align:center; color:#9ca3af;">Belum ada data santri terdaftar.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -314,7 +320,9 @@
         const kelasIdSelect = document.getElementById('tb_kelas_id');
         const jkSelect = document.getElementById('jenis_kelamin');
         const tglLahirInput = document.getElementById('tanggal_lahir');
-        const ortuInput = document.getElementById('nama_orang_tua');
+        const alamatInput = document.getElementById('alamat_rumah');
+        const ayahInput = document.getElementById('nama_ayah');
+        const ibuInput = document.getElementById('nama_ibu');
         const noHpOrtuInput = document.getElementById('no_hp_orang_tua');
 
         function editSantri(santri) {
@@ -333,7 +341,9 @@
             kelasIdSelect.value = santri.tb_kelas_id || "";
             jkSelect.value = santri.jenis_kelamin;
             tglLahirInput.value = santri.tanggal_lahir || "";
-            ortuInput.value = santri.nama_orang_tua || "";
+            alamatInput.value = santri.alamat_rumah || "";
+            ayahInput.value = santri.nama_ayah || "";
+            ibuInput.value = santri.nama_ibu || "";
             noHpOrtuInput.value = santri.no_hp_orang_tua || "";
         }
 
