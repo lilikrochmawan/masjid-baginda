@@ -156,7 +156,7 @@
                                 <option value="">Tidak terkait penerimaan</option>
                                 @foreach($penerimaanOptions as $option)
                                     <option value="{{ $option->id }}" data-amount="{{ $option->jumlah }}" {{ old('tb_penerimaan_kaleng_id') == $option->id ? 'selected' : '' }}>
-                                        {{ $option->tanggal_penerimaan }} - {{ $option->jumlah }} - {{ $option->user?->name ?? '-' }}
+                                        {{ $option->tanggal_penerimaan }} - Rp {{ number_format($option->jumlah, 0, ',', '.') }} - {{ $option->user?->name ?? '-' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -202,7 +202,7 @@
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $kas->tanggal_kas }}</td>
-                                                <td>{{ $kas->jumlah }}</td>
+                                                <td>{{ number_format($kas->jumlah, 0, ',', '.') }}</td>
                                                 <td>{{ $kas->keterangan ?? '-' }}</td>
                                                 <td>{{ $kas->user?->name ?? '-' }}</td>
                                                 <td>
@@ -242,7 +242,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->tanggal_kas }}</td>
                                 <td>{{ ucfirst($item->tipe) }}</td>
-                                <td>{{ $item->jumlah }}</td>
+                                <td>{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                                 <td>{{ $item->penerimaanKaleng?->tanggal_penerimaan ? 'Penerimaan ' . $item->penerimaanKaleng->tanggal_penerimaan : '-' }}</td>
                                 <td>{{ $item->user?->name ?? '-' }}</td>
                             </tr>

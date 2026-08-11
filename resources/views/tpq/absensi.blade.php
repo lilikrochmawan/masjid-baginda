@@ -189,7 +189,7 @@
                         <select id="tb_kelas_id" name="tb_kelas_id" onchange="this.form.submit()">
                             @forelse($classes as $c)
                                 <option value="{{ $c->id }}" {{ $selectedClassId == $c->id ? 'selected' : '' }}>
-                                    {{ $c->nama_kelas }} (Pengampu: {{ $c->guru?->nama_guru ?? 'Belum ditentukan' }})
+                                    {{ $c->nama_kelas }} (Pengampu: {{ $c->gurus->isNotEmpty() ? $c->gurus->pluck('nama_guru')->implode(', ') : 'Belum ditentukan' }})
                                 </option>
                             @empty
                                 <option value="">Belum ada kelas tersedia</option>

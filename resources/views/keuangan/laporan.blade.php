@@ -158,15 +158,15 @@
             <div class="summary-grid">
                 <div class="summary-card">
                     <span>Total Kas Masuk</span>
-                    <strong>{{ $totalMasuk }}</strong>
+                    <strong>Rp {{ number_format($totalMasuk, 0, ',', '.') }}</strong>
                 </div>
                 <div class="summary-card">
                     <span>Total Kas Keluar</span>
-                    <strong>{{ $totalKeluar }}</strong>
+                    <strong>Rp {{ number_format($totalKeluar, 0, ',', '.') }}</strong>
                 </div>
                 <div class="summary-card">
                     <span>Saldo Keseluruhan</span>
-                    <strong>{{ $overallNet }}</strong>
+                    <strong>Rp {{ number_format($overallNet, 0, ',', '.') }}</strong>
                 </div>
             </div>
 
@@ -188,7 +188,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->tanggal_kas }}</td>
                                 <td>{{ ucfirst($item->tipe) }}</td>
-                                <td>{{ $item->jumlah }}</td>
+                                <td>{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                                 <td>{{ $item->penerimaanKaleng?->tanggal_penerimaan ? 'Penerimaan ' . $item->penerimaanKaleng->tanggal_penerimaan : '-' }}</td>
                                 <td>{{ $item->keterangan ?? '-' }}</td>
                             </tr>

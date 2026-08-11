@@ -89,11 +89,17 @@
             .sidebar, .topbar, .sidebar-overlay, .tabs-nav, .filters, .alert, .btn-action { display: none !important; }
             .main { margin-left: 0; padding: 0; background: white; }
             .section { box-shadow: none; padding: 0; }
-            body { background: white; }
+            th, td { padding: 10px 8px; font-size: 12px; }
             .print-header { display: block; }
             th { background: #f1f5f9 !important; border-bottom: 2px solid #000 !important; color: #000 !important; }
             td, th { border-bottom: 1px solid #cbd5e1 !important; color: #000 !important; }
         }
+
+        /* ── Pagination Buttons ── */
+        .pagination-btn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; border: 1px solid #d1e7dd; background: #ffffff; color: #10714f; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .pagination-btn:hover { background: #f0fcf5; border-color: #a7f3d0; }
+        .pagination-btn.active { background: #10b981; color: white; border-color: #10b981; pointer-events: none; }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #ffffff; border-color: #e6f4ed; color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -195,41 +201,45 @@
         @endif
 
         <div class="section">
-            <h2>Rekap Pembayaran SPP Bulanan</h2>
-
-            <form class="filters" action="{{ route('tpq.keuangan.rekap.index') }}" method="GET">
-                <label>
-                    Bulan
-                    <select name="month">
-                        <option value="">Semua Bulan</option>
-                        @for($m = 1; $m <= 12; $m++)
-                            @php
-                                $monthName = \Carbon\Carbon::create()->month($m)->format('F');
-                            @endphp
-                            <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>{{ $monthName }}</option>
-                        @endfor
-                    </select>
-                </label>
-                <label>
-                    Tahun
-                    <select name="year">
-                        @for($y = date('Y') - 3; $y <= date('Y') + 1; $y++)
-                            <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
-                </label>
-                <label>
-                    Filter Kelas
-                    <select name="kelas_id">
-                        <option value="">Semua Kelas</option>
-                        @foreach($kelas as $k)
-                            <option value="{{ $k->id }}" {{ $kelasId == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <button type="submit">Filter</button>
-                <button type="button" class="print-btn" onclick="window.print()">🖨️ Cetak</button>
-            </form>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #e6f4ed; padding-bottom: 12px;">
+                <h2 style="margin-bottom: 0;">Rekap Pembayaran SPP Bulanan</h2>
+                <div style="display: flex; gap: 12px; align-items: center; margin: 0; flex-wrap: wrap;">
+                    <input type="text" id="tableSearchInput" placeholder="Cari data..." style="padding: 10px 14px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; min-width: 200px; outline: none; transition: border-color 0.2s;">
+                    
+                    <form class="filters" action="{{ route('tpq.keuangan.rekap.index') }}" method="GET" style="margin: 0; display: flex; gap: 12px; align-items: center;">
+                        <label style="display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #164a3f; margin-bottom: 0;">
+                            Bulan
+                            <select name="month" onchange="this.form.submit()" style="padding: 8px 10px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; outline: none; cursor: pointer;">
+                                <option value="">Semua Bulan</option>
+                                @for($m = 1; $m <= 12; $m++)
+                                    @php
+                                        $monthName = \Carbon\Carbon::create()->month($m)->format('F');
+                                    @endphp
+                                    <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>{{ $monthName }}</option>
+                                @endfor
+                            </select>
+                        </label>
+                        <label style="display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #164a3f; margin-bottom: 0;">
+                            Tahun
+                            <select name="year" onchange="this.form.submit()" style="padding: 8px 10px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; outline: none; cursor: pointer;">
+                                @for($y = date('Y') - 3; $y <= date('Y') + 1; $y++)
+                                    <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </label>
+                        <label style="display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #164a3f; margin-bottom: 0;">
+                            Filter Kelas
+                            <select name="kelas_id" onchange="this.form.submit()" style="padding: 8px 10px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; outline: none; cursor: pointer; min-width: 140px;">
+                                <option value="">Semua Kelas</option>
+                                @foreach($kelas as $k)
+                                    <option value="{{ $k->id }}" {{ $kelasId == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <button type="button" class="print-btn" onclick="window.print()" style="padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13.5px; background: #0f766e; color: white;">🖨️ Cetak</button>
+                    </form>
+                </div>
+            </div>
 
             <div class="table-wrapper">
                 <table>
@@ -280,7 +290,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
+                            <tr class="no-data-row">
                                 <td colspan="9" style="text-align:center; color:#9ca3af;">Tidak ditemukan riwayat pembayaran SPP.</td>
                             </tr>
                         @endforelse
@@ -299,6 +309,124 @@
             toggle.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
             overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
         }
+
+        // Client-side search and pagination logic
+        const tableSearchInput = document.getElementById('tableSearchInput');
+        const tableBody = document.querySelector('table tbody');
+        const allRows = Array.from(tableBody.querySelectorAll('tr:not(.no-data-row)'));
+        
+        let filteredRows = [...allRows];
+        const rowsPerPage = 10;
+        let currentPage = 1;
+
+        function updateTable() {
+            const query = tableSearchInput.value.toLowerCase().trim();
+            
+            // 1. Filter rows based on search
+            filteredRows = allRows.filter(row => {
+                const cells = Array.from(row.querySelectorAll('td'));
+                const searchString = cells.map(td => td.textContent.toLowerCase()).join(' ');
+                return searchString.includes(query);
+            });
+
+            // Handle "No data" message row
+            let noDataRow = tableBody.querySelector('.no-match-row');
+            if (filteredRows.length === 0) {
+                if (!noDataRow) {
+                    noDataRow = document.createElement('tr');
+                    noDataRow.className = 'no-match-row';
+                    noDataRow.innerHTML = '<td colspan="9" style="text-align:center; color:#9ca3af; padding: 20px 0;">Tidak ada rekap SPP yang cocok.</td>';
+                    tableBody.appendChild(noDataRow);
+                } else {
+                    noDataRow.style.display = '';
+                }
+                const originalNoDataRow = tableBody.querySelector('.no-data-row');
+                if (originalNoDataRow) originalNoDataRow.style.display = 'none';
+            } else {
+                if (noDataRow) {
+                    noDataRow.style.display = 'none';
+                }
+            }
+
+            // 2. Paginate filtered rows
+            const totalRows = filteredRows.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
+
+            // Hide all data rows first
+            allRows.forEach(row => row.style.display = 'none');
+
+            // Show matching rows for current page
+            for (let i = startIndex; i < endIndex; i++) {
+                filteredRows[i].style.display = '';
+                filteredRows[i].firstElementChild.textContent = i + 1;
+            }
+
+            // 3. Update pagination controls
+            document.getElementById('start-row').textContent = totalRows > 0 ? startIndex + 1 : 0;
+            document.getElementById('end-row').textContent = endIndex;
+            document.getElementById('total-rows').textContent = totalRows;
+
+            const buttonsContainer = document.getElementById('pagination-buttons');
+            buttonsContainer.innerHTML = '';
+
+            if (totalPages > 1) {
+                // Prev button
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'pagination-btn';
+                prevBtn.textContent = 'Sebelumnya';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = () => {
+                    currentPage--;
+                    updateTable();
+                };
+                buttonsContainer.appendChild(prevBtn);
+
+                // Page numbers
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, startPage + 4);
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+
+                for (let p = startPage; p <= endPage; p++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = 'pagination-btn' + (p === currentPage ? ' active' : '');
+                    pageBtn.textContent = p;
+                    pageBtn.onclick = () => {
+                        currentPage = p;
+                        updateTable();
+                    };
+                    buttonsContainer.appendChild(pageBtn);
+                }
+
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'pagination-btn';
+                nextBtn.textContent = 'Berikutnya';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = () => {
+                    currentPage++;
+                    updateTable();
+                };
+                buttonsContainer.appendChild(nextBtn);
+            }
+        }
+
+        // Attach event listener
+        tableSearchInput.addEventListener('input', () => {
+            currentPage = 1;
+            updateTable();
+        });
+
+        // Initialize table
+        updateTable();
     </script>
 </body>
 </html>
