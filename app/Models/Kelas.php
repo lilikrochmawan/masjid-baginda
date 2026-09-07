@@ -27,14 +27,6 @@ class Kelas extends Model
     }
 
     /**
-     * Get the teachers (walikelas/pengampu) of this class.
-     */
-    public function gurus(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(Guru::class, 'tb_kelas_guru', 'tb_kelas_id', 'tb_guru_id');
-    }
-
-    /**
      * Get the students registered in this class.
      */
     public function santri(): HasMany

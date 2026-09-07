@@ -294,28 +294,6 @@
             submitBtn.textContent = "Simpan Perubahan";
             cancelBtn.style.display = "inline-block";
 
-            // Clean up old temp-option if any
-            const oldTemp = userIdSelect.querySelector('.temp-option');
-            if (oldTemp) oldTemp.remove();
-
-            // Check if option exists in dropdown, if not append it dynamically
-            if (guru.tb_user_id) {
-                let optionExists = false;
-                for (let i = 0; i < userIdSelect.options.length; i++) {
-                    if (userIdSelect.options[i].value == guru.tb_user_id) {
-                        optionExists = true;
-                        break;
-                    }
-                }
-                if (!optionExists && guru.user) {
-                    const newOpt = document.createElement('option');
-                    newOpt.value = guru.tb_user_id;
-                    newOpt.className = 'temp-option';
-                    newOpt.textContent = `${guru.user.name} (${guru.user.email})`;
-                    userIdSelect.appendChild(newOpt);
-                }
-            }
-
             // Fill inputs
             userIdSelect.value = guru.tb_user_id || "";
             nipInput.value = guru.nip || "";
@@ -330,10 +308,6 @@
             methodField.value = "POST";
             submitBtn.textContent = "Simpan Guru";
             cancelBtn.style.display = "none";
-
-            // Clean up temp-option if any
-            const oldTemp = userIdSelect.querySelector('.temp-option');
-            if (oldTemp) oldTemp.remove();
 
             // Reset inputs
             form.reset();

@@ -10,7 +10,6 @@ class Setting extends Model
 
     protected $fillable = [
         'fonnte_token',
-        'whatsapp_status',
         'midtrans_client_id',
         'midtrans_server_key',
         'midtrans_environment',

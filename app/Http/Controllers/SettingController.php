@@ -89,13 +89,10 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'fonnte_token' => 'nullable|string|max:1000',
-            'whatsapp_status' => 'nullable|boolean',
             'midtrans_client_id' => 'nullable|string|max:255',
             'midtrans_server_key' => 'nullable|string|max:255',
             'midtrans_environment' => 'required|in:sandbox,production',
         ]);
-
-        $validated['whatsapp_status'] = $request->has('whatsapp_status') ? 1 : 0;
 
         $setting = Setting::first();
         if (!$setting) {

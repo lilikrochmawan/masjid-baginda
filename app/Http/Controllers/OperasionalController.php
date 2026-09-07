@@ -639,9 +639,6 @@ class OperasionalController extends Controller
         ]);
 
         $setting = Setting::first();
-        if ($setting && !$setting->whatsapp_status) {
-            return redirect()->route('operasional.broadcast.index')->with('error', 'Pesan WA tidak terkirim karena WhatsApp Gateway dinonaktifkan di pengaturan sistem.');
-        }
         $token = ($setting && $setting->fonnte_token) ? $setting->fonnte_token : env('FONNTE_TOKEN');
         
         if (empty($token)) {
@@ -836,12 +833,6 @@ class OperasionalController extends Controller
     public function fetchWaGroups()
     {
         $setting = Setting::first();
-        if ($setting && !$setting->whatsapp_status) {
-            return response()->json([
-                'success' => false,
-                'message' => 'WhatsApp Gateway dinonaktifkan di Pengaturan Aplikasi.'
-            ], 422);
-        }
         $token = $setting?->fonnte_token;
 
         if (!$token) {

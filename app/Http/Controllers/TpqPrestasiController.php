@@ -45,9 +45,7 @@ class TpqPrestasiController extends Controller
         if ($isGuru) {
             $guru = $user->guru;
             if ($guru) {
-                $kelasIds = Kelas::whereHas('gurus', function ($q) use ($guru) {
-                    $q->where('tb_guru.id', $guru->id);
-                })->pluck('id');
+                $kelasIds = Kelas::where('tb_guru_id', $guru->id)->pluck('id');
                 $santris = Santri::with('kelas')->whereIn('tb_kelas_id', $kelasIds)->orderBy('nama_santri')->get();
             } else {
                 $santris = collect();
@@ -132,9 +130,7 @@ class TpqPrestasiController extends Controller
             if (!$guru) {
                 abort(403, 'Akun Anda belum terhubung dengan data guru TPQ.');
             }
-            $kelasIds = Kelas::whereHas('gurus', function ($q) use ($guru) {
-                $q->where('tb_guru.id', $guru->id);
-            })->pluck('id');
+            $kelasIds = Kelas::where('tb_guru_id', $guru->id)->pluck('id');
             $santri = Santri::find($request->tb_santri_id);
             if (!$santri || !$kelasIds->contains($santri->tb_kelas_id)) {
                 abort(403, 'Anda tidak memiliki wewenang untuk mencatat prestasi santri ini.');
@@ -175,9 +171,7 @@ class TpqPrestasiController extends Controller
             if (!$guru) {
                 return response()->json(['success' => false, 'message' => 'Akun belum terhubung dengan data guru']);
             }
-            $kelasIds = Kelas::whereHas('gurus', function ($q) use ($guru) {
-                $q->where('tb_guru.id', $guru->id);
-            })->pluck('id');
+            $kelasIds = Kelas::where('tb_guru_id', $guru->id)->pluck('id');
             $santri = Santri::find($santriId);
             if (!$santri || !$kelasIds->contains($santri->tb_kelas_id)) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized']);
@@ -261,7 +255,7 @@ class TpqPrestasiController extends Controller
      */
     public function publicShow($token)
     {
-        $santri = Santri::with(['kelas.gurus'])->where('prestasi_token', $token)->firstOrFail();
+        $santri = Santri::where('prestasi_token', $token)->firstOrFail();
 
         $sorogan = PrestasiSantri::where('tb_santri_id', $santri->id)
             ->where('tipe', 'sorogan')
@@ -320,9 +314,6 @@ class TpqPrestasiController extends Controller
         }
 
         $setting = Setting::first();
-        if ($setting && !$setting->whatsapp_status) {
-            return ' (Notifikasi WA tidak terkirim karena WhatsApp Gateway dinonaktifkan di pengaturan sistem).';
-        }
         $token = ($setting && $setting->fonnte_token) ? $setting->fonnte_token : env('FONNTE_TOKEN');
         if (empty($token)) {
             return ' (Notifikasi WA tidak terkirim karena token Fonnte belum dikonfigurasi).';

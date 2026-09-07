@@ -90,12 +90,6 @@
             .radio-option { font-size: 12px; gap: 4px; }
             .radio-option input[type="radio"] { width: 16px; height: 16px; }
         }
-
-        /* ── Modal CSS ── */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal.open { display: flex; }
-        .modal-content { background: white; border-radius: 16px; padding: 24px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: scaleUp 0.2s ease-out; }
-        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -195,7 +189,7 @@
                         <select id="tb_kelas_id" name="tb_kelas_id" onchange="this.form.submit()">
                             @forelse($classes as $c)
                                 <option value="{{ $c->id }}" {{ $selectedClassId == $c->id ? 'selected' : '' }}>
-                                    {{ $c->nama_kelas }} (Pengampu: {{ $c->gurus->isNotEmpty() ? $c->gurus->pluck('nama_guru')->implode(', ') : 'Belum ditentukan' }})
+                                    {{ $c->nama_kelas }} (Pengampu: {{ $c->guru?->nama_guru ?? 'Belum ditentukan' }})
                                 </option>
                             @empty
                                 <option value="">Belum ada kelas tersedia</option>
@@ -222,7 +216,7 @@
                 </div>
 
                 @if($santris->isNotEmpty())
-                    <form id="attendance-form" action="{{ route('tpq.absensi.store') }}" method="POST" onsubmit="confirmSave(event)">
+                    <form action="{{ route('tpq.absensi.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="tb_kelas_id" value="{{ $selectedClassId }}">
                         <input type="hidden" name="tanggal" value="{{ $tanggal }}">
@@ -294,22 +288,6 @@
         @endif
     </main>
 
-    <!-- Modal Konfirmasi Absensi -->
-    <div class="modal" id="confirm-modal">
-        <div class="modal-content" style="max-width: 420px; text-align: center;">
-            <div style="font-size: 50px; margin-bottom: 16px;">📲</div>
-            <h3 style="color: #0f4d36; font-size: 18px; margin-bottom: 12px;">Konfirmasi Simpan Absensi</h3>
-            <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
-                Apakah data absensi yang dimasukkan sudah benar? <br>
-                Sistem akan menyimpan data ini dan **mengirimkan notifikasi broadcast WhatsApp** ke wali santri masing-masing.
-            </p>
-            <div style="display: flex; justify-content: center; gap: 12px;">
-                <button type="button" class="btn-cancel" onclick="closeConfirmModal()" style="padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #475569; font-weight: 600; cursor: pointer; transition: all 0.2s;">Batal</button>
-                <button type="button" class="button-primary" onclick="submitAbsensiForm()" style="padding: 10px 18px; border-radius: 8px; background: #10b981; color: white; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s;">Ya, Simpan & Kirim</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Sidebar Toggle
         const sidebar = document.getElementById('sidebar');
@@ -318,34 +296,6 @@
         if (toggle) {
             toggle.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
             overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
-        }
-
-        // Modal Confirmation Logic
-        function confirmSave(event) {
-            event.preventDefault();
-            document.getElementById('confirm-modal').classList.add('open');
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirm-modal').classList.remove('open');
-        }
-
-        // Close modal when clicking outside content
-        window.addEventListener('click', function(event) {
-            const confirmModal = document.getElementById('confirm-modal');
-            if (event.target === confirmModal) {
-                closeConfirmModal();
-            }
-        });
-
-        function submitAbsensiForm() {
-            // Disable button to prevent double submit
-            const submitBtn = document.querySelector('#confirm-modal .button-primary');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Menyimpan...';
-            }
-            document.getElementById('attendance-form').submit();
         }
     </script>
 </body>

@@ -333,12 +333,6 @@
                 width: 100%;
             }
         }
-
-        /* ── Switch Slider CSS ── */
-        .switch-container .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ef4444; transition: .3s; border-radius: 34px; }
-        .switch-container input:checked + .slider { background-color: #10b981; }
-        .switch-container .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .switch-container input:checked + .slider:before { transform: translateX(22px); }
     </style>
 </head>
 <body>
@@ -405,19 +399,6 @@
                     <div class="card-header">
                         <h2><span>📲</span> WhatsApp Gateway Fonnte</h2>
                         <div class="card-desc">Konfigurasi token Fonnte untuk otomatisasi pengiriman broadcast pesan kuitansi SPP TPQ dan Scan Koin Baginda.</div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 24px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 14px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <div>
-                                <div style="font-weight: 700; color: #1e293b; font-size: 14px;">Status WhatsApp Gateway</div>
-                                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Aktifkan atau nonaktifkan pengiriman pesan otomatis WhatsApp.</div>
-                            </div>
-                            <label class="switch-container" style="position: relative; display: inline-block; width: 50px; height: 28px;">
-                                <input type="checkbox" name="whatsapp_status" value="1" {{ old('whatsapp_status', $setting->whatsapp_status) ? 'checked' : '' }} style="opacity: 0; width: 0; height: 0;" id="whatsapp_status_checkbox">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
                     </div>
 
                     <div class="form-group">

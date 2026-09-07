@@ -81,16 +81,8 @@
         .btn-print:hover { background: #059669; transform: translateY(-1px); }
         .btn-print:active { transform: translateY(0); }
 
-        /* ── Print Header (Screen Hidden) ── */
-        .print-header { display: none; margin-bottom: 24px; border-bottom: 2px solid #000; padding-bottom: 16px; }
-        .print-logo-container { display: flex; align-items: center; gap: 16px; }
-        .print-logo { width: 68px; height: 68px; border-radius: 12px; object-fit: cover; }
-        .print-title { font-size: 20px; font-weight: 800; color: #000; }
-        .print-subtitle { font-size: 13px; color: #333; }
-
         @media print {
             body { background: white !important; color: black !important; }
-            .print-header { display: block !important; }
             .sidebar, .topbar, .sidebar-overlay, .filter-section, .btn-print, .legend, .page-title { display: none !important; }
             .main { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
             .section { box-shadow: none !important; padding: 0 !important; margin: 0 !important; border: none !important; }
@@ -179,17 +171,6 @@
 
     <!-- Main Content -->
     <main class="main">
-        <!-- Print Header -->
-        <div class="print-header">
-            <div class="print-logo-container">
-                <img src="{{ asset('images/image.png') }}" class="print-logo" alt="Masjid Baginda">
-                <div>
-                    <div class="print-title">MASJID BAGINDA - LAPORAN ABSENSI TPQ</div>
-                    <div class="print-subtitle">Alamat: Perum Taman Harmoni Jeruk Sawit, Gondangrejo, Karanganyar</div>
-                </div>
-            </div>
-        </div>
-
         <div class="page-title">
             <h1>Laporan Kehadiran Santri</h1>
         </div>
@@ -230,32 +211,14 @@
 
         <!-- Report Table Section -->
         @if($selectedClassId)
-            @php
-                $bulanIndo = [
-                    'January' => 'Januari',
-                    'February' => 'Februari',
-                    'March' => 'Maret',
-                    'April' => 'April',
-                    'May' => 'Mei',
-                    'June' => 'Juni',
-                    'July' => 'Juli',
-                    'August' => 'Agustus',
-                    'September' => 'September',
-                    'October' => 'Oktober',
-                    'November' => 'November',
-                    'December' => 'Desember'
-                ];
-                $monthEng = $selectedDate->format('F');
-                $monthIndo = $bulanIndo[$monthEng] ?? $monthEng;
-            @endphp
             <div class="section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
                     <h2>
                         Rekapitulasi Kehadiran - 
                         @if($periode === 'weekly')
-                            Mingguan (Minggu Ke-{{ $selectedDate->weekOfYear }}, {{ $monthIndo }} {{ $selectedDate->year }})
+                            Mingguan (Minggu Ke-{{ $selectedDate->weekOfYear }}, {{ $selectedDate->year }})
                         @elseif($periode === 'monthly')
-                            Bulanan ({{ $monthIndo }} {{ $selectedDate->year }})
+                            Bulanan ({{ $selectedDate->format('F Y') }})
                         @else
                             Tahunan (Tahun {{ $selectedDate->year }})
                         @endif

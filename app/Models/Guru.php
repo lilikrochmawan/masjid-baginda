@@ -32,8 +32,8 @@ class Guru extends Model
     /**
      * Get the classes managed/taught by the teacher.
      */
-    public function kelas(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function kelas(): HasMany
     {
-        return $this->belongsToMany(Kelas::class, 'tb_kelas_guru', 'tb_guru_id', 'tb_kelas_id');
+        return $this->hasMany(Kelas::class, 'tb_guru_id');
     }
 }

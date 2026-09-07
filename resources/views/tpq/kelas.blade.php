@@ -178,15 +178,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Guru Pengampu</label>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 4px; padding: 12px; background: #fbfffe; border: 1px solid #d1e7dd; border-radius: 12px; max-height: 150px; overflow-y: auto;">
+                        <label for="tb_guru_id">Guru Pengampu</label>
+                        <select id="tb_guru_id" name="tb_guru_id">
+                            <option value="">Pilih Guru Pengampu</option>
                             @foreach($gurus as $g)
-                                <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 13.5px; margin-bottom: 0; cursor: pointer;">
-                                    <input type="checkbox" name="tb_guru_ids[]" value="{{ $g->id }}" class="guru-checkbox" style="width: auto;">
-                                    {{ $g->nama_guru }}
-                                </label>
+                                <option value="{{ $g->id }}">{{ $g->nama_guru }}</option>
                             @endforeach
-                        </div>
+                        </select>
                     </div>
 
                     <button type="submit" class="button-primary" id="btn-submit">Simpan Kelas</button>
@@ -213,12 +211,8 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td><strong>{{ $item->nama_kelas }}</strong></td>
                                     <td>
-                                        @if($item->gurus->isNotEmpty())
-                                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                                @foreach($item->gurus as $g)
-                                                    <span style="color:#0f766e; font-weight:600; display: inline-flex; align-items: center; gap: 6px;">👨‍🏫 {{ $g->nama_guru }}</span>
-                                                @endforeach
-                                            </div>
+                                        @if($item->guru)
+                                            <span style="color:#0f766e; font-weight:600;">👨‍🏫 {{ $item->guru->nama_guru }}</span>
                                         @else
                                             <span style="color:#9ca3af; font-style:italic;">Belum ditentukan</span>
                                         @endif
@@ -263,6 +257,7 @@
         const cancelBtn = document.getElementById('btn-cancel');
 
         const namaKelasInput = document.getElementById('nama_kelas');
+        const guruIdSelect = document.getElementById('tb_guru_id');
 
         function editKelas(kelas) {
             // Scroll to form
@@ -276,17 +271,7 @@
 
             // Fill inputs
             namaKelasInput.value = kelas.nama_kelas;
-            
-            // Reset all checkboxes
-            document.querySelectorAll('.guru-checkbox').forEach(cb => cb.checked = false);
-            
-            // Check checkboxes
-            if (kelas.gurus) {
-                kelas.gurus.forEach(guru => {
-                    const cb = document.querySelector(`.guru-checkbox[value="${guru.id}"]`);
-                    if (cb) cb.checked = true;
-                });
-            }
+            guruIdSelect.value = kelas.tb_guru_id || "";
         }
 
         function resetForm() {
@@ -298,9 +283,6 @@
 
             // Reset inputs
             form.reset();
-            
-            // Reset checkboxes
-            document.querySelectorAll('.guru-checkbox').forEach(cb => cb.checked = false);
         }
     </script>
 </body>

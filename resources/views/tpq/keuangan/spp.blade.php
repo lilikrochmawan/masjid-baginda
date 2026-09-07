@@ -52,12 +52,6 @@
         .filters button { padding: 10px 16px; border-radius: 10px; border: none; background: #10b981; color: white; cursor: pointer; font-weight: 600; font-size: 13px; transition: opacity 0.2s; }
         .filters button:hover { opacity: 0.85; }
 
-        /* ── Pagination Buttons ── */
-        .pagination-btn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; border: 1px solid #d1e7dd; background: #ffffff; color: #10714f; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
-        .pagination-btn:hover { background: #f0fcf5; border-color: #a7f3d0; }
-        .pagination-btn.active { background: #10b981; color: white; border-color: #10b981; pointer-events: none; }
-        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #ffffff; border-color: #e6f4ed; color: #9ca3af; }
-
         .alert { border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
         .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
         .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
@@ -198,33 +192,28 @@
         @endif
 
         <div class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #e6f4ed; padding-bottom: 12px;">
-                <h2 style="margin-bottom: 0;">Peta Pembayaran SPP Tahun {{ $year }}</h2>
-                
-                <div style="display: flex; gap: 12px; align-items: center; margin: 0; flex-wrap: wrap;">
-                    <input type="text" id="tableSearchInput" placeholder="Cari nama / NIS..." style="padding: 10px 14px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; min-width: 200px; outline: none; transition: border-color 0.2s;">
-                    
-                    <form class="filters" action="{{ route('tpq.keuangan.spp.index') }}" method="GET" style="margin: 0; display: flex; gap: 12px; align-items: center;">
-                        <label style="display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #164a3f; margin-bottom: 0;">
-                            Tahun
-                            <select name="year" onchange="this.form.submit()" style="padding: 8px 10px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; outline: none; cursor: pointer;">
-                                @for($y = date('Y') - 3; $y <= date('Y') + 1; $y++)
-                                    <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                @endfor
-                            </select>
-                        </label>
-                        <label style="display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: #164a3f; margin-bottom: 0;">
-                            Filter Kelas
-                            <select name="kelas_id" onchange="this.form.submit()" style="padding: 8px 10px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; outline: none; cursor: pointer; min-width: 140px;">
-                                <option value="">Semua Kelas</option>
-                                @foreach($kelas as $k)
-                                    <option value="{{ $k->id }}" {{ $kelasId == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                    </form>
-                </div>
-            </div>
+            <h2>Peta Pembayaran SPP Tahun {{ $year }}</h2>
+
+            <form class="filters" action="{{ route('tpq.keuangan.spp.index') }}" method="GET">
+                <label>
+                    Tahun
+                    <select name="year">
+                        @for($y = date('Y') - 3; $y <= date('Y') + 1; $y++)
+                            <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </label>
+                <label>
+                    Filter Kelas
+                    <select name="kelas_id" onchange="this.form.submit()">
+                        <option value="">Semua Kelas</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}" {{ $kelasId == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <button type="submit">Tampilkan</button>
+            </form>
 
             <div class="table-wrapper">
                 <table>
@@ -271,19 +260,12 @@
                                 @endfor
                             </tr>
                         @empty
-                            <tr class="no-data-row">
+                            <tr>
                                 <td colspan="16" style="text-align:center; color:#9ca3af;">Belum ada data santri.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
-            </div>
-            <!-- Pagination Controls -->
-            <div id="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e6f4ed; flex-wrap: wrap; gap: 10px;">
-                <div id="pagination-info" style="font-size: 13px; color: #5c7b73;">
-                    Menampilkan <span id="start-row">0</span> - <span id="end-row">0</span> dari <span id="total-rows">0</span> santri
-                </div>
-                <div style="display: flex; gap: 6px;" id="pagination-buttons"></div>
             </div>
         </div>
     </main>
@@ -360,125 +342,6 @@
         function closePaymentModal() {
             modal.classList.remove('open');
         }
-
-        // Client-side search and pagination logic
-        const tableSearchInput = document.getElementById('tableSearchInput');
-        const tableBody = document.querySelector('table tbody');
-        const allRows = Array.from(tableBody.querySelectorAll('tr:not(.no-data-row)'));
-        
-        let filteredRows = [...allRows];
-        const rowsPerPage = 10;
-        let currentPage = 1;
-
-        function updateTable() {
-            const query = tableSearchInput.value.toLowerCase().trim();
-            
-            // 1. Filter rows based on search
-            filteredRows = allRows.filter(row => {
-                const cells = Array.from(row.querySelectorAll('td'));
-                // Search in NIS, Nama Santri, and Kelas (first 4 columns)
-                const searchString = cells.slice(0, 4).map(td => td.textContent.toLowerCase()).join(' ');
-                return searchString.includes(query);
-            });
-
-            // Handle "No data" message row
-            let noDataRow = tableBody.querySelector('.no-match-row');
-            if (filteredRows.length === 0) {
-                if (!noDataRow) {
-                    noDataRow = document.createElement('tr');
-                    noDataRow.className = 'no-match-row';
-                    noDataRow.innerHTML = '<td colspan="16" style="text-align:center; color:#9ca3af; padding: 20px 0;">Tidak ada data santri yang cocok.</td>';
-                    tableBody.appendChild(noDataRow);
-                } else {
-                    noDataRow.style.display = '';
-                }
-                const originalNoDataRow = tableBody.querySelector('.no-data-row');
-                if (originalNoDataRow) originalNoDataRow.style.display = 'none';
-            } else {
-                if (noDataRow) {
-                    noDataRow.style.display = 'none';
-                }
-            }
-
-            // 2. Paginate filtered rows
-            const totalRows = filteredRows.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
-
-            if (currentPage > totalPages) {
-                currentPage = totalPages;
-            }
-
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
-
-            // Hide all data rows first
-            allRows.forEach(row => row.style.display = 'none');
-
-            // Show matching rows for current page
-            for (let i = startIndex; i < endIndex; i++) {
-                filteredRows[i].style.display = '';
-                filteredRows[i].firstElementChild.textContent = i + 1;
-            }
-
-            // 3. Update pagination controls
-            document.getElementById('start-row').textContent = totalRows > 0 ? startIndex + 1 : 0;
-            document.getElementById('end-row').textContent = endIndex;
-            document.getElementById('total-rows').textContent = totalRows;
-
-            const buttonsContainer = document.getElementById('pagination-buttons');
-            buttonsContainer.innerHTML = '';
-
-            if (totalPages > 1) {
-                // Prev button
-                const prevBtn = document.createElement('button');
-                prevBtn.className = 'pagination-btn';
-                prevBtn.textContent = 'Sebelumnya';
-                prevBtn.disabled = currentPage === 1;
-                prevBtn.onclick = () => {
-                    currentPage--;
-                    updateTable();
-                };
-                buttonsContainer.appendChild(prevBtn);
-
-                // Page numbers
-                let startPage = Math.max(1, currentPage - 2);
-                let endPage = Math.min(totalPages, startPage + 4);
-                if (endPage - startPage < 4) {
-                    startPage = Math.max(1, endPage - 4);
-                }
-
-                for (let p = startPage; p <= endPage; p++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = 'pagination-btn' + (p === currentPage ? ' active' : '');
-                    pageBtn.textContent = p;
-                    pageBtn.onclick = () => {
-                        currentPage = p;
-                        updateTable();
-                    };
-                    buttonsContainer.appendChild(pageBtn);
-                }
-
-                // Next button
-                const nextBtn = document.createElement('button');
-                nextBtn.className = 'pagination-btn';
-                nextBtn.textContent = 'Berikutnya';
-                nextBtn.disabled = currentPage === totalPages;
-                nextBtn.onclick = () => {
-                    currentPage++;
-                    updateTable();
-                };
-                buttonsContainer.appendChild(nextBtn);
-            }
-        }
-
-        // Attach event listener
-        tableSearchInput.addEventListener('input', () => {
-            currentPage = 1;
-            updateTable();
-        });
-
-        // Initialize table
-        updateTable();
     </script>
 </body>
 </html>

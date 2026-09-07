@@ -356,9 +356,6 @@ class KoinBagindaController extends Controller
         }
 
         $setting = Setting::first();
-        if ($setting && !$setting->whatsapp_status) {
-            return 'Pesan WA tidak terkirim karena WhatsApp Gateway dinonaktifkan di pengaturan sistem.';
-        }
         $token = ($setting && $setting->fonnte_token) ? $setting->fonnte_token : env('FONNTE_TOKEN');
         if (empty($token)) {
             return 'Pesan WA tidak terkirim karena token Fonnte belum disetel di pengaturan sistem atau di server.';

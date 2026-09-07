@@ -84,10 +84,10 @@ class TpqController extends Controller
         $hakakses = $user->hakakses;
 
         $gurus = Guru::with('user')->get();
-        // Ambil user dengan hakakses tpq dan guru tpq untuk ditautkan ke guru (yang belum ditautkan)
+        // Ambil user dengan hakakses tpq dan guru tpq untuk ditautkan ke guru
         $users = User::whereHas('hakakses', function ($query) {
             $query->whereIn('nama_hakakses', ['tpq', 'guru tpq']);
-        })->whereDoesntHave('guru')->get();
+        })->get();
 
         return view('tpq.guru', compact('user', 'hakakses', 'gurus', 'users'));
     }
@@ -130,7 +130,6 @@ class TpqController extends Controller
         
         // Lepaskan referensi guru di kelas sebelum menghapus
         Kelas::where('tb_guru_id', $guru->id)->update(['tb_guru_id' => null]);
-        $guru->kelas()->detach();
         
         $guru->delete();
 
@@ -145,7 +144,7 @@ class TpqController extends Controller
         $user = Auth::user();
         $hakakses = $user->hakakses;
 
-        $kelas = Kelas::with(['gurus', 'guru'])->get();
+        $kelas = Kelas::with('guru')->get();
         $gurus = Guru::all();
 
         return view('tpq.kelas', compact('user', 'hakakses', 'kelas', 'gurus'));
@@ -155,20 +154,10 @@ class TpqController extends Controller
     {
         $validated = $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'tb_guru_ids' => 'nullable|array',
-            'tb_guru_ids.*' => 'exists:tb_guru,id',
+            'tb_guru_id' => 'nullable|exists:tb_guru,id',
         ]);
 
-        $firstGuruId = !empty($validated['tb_guru_ids']) ? $validated['tb_guru_ids'][0] : null;
-
-        $kelas = Kelas::create([
-            'nama_kelas' => $validated['nama_kelas'],
-            'tb_guru_id' => $firstGuruId,
-        ]);
-
-        if (!empty($validated['tb_guru_ids'])) {
-            $kelas->gurus()->sync($validated['tb_guru_ids']);
-        }
+        Kelas::create($validated);
 
         return redirect()->route('tpq.kelas.index')->with('success', 'Data kelas berhasil ditambahkan.');
     }
@@ -179,18 +168,10 @@ class TpqController extends Controller
 
         $validated = $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'tb_guru_ids' => 'nullable|array',
-            'tb_guru_ids.*' => 'exists:tb_guru,id',
+            'tb_guru_id' => 'nullable|exists:tb_guru,id',
         ]);
 
-        $firstGuruId = !empty($validated['tb_guru_ids']) ? $validated['tb_guru_ids'][0] : null;
-
-        $kelas->update([
-            'nama_kelas' => $validated['nama_kelas'],
-            'tb_guru_id' => $firstGuruId,
-        ]);
-
-        $kelas->gurus()->sync($validated['tb_guru_ids'] ?? []);
+        $kelas->update($validated);
 
         return redirect()->route('tpq.kelas.index')->with('success', 'Data kelas berhasil diperbarui.');
     }
@@ -325,11 +306,9 @@ class TpqController extends Controller
         $isGuru = $hakakses->nama_hakakses !== 'administrator' && $user->guru;
         
         if ($isGuru) {
-            $classes = Kelas::with('gurus')->whereHas('gurus', function ($query) use ($user) {
-                $query->where('tb_guru.id', $user->guru->id);
-            })->get();
+            $classes = Kelas::where('tb_guru_id', $user->guru->id)->get();
         } else {
-            $classes = Kelas::with('gurus')->get();
+            $classes = Kelas::all();
         }
 
         $selectedClassId = $kelasId ?: ($classes->first()?->id ?? null);
@@ -382,9 +361,7 @@ class TpqController extends Controller
         // Validasi kepemilikan kelas oleh guru
         $isGuru = $hakakses->nama_hakakses !== 'administrator' && $user->guru;
         if ($isGuru) {
-            $kelas = Kelas::where('id', $kelasId)->whereHas('gurus', function ($query) use ($user) {
-                $query->where('tb_guru.id', $user->guru->id);
-            })->first();
+            $kelas = Kelas::where('id', $kelasId)->where('tb_guru_id', $user->guru->id)->first();
             if (!$kelas) {
                 abort(403, 'Anda tidak berwenang mengabsen kelas ini.');
             }

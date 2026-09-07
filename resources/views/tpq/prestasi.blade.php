@@ -176,12 +176,6 @@
             .section { padding: 16px 14px; }
             th, td { padding: 10px 8px; font-size: 12px; }
         }
-
-        /* ── Pagination Buttons ── */
-        .pagination-btn { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; border: 1px solid #d1e7dd; background: #ffffff; color: #10714f; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
-        .pagination-btn:hover { background: #f0fcf5; border-color: #a7f3d0; }
-        .pagination-btn.active { background: #10b981; color: white; border-color: #10b981; pointer-events: none; }
-        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #ffffff; border-color: #e6f4ed; color: #9ca3af; }
     </style>
 </head>
 <body>
@@ -362,37 +356,12 @@
                         <!-- Sorogan: Alquran -->
                         <div id="materiAlquran" class="materi-group" style="display: none;">
                             <div class="form-group">
-                                <label>Surah Al-Quran</label>
-                                <div class="custom-select-container" id="surahSelectContainer">
-                                    <div id="surahSelectTrigger" class="custom-select-trigger" onclick="toggleSurahDropdown(event)">
-                                        @if(count($surahs) > 0)
-                                            @php
-                                                $firstNum = array_key_first($surahs);
-                                                $firstName = $surahs[$firstNum];
-                                            @endphp
-                                            {{ $firstNum }}. {{ $firstName }}
-                                        @else
-                                            -- Pilih Surah --
-                                        @endif
-                                    </div>
-                                    <div id="surahDropdownList" class="custom-dropdown-list">
-                                        <div class="dropdown-search-wrapper">
-                                            <input type="text" id="surahSearchInput" placeholder="Cari surah..." autocomplete="off" oninput="filterSurahDropdown()">
-                                        </div>
-                                        <div class="dropdown-options-wrapper">
-                                            @foreach($surahs as $num => $name)
-                                                <div class="dropdown-item surah-option" 
-                                                     data-value="{{ $name }}" 
-                                                     data-text="{{ $num }}. {{ $name }}"
-                                                     data-search="{{ strtolower($num . ' ' . $name) }}"
-                                                     onclick="selectSurah('{{ $name }}', '{{ $num }}. {{ $name }}')">
-                                                     <strong>{{ $num }}.</strong> {{ $name }}
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                    <input type="hidden" name="alquran_surah" id="alquran_surah" value="{{ count($surahs) > 0 ? $surahs[array_key_first($surahs)] : '' }}">
-                                </div>
+                                <label for="alquran_surah">Surah Al-Quran</label>
+                                <select name="alquran_surah" id="alquran_surah">
+                                    @foreach($surahs as $num => $name)
+                                        <option value="{{ $name }}">{{ $num }}. {{ $name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="alquran_ayat">Ayat</label>
@@ -403,37 +372,12 @@
                         <!-- Sorogan: Juz Amma -->
                         <div id="materiJuzAmma" class="materi-group" style="display: none;">
                             <div class="form-group">
-                                <label>Surah Juz 30</label>
-                                <div class="custom-select-container" id="juzAmmaSelectContainer">
-                                    <div id="juzAmmaSelectTrigger" class="custom-select-trigger" onclick="toggleJuzAmmaDropdown(event)">
-                                        @if(count($juz30Surahs) > 0)
-                                            @php
-                                                $firstNum = array_key_first($juz30Surahs);
-                                                $firstName = $juz30Surahs[$firstNum];
-                                            @endphp
-                                            {{ $firstNum }}. {{ $firstName }}
-                                        @else
-                                            -- Pilih Surah --
-                                        @endif
-                                    </div>
-                                    <div id="juzAmmaDropdownList" class="custom-dropdown-list">
-                                        <div class="dropdown-search-wrapper">
-                                            <input type="text" id="juzAmmaSearchInput" placeholder="Cari surah..." autocomplete="off" oninput="filterJuzAmmaDropdown()">
-                                        </div>
-                                        <div class="dropdown-options-wrapper">
-                                            @foreach($juz30Surahs as $num => $name)
-                                                <div class="dropdown-item juz-amma-option" 
-                                                     data-value="{{ $name }}" 
-                                                     data-text="{{ $num }}. {{ $name }}"
-                                                     data-search="{{ strtolower($num . ' ' . $name) }}"
-                                                     onclick="selectJuzAmma('{{ $name }}', '{{ $num }}. {{ $name }}')">
-                                                     <strong>{{ $num }}.</strong> {{ $name }}
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                    <input type="hidden" name="juz_amma_surah" id="juz_amma_surah" value="{{ count($juz30Surahs) > 0 ? $juz30Surahs[array_key_first($juz30Surahs)] : '' }}">
-                                </div>
+                                <label for="juz_amma_surah">Surah Juz 30</label>
+                                <select name="juz_amma_surah" id="juz_amma_surah">
+                                    @foreach($juz30Surahs as $num => $name)
+                                        <option value="{{ $name }}">{{ $num }}. {{ $name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="juz_amma_ayat">Ayat</label>
@@ -486,10 +430,7 @@
 
             <!-- Right Column: Riwayat Input Terbaru -->
             <div class="section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #e6f4ed; padding-bottom: 12px;">
-                    <h2 style="margin-bottom: 0;">Riwayat Pencatatan Terbaru (Maks. 50)</h2>
-                    <input type="text" id="tableSearchInput" placeholder="Cari riwayat..." style="padding: 10px 14px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; min-width: 200px; outline: none; transition: border-color 0.2s;">
-                </div>
+                <h2>Riwayat Pencatatan Terbaru (Maks. 50)</h2>
                 
                 <div class="table-wrapper">
                     <table>
@@ -551,19 +492,12 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr class="no-data-row">
+                                <tr>
                                     <td colspan="9" style="text-align: center; color:#6b7280; padding:20px;">Belum ada riwayat pencatatan prestasi hari ini.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
-                </div>
-                <!-- Pagination Controls -->
-                <div id="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #e6f4ed; flex-wrap: wrap; gap: 10px;">
-                    <div id="pagination-info" style="font-size: 13px; color: #5c7b73;">
-                        Menampilkan <span id="start-row">0</span> - <span id="end-row">0</span> dari <span id="total-rows">0</span> catatan
-                    </div>
-                    <div style="display: flex; gap: 6px;" id="pagination-buttons"></div>
                 </div>
             </div>
         </div>
@@ -651,12 +585,10 @@
                                 recommendText.textContent = `Pertemuan sebelumnya: Jilid ${lastRec.iqro_jilid} Hal. ${lastRec.iqro_halaman} (${statusLabel}). Halaman otomatis terisi ke rekomendasi baru.`;
                             } else if (materi === 'alquran') {
                                 document.getElementById('alquran_surah').value = rec.alquran_surah;
-                                updateSurahTrigger(rec.alquran_surah);
                                 document.getElementById('alquran_ayat').value = rec.alquran_ayat;
                                 recommendText.textContent = `Pertemuan sebelumnya: Surah ${lastRec.alquran_surah} Ayat ${lastRec.alquran_ayat} (${statusLabel}). Ayat otomatis terisi ke rekomendasi baru.`;
                             } else if (materi === 'juz_amma') {
                                 document.getElementById('juz_amma_surah').value = rec.juz_amma_surah;
-                                updateJuzAmmaTrigger(rec.juz_amma_surah);
                                 document.getElementById('juz_amma_ayat').value = rec.juz_amma_ayat;
                                 recommendText.textContent = `Pertemuan sebelumnya: Surah ${lastRec.juz_amma_surah} Ayat ${lastRec.juz_amma_ayat} (${statusLabel}). Ayat otomatis terisi ke rekomendasi baru.`;
                             }
@@ -685,38 +617,23 @@
             if (container && !container.contains(event.target)) {
                 dropdownList.style.display = 'none';
             }
-
-            const surahContainer = document.getElementById('surahSelectContainer');
-            const surahDropdownList = document.getElementById('surahDropdownList');
-            if (surahContainer && !surahContainer.contains(event.target)) {
-                surahDropdownList.style.display = 'none';
-            }
-
-            const juzAmmaContainer = document.getElementById('juzAmmaSelectContainer');
-            const juzAmmaDropdownList = document.getElementById('juzAmmaDropdownList');
-            if (juzAmmaContainer && !juzAmmaContainer.contains(event.target)) {
-                juzAmmaDropdownList.style.display = 'none';
-            }
         });
 
-        // Santri Dropdown Logic
         function toggleSantriDropdown(event) {
             event.stopPropagation();
             const dropdownList = document.getElementById('santriDropdownList');
             const isOpen = dropdownList.style.display === 'block';
             
-            // Close other dropdowns
-            const surahList = document.getElementById('surahDropdownList');
-            if (surahList) surahList.style.display = 'none';
-            const juzAmmaList = document.getElementById('juzAmmaDropdownList');
-            if (juzAmmaList) juzAmmaList.style.display = 'none';
-
+            // Close or open
             dropdownList.style.display = isOpen ? 'none' : 'block';
             
             if (!isOpen) {
+                // Focus the search box inside dropdown
                 const searchInput = document.getElementById('santriSearchInput');
                 searchInput.value = '';
                 searchInput.focus();
+                
+                // Reset option visibility
                 filterSantriDropdown();
             }
         }
@@ -763,250 +680,9 @@
                 document.getElementById('recommendationAlert').style.display = 'none';
             }
 
+            // Manually trigger fetchLastProgress
             fetchLastProgress();
         }
-
-        // Surah Al-Quran Dropdown Logic
-        function toggleSurahDropdown(event) {
-            event.stopPropagation();
-            const dropdownList = document.getElementById('surahDropdownList');
-            const isOpen = dropdownList.style.display === 'block';
-            
-            // Close other dropdowns
-            document.getElementById('santriDropdownList').style.display = 'none';
-            const juzAmmaList = document.getElementById('juzAmmaDropdownList');
-            if (juzAmmaList) juzAmmaList.style.display = 'none';
-
-            dropdownList.style.display = isOpen ? 'none' : 'block';
-            
-            if (!isOpen) {
-                const searchInput = document.getElementById('surahSearchInput');
-                searchInput.value = '';
-                searchInput.focus();
-                filterSurahDropdown();
-            }
-        }
-
-        function filterSurahDropdown() {
-            const searchInput = document.getElementById('surahSearchInput');
-            const filter = searchInput.value.toLowerCase().trim();
-            const items = document.querySelectorAll('.surah-option');
-
-            items.forEach(item => {
-                const searchText = item.getAttribute('data-search');
-                if (searchText.indexOf(filter) > -1) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        function selectSurah(val, text) {
-            const trigger = document.getElementById('surahSelectTrigger');
-            const hiddenInput = document.getElementById('alquran_surah');
-            const dropdownList = document.getElementById('surahDropdownList');
-            
-            hiddenInput.value = val;
-            trigger.textContent = text;
-            dropdownList.style.display = 'none';
-            
-            fetchLastProgress();
-        }
-
-        function updateSurahTrigger(val) {
-            const trigger = document.getElementById('surahSelectTrigger');
-            if (!trigger) return;
-            const options = document.querySelectorAll('.surah-option');
-            let foundText = val;
-            options.forEach(opt => {
-                if (opt.getAttribute('data-value') === val) {
-                    foundText = opt.getAttribute('data-text');
-                }
-            });
-            trigger.textContent = foundText;
-        }
-
-        // Juz Amma Dropdown Logic
-        function toggleJuzAmmaDropdown(event) {
-            event.stopPropagation();
-            const dropdownList = document.getElementById('juzAmmaDropdownList');
-            const isOpen = dropdownList.style.display === 'block';
-            
-            // Close other dropdowns
-            document.getElementById('santriDropdownList').style.display = 'none';
-            const surahList = document.getElementById('surahDropdownList');
-            if (surahList) surahList.style.display = 'none';
-
-            dropdownList.style.display = isOpen ? 'none' : 'block';
-            
-            if (!isOpen) {
-                const searchInput = document.getElementById('juzAmmaSearchInput');
-                searchInput.value = '';
-                searchInput.focus();
-                filterJuzAmmaDropdown();
-            }
-        }
-
-        function filterJuzAmmaDropdown() {
-            const searchInput = document.getElementById('juzAmmaSearchInput');
-            const filter = searchInput.value.toLowerCase().trim();
-            const items = document.querySelectorAll('.juz-amma-option');
-
-            items.forEach(item => {
-                const searchText = item.getAttribute('data-search');
-                if (searchText.indexOf(filter) > -1) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-
-        // Select Juz Amma Surah
-        function selectJuzAmma(val, text) {
-            const trigger = document.getElementById('juzAmmaSelectTrigger');
-            const hiddenInput = document.getElementById('juz_amma_surah');
-            const dropdownList = document.getElementById('juzAmmaDropdownList');
-            
-            hiddenInput.value = val;
-            trigger.textContent = text;
-            dropdownList.style.display = 'none';
-            
-            fetchLastProgress();
-        }
-
-        // Update Juz Amma Trigger
-        function updateJuzAmmaTrigger(val) {
-            const trigger = document.getElementById('juzAmmaSelectTrigger');
-            if (!trigger) return;
-            const options = document.querySelectorAll('.juz-amma-option');
-            let foundText = val;
-            options.forEach(opt => {
-                if (opt.getAttribute('data-value') === val) {
-                    foundText = opt.getAttribute('data-text');
-                }
-            });
-            trigger.textContent = foundText;
-        }
-
-        // Client-side search and pagination logic for table
-        const tableSearchInput = document.getElementById('tableSearchInput');
-        const tableBody = document.querySelector('table tbody');
-        const allRows = Array.from(tableBody.querySelectorAll('tr:not(.no-data-row)'));
-        
-        let filteredRows = [...allRows];
-        const rowsPerPage = 10;
-        let currentPage = 1;
-
-        function updateTable() {
-            const query = tableSearchInput.value.toLowerCase().trim();
-            
-            // 1. Filter rows based on search
-            filteredRows = allRows.filter(row => {
-                const cells = Array.from(row.querySelectorAll('td'));
-                const searchString = cells.map(td => td.textContent.toLowerCase()).join(' ');
-                return searchString.includes(query);
-            });
-
-            // Handle "No data" message row
-            let noDataRow = tableBody.querySelector('.no-match-row');
-            if (filteredRows.length === 0) {
-                if (!noDataRow) {
-                    noDataRow = document.createElement('tr');
-                    noDataRow.className = 'no-match-row';
-                    noDataRow.innerHTML = '<td colspan="9" style="text-align:center; color:#9ca3af; padding: 20px 0;">Tidak ada catatan prestasi yang cocok.</td>';
-                    tableBody.appendChild(noDataRow);
-                } else {
-                    noDataRow.style.display = '';
-                }
-                const originalNoDataRow = tableBody.querySelector('.no-data-row');
-                if (originalNoDataRow) originalNoDataRow.style.display = 'none';
-            } else {
-                if (noDataRow) {
-                    noDataRow.style.display = 'none';
-                }
-            }
-
-            // 2. Paginate filtered rows
-            const totalRows = filteredRows.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
-
-            if (currentPage > totalPages) {
-                currentPage = totalPages;
-            }
-
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
-
-            // Hide all data rows first
-            allRows.forEach(row => row.style.display = 'none');
-
-            // Show matching rows for current page
-            for (let i = startIndex; i < endIndex; i++) {
-                filteredRows[i].style.display = '';
-                filteredRows[i].firstElementChild.textContent = i + 1;
-            }
-
-            // 3. Update pagination controls
-            document.getElementById('start-row').textContent = totalRows > 0 ? startIndex + 1 : 0;
-            document.getElementById('end-row').textContent = endIndex;
-            document.getElementById('total-rows').textContent = totalRows;
-
-            const buttonsContainer = document.getElementById('pagination-buttons');
-            buttonsContainer.innerHTML = '';
-
-            if (totalPages > 1) {
-                // Prev button
-                const prevBtn = document.createElement('button');
-                prevBtn.className = 'pagination-btn';
-                prevBtn.textContent = 'Sebelumnya';
-                prevBtn.disabled = currentPage === 1;
-                prevBtn.onclick = () => {
-                    currentPage--;
-                    updateTable();
-                };
-                buttonsContainer.appendChild(prevBtn);
-
-                // Page numbers
-                let startPage = Math.max(1, currentPage - 2);
-                let endPage = Math.min(totalPages, startPage + 4);
-                if (endPage - startPage < 4) {
-                    startPage = Math.max(1, endPage - 4);
-                }
-
-                for (let p = startPage; p <= endPage; p++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = 'pagination-btn' + (p === currentPage ? ' active' : '');
-                    pageBtn.textContent = p;
-                    pageBtn.onclick = () => {
-                        currentPage = p;
-                        updateTable();
-                    };
-                    buttonsContainer.appendChild(pageBtn);
-                }
-
-                // Next button
-                const nextBtn = document.createElement('button');
-                nextBtn.className = 'pagination-btn';
-                nextBtn.textContent = 'Berikutnya';
-                nextBtn.disabled = currentPage === totalPages;
-                nextBtn.onclick = () => {
-                    currentPage++;
-                    updateTable();
-                };
-                buttonsContainer.appendChild(nextBtn);
-            }
-        }
-
-        // Attach event listener
-        tableSearchInput.addEventListener('input', () => {
-            currentPage = 1;
-            updateTable();
-        });
-
-        // Initialize table
-        updateTable();
     </script>
 </body>
 </html>

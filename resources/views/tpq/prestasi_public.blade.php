@@ -92,7 +92,7 @@
                 </div>
                 <div class="profile-item">
                     <span>Kelas</span>
-                    <strong>{{ $santri->kelas?->nama_kelas ?? '-' }}@if($santri->kelas && $santri->kelas->gurus->isNotEmpty()) (Pengampu: {{ $santri->kelas->gurus->pluck('nama_guru')->implode(', ') }})@endif</strong>
+                    <strong>{{ $santri->kelas?->nama_kelas ?? '-' }}</strong>
                 </div>
                 <div class="profile-item">
                     <span>Status Saat Ini</span>
