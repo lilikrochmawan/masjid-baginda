@@ -36,7 +36,7 @@
         .page-title { margin-bottom: 20px; }
         .page-title h1 { color: #0f4d36; font-size: 26px; font-weight: 700; }
 
-        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; }
+        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
         
         .filter-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 20px; }
         .filter-group { flex: 1; min-width: 180px; }
@@ -45,7 +45,7 @@
 
         .alert { border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
         
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 700px; }
         th, td { padding: 10px 8px; border: 1px solid #e6f4ed; text-align: center; font-size: 13px; color: #164a3f; }
         th { background: #f0fdf4; font-weight: 700; }
@@ -69,7 +69,7 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 16px 14px 30px; }
+            .main { margin-left: 0; padding: 16px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             .filter-group { min-width: 100%; }
@@ -108,40 +108,40 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="<?php echo e(route('tpq.dashboard')); ?>">
+            <a href="<?php echo e(route('tpq.dashboard')); ?>" class="<?php echo e(request()->routeIs('tpq.dashboard') ? 'active' : ''); ?>">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
             <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
-            <a href="<?php echo e(route('tpq.guru.index')); ?>">
+            <a href="<?php echo e(route('tpq.guru.index')); ?>" class="<?php echo e(request()->routeIs('tpq.guru.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-<?php endif; ?>
+            <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
-<a href="<?php echo e(route('tpq.kelas.index')); ?>">
+            <a href="<?php echo e(route('tpq.kelas.index')); ?>" class="<?php echo e(request()->routeIs('tpq.kelas.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-<?php endif; ?>
+            <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
-            <a href="<?php echo e(route('tpq.santri.index')); ?>">
+            <a href="<?php echo e(route('tpq.santri.index')); ?>" class="<?php echo e(request()->routeIs('tpq.santri.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
             <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
-<a href="<?php echo e(route('tpq.absensi.index')); ?>">
+            <a href="<?php echo e(route('tpq.absensi.index')); ?>" class="<?php echo e(request()->routeIs('tpq.absensi.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-<?php endif; ?>
+            <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
-<a href="<?php echo e(route('tpq.laporan.index')); ?>" class="active">
+            <a href="<?php echo e(route('tpq.laporan.index')); ?>" class="<?php echo e(request()->routeIs('tpq.laporan.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-<?php endif; ?>
-            <a href="<?php echo e(route('tpq.prestasi.index')); ?>">
-                <span class="nav-icon">📖</span> Kartu Prestasi
+            <?php endif; ?>
+            <a href="<?php echo e(route('tpq.prestasi.index')); ?>" class="<?php echo e(request()->routeIs('tpq.prestasi.*') ? 'active' : ''); ?>">
+                <span class="nav-icon">🏆</span> Kartu Prestasi
             </a>
-            <?php if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator'): ?>
-            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>">
-                <span class="nav-icon">⚙️</span> Master Hafalan
+            <?php if(auth()->user()->hasAccess('tpq.guru') || (auth()->user()->hakakses && auth()->user()->hakakses->nama_hakakses === 'administrator')): ?>
+            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>" class="<?php echo e(request()->routeIs('tpq.master-hafalan.*') ? 'active' : ''); ?>">
+                <span class="nav-icon">📚</span> Master Hafalan
             </a>
             <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.keuangan')): ?>

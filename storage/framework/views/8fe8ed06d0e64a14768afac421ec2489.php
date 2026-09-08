@@ -175,6 +175,7 @@
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             th, td { padding: 10px 8px; font-size: 12px; }
+            .table-wrapper th:nth-child(3), .table-wrapper td:nth-child(3) { max-width: 45vw; white-space: normal; word-wrap: break-word; }
         }
         /* Custom Select2 Theme matching main style */
         .select2-container--default .select2-selection--single {
@@ -227,40 +228,45 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="<?php echo e(route('tpq.dashboard')); ?>">
+            <a href="<?php echo e(route('tpq.dashboard')); ?>" class="<?php echo e(request()->routeIs('tpq.dashboard') ? 'active' : ''); ?>">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
             <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
-            <a href="<?php echo e(route('tpq.guru.index')); ?>">
+            <a href="<?php echo e(route('tpq.guru.index')); ?>" class="<?php echo e(request()->routeIs('tpq.guru.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
             <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
-            <a href="<?php echo e(route('tpq.kelas.index')); ?>">
+            <a href="<?php echo e(route('tpq.kelas.index')); ?>" class="<?php echo e(request()->routeIs('tpq.kelas.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
             <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
-            <a href="<?php echo e(route('tpq.santri.index')); ?>">
+            <a href="<?php echo e(route('tpq.santri.index')); ?>" class="<?php echo e(request()->routeIs('tpq.santri.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
             <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
-            <a href="<?php echo e(route('tpq.absensi.index')); ?>">
+            <a href="<?php echo e(route('tpq.absensi.index')); ?>" class="<?php echo e(request()->routeIs('tpq.absensi.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
             <?php endif; ?>
             <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
-            <a href="<?php echo e(route('tpq.laporan.index')); ?>">
+            <a href="<?php echo e(route('tpq.laporan.index')); ?>" class="<?php echo e(request()->routeIs('tpq.laporan.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
             <?php endif; ?>
-            <a href="<?php echo e(route('tpq.prestasi.index')); ?>" class="active">
-                <span class="nav-icon">📖</span> Kartu Prestasi
+            <a href="<?php echo e(route('tpq.prestasi.index')); ?>" class="<?php echo e(request()->routeIs('tpq.prestasi.*') ? 'active' : ''); ?>">
+                <span class="nav-icon">🏆</span> Kartu Prestasi
             </a>
-            <?php if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator'): ?>
-            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>">
-                <span class="nav-icon">⚙️</span> Master Hafalan
+            <?php if(auth()->user()->hasAccess('tpq.guru') || (auth()->user()->hakakses && auth()->user()->hakakses->nama_hakakses === 'administrator')): ?>
+            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>" class="<?php echo e(request()->routeIs('tpq.master-hafalan.*') ? 'active' : ''); ?>">
+                <span class="nav-icon">📚</span> Master Hafalan
+            </a>
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.keuangan')): ?>
+            <a href="<?php echo e(route('tpq.keuangan.spp.index')); ?>" class="<?php echo e(request()->routeIs('tpq.keuangan.*') ? 'active' : ''); ?>">
+                <span class="nav-icon">💰</span> Keuangan TPQ
             </a>
             <?php endif; ?>
             <div class="divider"></div>

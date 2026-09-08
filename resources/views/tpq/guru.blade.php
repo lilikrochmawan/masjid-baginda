@@ -85,40 +85,40 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ route('tpq.dashboard') }}">
+            <a href="{{ route('tpq.dashboard') }}" class="{{ request()->routeIs('tpq.dashboard') ? 'active' : '' }}">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
             @if(auth()->user()->hasAccess('tpq.guru'))
-<a href="{{ route('tpq.guru.index') }}" class="active">
+            <a href="{{ route('tpq.guru.index') }}" class="{{ request()->routeIs('tpq.guru.*') ? 'active' : '' }}">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.kelas'))
-<a href="{{ route('tpq.kelas.index') }}">
+            <a href="{{ route('tpq.kelas.index') }}" class="{{ request()->routeIs('tpq.kelas.*') ? 'active' : '' }}">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.santri'))
-            <a href="{{ route('tpq.santri.index') }}">
+            <a href="{{ route('tpq.santri.index') }}" class="{{ request()->routeIs('tpq.santri.*') ? 'active' : '' }}">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.absensi'))
-<a href="{{ route('tpq.absensi.index') }}">
+            <a href="{{ route('tpq.absensi.index') }}" class="{{ request()->routeIs('tpq.absensi.*') ? 'active' : '' }}">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-@endif
+            @endif
             @if(auth()->user()->hasAccess('tpq.laporan'))
-<a href="{{ route('tpq.laporan.index') }}">
+            <a href="{{ route('tpq.laporan.index') }}" class="{{ request()->routeIs('tpq.laporan.*') ? 'active' : '' }}">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-@endif
-            <a href="{{ route('tpq.prestasi.index') }}">
-                <span class="nav-icon">📖</span> Kartu Prestasi
+            @endif
+            <a href="{{ route('tpq.prestasi.index') }}" class="{{ request()->routeIs('tpq.prestasi.*') ? 'active' : '' }}">
+                <span class="nav-icon">🏆</span> Kartu Prestasi
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
-                <span class="nav-icon">⚙️</span> Master Hafalan
+            @if(auth()->user()->hasAccess('tpq.guru') || (auth()->user()->hakakses && auth()->user()->hakakses->nama_hakakses === 'administrator'))
+            <a href="{{ route('tpq.master-hafalan.index') }}" class="{{ request()->routeIs('tpq.master-hafalan.*') ? 'active' : '' }}">
+                <span class="nav-icon">📚</span> Master Hafalan
             </a>
             @endif
             @if(auth()->user()->hasAccess('tpq.keuangan'))
