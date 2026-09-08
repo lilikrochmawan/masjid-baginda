@@ -45,7 +45,9 @@ class TpqPrestasiController extends Controller
         if ($isGuru) {
             $guru = $user->guru;
             if ($guru) {
-                $kelasIds = Kelas::where('tb_guru_id', $guru->id)->pluck('id');
+                $kelasIds = Kelas::whereHas('gurus', function($q) use ($guru) {
+                    $q->where('tb_guru_id', $guru->id);
+                })->pluck('id');
                 $santris = Santri::with('kelas')->whereIn('tb_kelas_id', $kelasIds)->orderBy('nama_santri')->get();
             } else {
                 $santris = collect();
@@ -130,7 +132,9 @@ class TpqPrestasiController extends Controller
             if (!$guru) {
                 abort(403, 'Akun Anda belum terhubung dengan data guru TPQ.');
             }
-            $kelasIds = Kelas::where('tb_guru_id', $guru->id)->pluck('id');
+            $kelasIds = Kelas::whereHas('gurus', function($q) use ($guru) {
+                $q->where('tb_guru_id', $guru->id);
+            })->pluck('id');
             $santri = Santri::find($request->tb_santri_id);
             if (!$santri || !$kelasIds->contains($santri->tb_kelas_id)) {
                 abort(403, 'Anda tidak memiliki wewenang untuk mencatat prestasi santri ini.');
@@ -171,7 +175,9 @@ class TpqPrestasiController extends Controller
             if (!$guru) {
                 return response()->json(['success' => false, 'message' => 'Akun belum terhubung dengan data guru']);
             }
-            $kelasIds = Kelas::where('tb_guru_id', $guru->id)->pluck('id');
+            $kelasIds = Kelas::whereHas('gurus', function($q) use ($guru) {
+                $q->where('tb_guru_id', $guru->id);
+            })->pluck('id');
             $santri = Santri::find($santriId);
             if (!$santri || !$kelasIds->contains($santri->tb_kelas_id)) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized']);

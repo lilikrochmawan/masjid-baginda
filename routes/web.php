@@ -139,6 +139,7 @@ Route::middleware(['auth'])->group(function () {
         // Absensi Santri
         Route::get('/absensi', [App\Http\Controllers\TpqController::class, 'absensiIndex'])->name('absensi.index');
         Route::post('/absensi', [App\Http\Controllers\TpqController::class, 'absensiStore'])->name('absensi.store');
+        Route::post('/absensi/send-wa', [App\Http\Controllers\TpqController::class, 'absensiSendWa'])->name('absensi.send-wa');
 
         // Laporan Absensi
         Route::get('/laporan', [App\Http\Controllers\TpqController::class, 'laporanIndex'])->name('laporan.index');

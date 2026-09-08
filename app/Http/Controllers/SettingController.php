@@ -119,11 +119,19 @@ class SettingController extends Controller
             'templates' => 'required|array',
             'templates.*.key' => 'required|string|exists:tb_wa_template,key',
             'templates.*.template' => 'required|string|max:2000',
+            'templates.*.waba_template_name' => 'nullable|string|max:255',
+            'templates.*.waba_template_language' => 'nullable|string|max:255',
+            'templates.*.waba_template_variables' => 'nullable|string|max:1000',
         ]);
 
         foreach ($validated['templates'] as $item) {
             WaTemplate::where('key', $item['key'])
-                ->update(['template' => $item['template']]);
+                ->update([
+                    'template' => $item['template'],
+                    'waba_template_name' => $item['waba_template_name'] ?? null,
+                    'waba_template_language' => $item['waba_template_language'] ?? null,
+                    'waba_template_variables' => $item['waba_template_variables'] ?? null,
+                ]);
         }
 
         return redirect()->route('settings.index', ['tab' => 'templates'])->with('success', 'Template WhatsApp berhasil diperbarui.');

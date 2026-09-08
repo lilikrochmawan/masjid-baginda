@@ -20,10 +20,19 @@ class Kelas extends Model
 
     /**
      * Get the teacher (walikelas/pengampu) of this class.
+     * @deprecated Use gurus() for multiple teachers.
      */
     public function guru(): BelongsTo
     {
         return $this->belongsTo(Guru::class, 'tb_guru_id');
+    }
+
+    /**
+     * Get the teachers of this class (many-to-many).
+     */
+    public function gurus()
+    {
+        return $this->belongsToMany(Guru::class, 'tb_kelas_guru', 'tb_kelas_id', 'tb_guru_id')->withTimestamps();
     }
 
     /**

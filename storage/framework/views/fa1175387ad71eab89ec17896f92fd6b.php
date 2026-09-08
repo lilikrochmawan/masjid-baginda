@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ $logoFavicon }}">
+    <link rel="icon" href="<?php echo e($logoFavicon); ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pencatatan Absensi TPQ - Baginda</title>
@@ -100,55 +100,55 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ route('tpq.dashboard') }}">
+            <a href="<?php echo e(route('tpq.dashboard')); ?>">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru'))
-<a href="{{ route('tpq.guru.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
+<a href="<?php echo e(route('tpq.guru.index')); ?>">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.kelas'))
-<a href="{{ route('tpq.kelas.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
+<a href="<?php echo e(route('tpq.kelas.index')); ?>">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.santri'))
-<a href="{{ route('tpq.santri.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
+<a href="<?php echo e(route('tpq.santri.index')); ?>">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.absensi'))
-<a href="{{ route('tpq.absensi.index') }}" class="active">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
+<a href="<?php echo e(route('tpq.absensi.index')); ?>" class="active">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.laporan'))
-<a href="{{ route('tpq.laporan.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
+<a href="<?php echo e(route('tpq.laporan.index')); ?>">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-@endif
-            <a href="{{ route('tpq.prestasi.index') }}">
+<?php endif; ?>
+            <a href="<?php echo e(route('tpq.prestasi.index')); ?>">
                 <span class="nav-icon">📖</span> Kartu Prestasi
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator'): ?>
+            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>">
                 <span class="nav-icon">⚙️</span> Master Hafalan
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.keuangan'))
-            <a href="{{ route('tpq.keuangan.spp.index') }}" class="{{ request()->routeIs('tpq.keuangan.*') ? 'active' : '' }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.keuangan')): ?>
+            <a href="<?php echo e(route('tpq.keuangan.spp.index')); ?>" class="<?php echo e(request()->routeIs('tpq.keuangan.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">💰</span> Keuangan TPQ
             </a>
-            @endif
+            <?php endif; ?>
             <div class="divider"></div>
-            <a href="{{ route('dashboard') }}">
+            <a href="<?php echo e(route('dashboard')); ?>">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
             </a>
         </nav>
         <div class="sidebar-footer">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit"><span>🚪</span> Logout</button>
             </form>
         </div>
@@ -167,59 +167,60 @@
             <h1>Pencatatan Absensi Harian</h1>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if($errors->any())
+        <?php if(session('success')): ?>
+            <div class="alert alert-success"><?php echo e(session('success')); ?></div>
+        <?php endif; ?>
+        <?php if($errors->any()): ?>
             <div class="alert alert-danger">
                 <ul style="padding-left: 16px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Filter Section -->
         <div class="section">
-            <form method="GET" action="{{ route('tpq.absensi.index') }}">
+            <form method="GET" action="<?php echo e(route('tpq.absensi.index')); ?>">
                 <div class="filter-row">
                     <div class="filter-group">
                         <label for="tb_kelas_id">Pilih Kelas</label>
                         <select id="tb_kelas_id" name="tb_kelas_id" onchange="this.form.submit()">
-                            @forelse($classes as $c)
-                                <option value="{{ $c->id }}" {{ $selectedClassId == $c->id ? 'selected' : '' }}>
-                                    {{ $c->nama_kelas }} (Pengampu: {{ $c->guru?->nama_guru ?? 'Belum ditentukan' }})
+                            <?php $__empty_1 = true; $__currentLoopData = $classes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <option value="<?php echo e($c->id); ?>" <?php echo e($selectedClassId == $c->id ? 'selected' : ''); ?>>
+                                    <?php echo e($c->nama_kelas); ?> (Pengampu: <?php echo e($c->guru?->nama_guru ?? 'Belum ditentukan'); ?>)
                                 </option>
-                            @empty
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <option value="">Belum ada kelas tersedia</option>
-                            @endforelse
+                            <?php endif; ?>
                         </select>
                     </div>
 
                     <div class="filter-group">
                         <label for="tanggal">Pilih Tanggal</label>
-                        <input type="date" id="tanggal" name="tanggal" value="{{ $tanggal }}" onchange="this.form.submit()">
+                        <input type="date" id="tanggal" name="tanggal" value="<?php echo e($tanggal); ?>" onchange="this.form.submit()">
                     </div>
                 </div>
             </form>
         </div>
 
         <!-- Attendance Sheet Section -->
-        @if($selectedClassId)
+        <?php if($selectedClassId): ?>
             <div class="section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; flex-wrap:wrap; gap:10px;">
                     <h2>Daftar Kehadiran Santri</h2>
                     <span style="font-size: 14px; font-weight:600; color:#0f766e; background:#e6f7f0; padding:6px 12px; border-radius:8px;">
-                        📅 {{ date('d F Y', strtotime($tanggal)) }}
+                        📅 <?php echo e(date('d F Y', strtotime($tanggal))); ?>
+
                     </span>
                 </div>
 
-                @if($santris->isNotEmpty())
-                    <form action="{{ route('tpq.absensi.store') }}" method="POST" id="formAbsensi">
-                        @csrf
-                        <input type="hidden" name="tb_kelas_id" value="{{ $selectedClassId }}">
-                        <input type="hidden" name="tanggal" value="{{ $tanggal }}">
+                <?php if($santris->isNotEmpty()): ?>
+                    <form action="<?php echo e(route('tpq.absensi.store')); ?>" method="POST" id="formAbsensi">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="tb_kelas_id" value="<?php echo e($selectedClassId); ?>">
+                        <input type="hidden" name="tanggal" value="<?php echo e($tanggal); ?>">
 
                         <div class="table-wrapper">
                             <table>
@@ -233,36 +234,36 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($santris as $santri)
-                                        @php
+                                    <?php $__currentLoopData = $santris; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $santri): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php
                                             $absen = $existingAbsensi->get($santri->id);
                                             $currentStatus = $absen ? $absen->status : 'H'; // Default Hadir
                                             $currentKeterangan = $absen ? $absen->keterangan : '';
-                                        @endphp
+                                        ?>
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $santri->nis ?? '-' }}</td>
+                                            <td><?php echo e($loop->iteration); ?></td>
+                                            <td><?php echo e($santri->nis ?? '-'); ?></td>
                                             <td>
-                                                <strong>{{ $santri->nama_santri }}</strong>
-                                                @if($absen)
-                                                    <span class="status-badge badge-{{ $currentStatus === 'H' ? 'H' : 'A' }}">{{ $currentStatus === 'H' ? 'Hadir' : 'Alfa/tidak hadir' }}</span>
-                                                @endif
+                                                <strong><?php echo e($santri->nama_santri); ?></strong>
+                                                <?php if($absen): ?>
+                                                    <span class="status-badge badge-<?php echo e($currentStatus === 'H' ? 'H' : 'A'); ?>"><?php echo e($currentStatus === 'H' ? 'Hadir' : 'Alfa/tidak hadir'); ?></span>
+                                                <?php endif; ?>
                                             </td>
                                             <td style="text-align: center; vertical-align: middle;">
                                                 <div class="radio-group" style="justify-content: center;">
                                                     <label class="radio-option" style="color: #166534;">
-                                                        <input type="radio" name="absensi[{{ $santri->id }}]" value="H" {{ $currentStatus === 'H' ? 'checked' : '' }}> Hadir
+                                                        <input type="radio" name="absensi[<?php echo e($santri->id); ?>]" value="H" <?php echo e($currentStatus === 'H' ? 'checked' : ''); ?>> Hadir
                                                     </label>
                                                     <label class="radio-option" style="color: #991b1b;">
-                                                        <input type="radio" name="absensi[{{ $santri->id }}]" value="A" {{ $currentStatus !== 'H' ? 'checked' : '' }}> Alfa/tidak hadir
+                                                        <input type="radio" name="absensi[<?php echo e($santri->id); ?>]" value="A" <?php echo e($currentStatus !== 'H' ? 'checked' : ''); ?>> Alfa/tidak hadir
                                                     </label>
                                                 </div>
                                             </td>
                                             <td>
-                                                <input type="text" name="keterangan[{{ $santri->id }}]" value="{{ $currentKeterangan }}" placeholder="Catatan opsional..." class="keterangan-input">
+                                                <input type="text" name="keterangan[<?php echo e($santri->id); ?>]" value="<?php echo e($currentKeterangan); ?>" placeholder="Catatan opsional..." class="keterangan-input">
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>
                             </table>
                         </div>
@@ -271,15 +272,15 @@
                             <button type="button" class="button-primary" onclick="showModal()">💾 Simpan Data Absensi</button>
                         </div>
                     </form>
-                @else
+                <?php else: ?>
                     <p style="text-align:center; color:#9ca3af; padding: 30px 0;">Belum ada santri terdaftar di kelas ini. Daftarkan santri terlebih dahulu di menu Data Santri.</p>
-                @endif
+                <?php endif; ?>
             </div>
-        @else
+        <?php else: ?>
             <div class="section">
                 <p style="text-align:center; color:#9ca3af; padding: 20px 0;">Silakan buat kelas terlebih dahulu di menu Data Kelas untuk memulai pencatatan absensi.</p>
             </div>
-        @endif
+        <?php endif; ?>
     </main>
 
     <script>
@@ -331,11 +332,11 @@
                             document.getElementById('progressBar').style.width = `${10 + ((i / messages.length) * 90)}%`;
                             
                             // Send individual WA request
-                            await fetch('{{ route('tpq.absensi.send-wa') }}', {
+                            await fetch('<?php echo e(route('tpq.absensi.send-wa')); ?>', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                                     'Accept': 'application/json'
                                 },
                                 body: JSON.stringify(messages[i])
@@ -388,3 +389,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\masjid-baginda\resources\views/tpq/absensi.blade.php ENDPATH**/ ?>

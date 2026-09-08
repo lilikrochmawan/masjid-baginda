@@ -144,7 +144,7 @@ class TpqController extends Controller
         $user = Auth::user();
         $hakakses = $user->hakakses;
 
-        $kelas = Kelas::with('guru')->get();
+        $kelas = Kelas::with('gurus')->get();
         $gurus = Guru::all();
 
         return view('tpq.kelas', compact('user', 'hakakses', 'kelas', 'gurus'));
@@ -154,10 +154,18 @@ class TpqController extends Controller
     {
         $validated = $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'tb_guru_id' => 'nullable|exists:tb_guru,id',
+            'tb_guru_id' => 'nullable|array',
+            'tb_guru_id.*' => 'exists:tb_guru,id',
         ]);
 
-        Kelas::create($validated);
+        $kelas = Kelas::create([
+            'nama_kelas' => $validated['nama_kelas'],
+            'tb_guru_id' => null, // Deprecated column
+        ]);
+
+        if (!empty($validated['tb_guru_id'])) {
+            $kelas->gurus()->sync($validated['tb_guru_id']);
+        }
 
         return redirect()->route('tpq.kelas.index')->with('success', 'Data kelas berhasil ditambahkan.');
     }
@@ -168,10 +176,19 @@ class TpqController extends Controller
 
         $validated = $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'tb_guru_id' => 'nullable|exists:tb_guru,id',
+            'tb_guru_id' => 'nullable|array',
+            'tb_guru_id.*' => 'exists:tb_guru,id',
         ]);
 
-        $kelas->update($validated);
+        $kelas->update([
+            'nama_kelas' => $validated['nama_kelas'],
+        ]);
+
+        if (isset($validated['tb_guru_id'])) {
+            $kelas->gurus()->sync($validated['tb_guru_id']);
+        } else {
+            $kelas->gurus()->detach();
+        }
 
         return redirect()->route('tpq.kelas.index')->with('success', 'Data kelas berhasil diperbarui.');
     }
@@ -183,6 +200,7 @@ class TpqController extends Controller
         // Pindahkan santri ke tanpa kelas sebelum menghapus kelas
         Santri::where('tb_kelas_id', $kelas->id)->update(['tb_kelas_id' => null]);
         
+        $kelas->gurus()->detach();
         $kelas->delete();
 
         return redirect()->route('tpq.kelas.index')->with('success', 'Data kelas berhasil dihapus.');
@@ -306,7 +324,9 @@ class TpqController extends Controller
         $isGuru = $hakakses->nama_hakakses !== 'administrator' && $user->guru;
         
         if ($isGuru) {
-            $classes = Kelas::where('tb_guru_id', $user->guru->id)->get();
+            $classes = Kelas::whereHas('gurus', function($q) use ($user) {
+                $q->where('tb_guru_id', $user->guru->id);
+            })->get();
         } else {
             $classes = Kelas::all();
         }
@@ -349,7 +369,7 @@ class TpqController extends Controller
             'tb_kelas_id' => 'required|exists:tb_kelas,id',
             'tanggal' => 'required|date',
             'absensi' => 'required|array',
-            'absensi.*' => 'required|in:H,S,I,A',
+            'absensi.*' => 'required|in:H,A',
             'keterangan' => 'nullable|array',
         ]);
 
@@ -361,7 +381,10 @@ class TpqController extends Controller
         // Validasi kepemilikan kelas oleh guru
         $isGuru = $hakakses->nama_hakakses !== 'administrator' && $user->guru;
         if ($isGuru) {
-            $kelas = Kelas::where('id', $kelasId)->where('tb_guru_id', $user->guru->id)->first();
+            $kelas = Kelas::whereHas('gurus', function($q) use ($user) {
+                $q->where('tb_guru_id', $user->guru->id);
+            })->where('id', $kelasId)->first();
+            
             if (!$kelas) {
                 abort(403, 'Anda tidak berwenang mengabsen kelas ini.');
             }
@@ -384,10 +407,85 @@ class TpqController extends Controller
             );
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            $messages = [];
+            if ($request->broadcast_wa) {
+                $templateRecord = \App\Models\WaTemplate::where('key', 'tpq_absensi')->first();
+                $templateText = $templateRecord ? $templateRecord->template : '';
+                
+                if ($templateText) {
+                    $setting = \App\Models\Setting::first();
+                    if ($setting && $setting->whatsapp_status) {
+                        foreach ($absensiData as $santriId => $status) {
+                            $santri = Santri::find($santriId);
+                            if ($santri && $santri->no_hp_orang_tua) {
+                                $statusText = $status === 'H' ? 'Hadir' : 'Alfa / Tidak Hadir';
+                                $msg = str_replace(
+                                    ['{nama_santri}', '{tanggal}', '{status}', '{keterangan}', '{nama_wali}'],
+                                    [$santri->nama_santri, date('d F Y', strtotime($tanggal)), $statusText, $keteranganData[$santriId] ?? '-', $santri->nama_ayah ?? 'Wali Santri'],
+                                    $templateText
+                                );
+                                $messages[] = [
+                                    'target' => $santri->no_hp_orang_tua,
+                                    'message' => $msg
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Group messages by target to avoid double WA
+            $groupedMessages = [];
+            foreach ($messages as $m) {
+                if (!isset($groupedMessages[$m['target']])) {
+                    $groupedMessages[$m['target']] = [];
+                }
+                $groupedMessages[$m['target']][] = $m['message'];
+            }
+            
+            $finalMessages = [];
+            foreach ($groupedMessages as $target => $msgs) {
+                $finalMessages[] = [
+                    'target' => $target,
+                    'message' => implode("\n\n---\n\n", $msgs)
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'messages' => $finalMessages
+            ]);
+        }
+
         return redirect()->route('tpq.absensi.index', [
             'tb_kelas_id' => $kelasId,
             'tanggal' => $tanggal
         ])->with('success', 'Data absensi berhasil disimpan.');
+    }
+
+    public function absensiSendWa(Request $request)
+    {
+        $setting = \App\Models\Setting::first();
+        if (!$setting || !$setting->whatsapp_status) {
+            return response()->json(['success' => false, 'message' => 'WA gateway dimatikan']);
+        }
+        $token = $setting->fonnte_token ?? env('FONNTE_TOKEN');
+        if (empty($token)) {
+            return response()->json(['success' => false, 'message' => 'Token kosong']);
+        }
+        
+        $target = $request->input('target');
+        $message = $request->input('message');
+        
+        \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => $token,
+        ])->asForm()->post('https://api.fonnte.com/send', [
+            'target' => $target,
+            'message' => $message,
+        ]);
+        
+        return response()->json(['success' => true]);
     }
 
     /**

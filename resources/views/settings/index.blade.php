@@ -573,6 +573,33 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- WABA Configuration Details -->
+                        <details style="margin-top: 16px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden;">
+                            <summary style="padding: 12px 16px; font-weight: 600; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                <i style="font-style: normal;">⚙️</i> Pengaturan Template Meta WABA (Khusus Pengguna Bablast)
+                            </summary>
+                            <div style="padding: 16px; border-top: 1px solid #cbd5e1; font-size: 13.5px; background: white;">
+                                <p style="color: #64748b; margin-bottom: 15px; font-size: 13px;">Isi pengaturan di bawah ini jika Anda menggunakan WABA (Bablast) agar pesan tetap terkirim walaupun di luar batas 24 jam. Kosongkan jika menggunakan Fonnte.</p>
+                                
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="waba_name_{{ $template->key }}" style="font-size: 13px; font-weight: 600;">Nama Template (cth: pemberitahuan_tagihan)</label>
+                                    <input type="text" id="waba_name_{{ $template->key }}" name="templates[{{ $loop->index }}][waba_template_name]" value="{{ old('templates.'.$loop->index.'.waba_template_name', $template->waba_template_name) }}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" placeholder="cth: tagihan_internet">
+                                </div>
+                                
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="waba_lang_{{ $template->key }}" style="font-size: 13px; font-weight: 600;">Bahasa Template (default: id)</label>
+                                    <input type="text" id="waba_lang_{{ $template->key }}" name="templates[{{ $loop->index }}][waba_template_language]" value="{{ old('templates.'.$loop->index.'.waba_template_language', $template->waba_template_language ?? 'id') }}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                                    <small style="color: #64748b; display: block; margin-top: 4px;">Penting: Sesuaikan kode bahasa dengan yang Anda pilih saat membuat template di Meta (misal: en, id, en_US).</small>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="waba_vars_{{ $template->key }}" style="font-size: 13px; font-weight: 600;">Urutan Variabel Template (pisahkan dengan koma)</label>
+                                    <input type="text" id="waba_vars_{{ $template->key }}" name="templates[{{ $loop->index }}][waba_template_variables]" value="{{ old('templates.'.$loop->index.'.waba_template_variables', $template->waba_template_variables) }}" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" placeholder="nama,jumlah,tanggal_bayar">
+                                    <small style="color: #64748b; display: block; margin-top: 4px;">Ketikkan nama variabel sesuai urutan 1, 2, 3 di template Meta Anda.</small>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 @endforeach
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ $logoFavicon }}">
+    <link rel="icon" href="<?php echo e($logoFavicon); ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Kelas TPQ - Baginda</title>
@@ -120,55 +120,55 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ route('tpq.dashboard') }}">
+            <a href="<?php echo e(route('tpq.dashboard')); ?>">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru'))
-<a href="{{ route('tpq.guru.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
+<a href="<?php echo e(route('tpq.guru.index')); ?>">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.kelas'))
-<a href="{{ route('tpq.kelas.index') }}" class="active">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
+<a href="<?php echo e(route('tpq.kelas.index')); ?>" class="active">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.santri'))
-<a href="{{ route('tpq.santri.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
+<a href="<?php echo e(route('tpq.santri.index')); ?>">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.absensi'))
-<a href="{{ route('tpq.absensi.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
+<a href="<?php echo e(route('tpq.absensi.index')); ?>">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.laporan'))
-<a href="{{ route('tpq.laporan.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
+<a href="<?php echo e(route('tpq.laporan.index')); ?>">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-@endif
-            <a href="{{ route('tpq.prestasi.index') }}">
+<?php endif; ?>
+            <a href="<?php echo e(route('tpq.prestasi.index')); ?>">
                 <span class="nav-icon">📖</span> Kartu Prestasi
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator'): ?>
+            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>">
                 <span class="nav-icon">⚙️</span> Master Hafalan
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.keuangan'))
-            <a href="{{ route('tpq.keuangan.spp.index') }}" class="{{ request()->routeIs('tpq.keuangan.*') ? 'active' : '' }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.keuangan')): ?>
+            <a href="<?php echo e(route('tpq.keuangan.spp.index')); ?>" class="<?php echo e(request()->routeIs('tpq.keuangan.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">💰</span> Keuangan TPQ
             </a>
-            @endif
+            <?php endif; ?>
             <div class="divider"></div>
-            <a href="{{ route('dashboard') }}">
+            <a href="<?php echo e(route('dashboard')); ?>">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
             </a>
         </nav>
         <div class="sidebar-footer">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit"><span>🚪</span> Logout</button>
             </form>
         </div>
@@ -187,25 +187,25 @@
             <h1>Manajemen Data Kelas</h1>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if($errors->any())
+        <?php if(session('success')): ?>
+            <div class="alert alert-success"><?php echo e(session('success')); ?></div>
+        <?php endif; ?>
+        <?php if($errors->any()): ?>
             <div class="alert alert-danger">
                 <ul style="padding-left: 16px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
-        @endif
+        <?php endif; ?>
 
         <div class="grid">
             <!-- Left Side: Form -->
             <div class="section" id="form-container">
                 <h2 id="form-title">Tambah Kelas Baru</h2>
-                <form id="kelas-form" action="{{ route('tpq.kelas.store') }}" method="POST">
-                    @csrf
+                <form id="kelas-form" action="<?php echo e(route('tpq.kelas.store')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                     <input type="hidden" id="method-field" name="_method" value="POST">
 
                     <div class="form-group">
@@ -216,9 +216,9 @@
                     <div class="form-group">
                         <label for="tb_guru_id">Guru Pengampu</label>
                         <select id="tb_guru_id" name="tb_guru_id[]" multiple="multiple" style="width: 100%;">
-                            @foreach($gurus as $g)
-                                <option value="{{ $g->id }}">{{ $g->nama_guru }}</option>
-                            @endforeach
+                            <?php $__currentLoopData = $gurus; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $g): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($g->id); ?>"><?php echo e($g->nama_guru); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
 
@@ -241,31 +241,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($kelas as $item)
+                            <?php $__empty_1 = true; $__currentLoopData = $kelas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td><strong>{{ $item->nama_kelas }}</strong></td>
+                                    <td><?php echo e($loop->iteration); ?></td>
+                                    <td><strong><?php echo e($item->nama_kelas); ?></strong></td>
                                     <td>
-                                        @if($item->gurus->count() > 0)
-                                            <span style="color:#0f766e; font-weight:600;">👨‍🏫 {{ $item->gurus->pluck('nama_guru')->join(', ') }}</span>
-                                        @else
+                                        <?php if($item->gurus->count() > 0): ?>
+                                            <span style="color:#0f766e; font-weight:600;">👨‍🏫 <?php echo e($item->gurus->pluck('nama_guru')->join(', ')); ?></span>
+                                        <?php else: ?>
                                             <span style="color:#9ca3af; font-style:italic;">Belum ditentukan</span>
-                                        @endif
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn-action" onclick='editKelas(@json($item), @json($item->gurus->pluck("id")))'>Ubah</button>
-                                        <form action="{{ route('tpq.kelas.destroy', $item->id) }}" method="POST" style="display:inline; margin-left: 4px;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini? Santri di kelas ini akan dipindahkan ke tanpa kelas.')">
-                                            @csrf
-                                            @method('DELETE')
+                                        <button class="btn-action" onclick='editKelas(<?php echo json_encode($item, 15, 512) ?>, <?php echo json_encode($item->gurus->pluck("id"), 15, 512) ?>)'>Ubah</button>
+                                        <form action="<?php echo e(route('tpq.kelas.destroy', $item->id)); ?>" method="POST" style="display:inline; margin-left: 4px;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini? Santri di kelas ini akan dipindahkan ke tanpa kelas.')">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
                                             <button type="submit" class="btn-action btn-danger">Hapus</button>
                                         </form>
                                     </td>
                                 </tr>
-                            @empty
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <tr>
                                     <td colspan="4" style="text-align:center; color:#9ca3af;">Belum ada data kelas.</td>
                                 </tr>
-                            @endforelse
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -299,7 +299,7 @@
             formContainer.scrollIntoView({ behavior: 'smooth' });
 
             formTitle.textContent = "Edit Data Kelas";
-            form.action = "{{ route('tpq.kelas.update', ':id') }}".replace(':id', kelas.id);
+            form.action = "<?php echo e(route('tpq.kelas.update', ':id')); ?>".replace(':id', kelas.id);
             methodField.value = "PUT";
             submitBtn.textContent = "Simpan Perubahan";
             cancelBtn.style.display = "inline-block";
@@ -320,7 +320,7 @@
 
         function resetForm() {
             formTitle.textContent = "Tambah Kelas Baru";
-            form.action = "{{ route('tpq.kelas.store') }}";
+            form.action = "<?php echo e(route('tpq.kelas.store')); ?>";
             methodField.value = "POST";
             submitBtn.textContent = "Simpan Kelas";
             cancelBtn.style.display = "none";
@@ -344,3 +344,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\masjid-baginda\resources\views/tpq/kelas.blade.php ENDPATH**/ ?>

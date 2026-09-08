@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ $logoFavicon }}">
+    <link rel="icon" href="<?php echo e($logoFavicon); ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kartu Kontrol Prestasi Santri - Baginda</title>
@@ -214,50 +214,50 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ route('tpq.dashboard') }}">
+            <a href="<?php echo e(route('tpq.dashboard')); ?>">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru'))
-            <a href="{{ route('tpq.guru.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
+            <a href="<?php echo e(route('tpq.guru.index')); ?>">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.kelas'))
-            <a href="{{ route('tpq.kelas.index') }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
+            <a href="<?php echo e(route('tpq.kelas.index')); ?>">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.santri'))
-            <a href="{{ route('tpq.santri.index') }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
+            <a href="<?php echo e(route('tpq.santri.index')); ?>">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.absensi'))
-            <a href="{{ route('tpq.absensi.index') }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
+            <a href="<?php echo e(route('tpq.absensi.index')); ?>">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.laporan'))
-            <a href="{{ route('tpq.laporan.index') }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
+            <a href="<?php echo e(route('tpq.laporan.index')); ?>">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-            @endif
-            <a href="{{ route('tpq.prestasi.index') }}" class="active">
+            <?php endif; ?>
+            <a href="<?php echo e(route('tpq.prestasi.index')); ?>" class="active">
                 <span class="nav-icon">📖</span> Kartu Prestasi
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator'): ?>
+            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>">
                 <span class="nav-icon">⚙️</span> Master Hafalan
             </a>
-            @endif
+            <?php endif; ?>
             <div class="divider"></div>
-            <a href="{{ route('dashboard') }}">
+            <a href="<?php echo e(route('dashboard')); ?>">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
             </a>
         </nav>
         <div class="sidebar-footer">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit"><span>🚪</span> Logout</button>
             </form>
         </div>
@@ -276,19 +276,19 @@
             <h1>Kartu Kontrol Prestasi Santri</h1>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+        <?php if(session('success')): ?>
+            <div class="alert alert-success"><?php echo e(session('success')); ?></div>
+        <?php endif; ?>
 
-        @if($errors->any())
+        <?php if($errors->any()): ?>
             <div class="alert alert-danger">
                 <ul style="margin-left: 16px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
-        @endif
+        <?php endif; ?>
 
         <div class="grid">
             <!-- Left Column: Form Input Prestasi -->
@@ -299,8 +299,8 @@
                     <span>💡</span> <span id="recommendationText">Rekomendasi halaman otomatis terisi.</span>
                 </div>
 
-                <form action="{{ route('tpq.prestasi.store') }}" method="POST">
-                    @csrf
+                <form action="<?php echo e(route('tpq.prestasi.store')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
 
                     <div class="form-group">
                         <label>Pilih Santri</label>
@@ -316,18 +316,19 @@
                                 <div class="dropdown-options-wrapper">
                                     <div class="dropdown-item option-default" onclick="selectSantri('', '-- Pilih Santri --')">-- Pilih Santri --</div>
                                     
-                                    @foreach($santris->groupBy(fn($s) => $s->kelas?->nama_kelas ?? 'Tanpa Kelas') as $namaKelas => $listSantri)
-                                        <div class="dropdown-group-label">Kelas: {{ $namaKelas }}</div>
-                                        @foreach($listSantri as $s)
+                                    <?php $__currentLoopData = $santris->groupBy(fn($s) => $s->kelas?->nama_kelas ?? 'Tanpa Kelas'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $namaKelas => $listSantri): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <div class="dropdown-group-label">Kelas: <?php echo e($namaKelas); ?></div>
+                                        <?php $__currentLoopData = $listSantri; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                             <div class="dropdown-item santri-option" 
-                                                 data-id="{{ $s->id }}" 
-                                                 data-text="{{ $s->nis }} - {{ $s->nama_santri }}"
-                                                 data-search="{{ strtolower($s->nis . ' ' . $s->nama_santri . ' ' . $namaKelas) }}"
-                                                 onclick="selectSantri('{{ $s->id }}', '{{ $s->nis }} - {{ $s->nama_santri }}')">
-                                                 <strong style="color: #059669;">{{ $s->nis }}</strong> - {{ $s->nama_santri }}
+                                                 data-id="<?php echo e($s->id); ?>" 
+                                                 data-text="<?php echo e($s->nis); ?> - <?php echo e($s->nama_santri); ?>"
+                                                 data-search="<?php echo e(strtolower($s->nis . ' ' . $s->nama_santri . ' ' . $namaKelas)); ?>"
+                                                 onclick="selectSantri('<?php echo e($s->id); ?>', '<?php echo e($s->nis); ?> - <?php echo e($s->nama_santri); ?>')">
+                                                 <strong style="color: #059669;"><?php echo e($s->nis); ?></strong> - <?php echo e($s->nama_santri); ?>
+
                                             </div>
-                                        @endforeach
-                                    @endforeach
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
                             </div>
                             
@@ -348,7 +349,7 @@
 
                     <div class="form-group">
                         <label for="tanggal">Tanggal Pertemuan</label>
-                        <input type="date" name="tanggal" id="tanggal" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" name="tanggal" id="tanggal" value="<?php echo e(date('Y-m-d')); ?>" required>
                     </div>
 
                     <!-- TIPE: SOROGAN FIELDS -->
@@ -386,9 +387,9 @@
                             <div class="form-group">
                                 <label for="alquran_surah">Surah Al-Quran</label>
                                 <select name="alquran_surah" id="alquran_surah">
-                                    @foreach($surahs as $num => $name)
-                                        <option value="{{ $name }}">{{ $num }}. {{ $name }}</option>
-                                    @endforeach
+                                    <?php $__currentLoopData = $surahs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $num => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($name); ?>"><?php echo e($num); ?>. <?php echo e($name); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -402,9 +403,9 @@
                             <div class="form-group">
                                 <label for="juz_amma_surah">Surah Juz 30</label>
                                 <select name="juz_amma_surah" id="juz_amma_surah">
-                                    @foreach($juz30Surahs as $num => $name)
-                                        <option value="{{ $name }}">{{ $num }}. {{ $name }}</option>
-                                    @endforeach
+                                    <?php $__currentLoopData = $juz30Surahs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $num => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($name); ?>"><?php echo e($num); ?>. <?php echo e($name); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -421,14 +422,14 @@
                             <select name="tb_tpq_master_hafalan_id" id="tb_tpq_master_hafalan_id" onchange="fetchLastProgress()">
                                 <option value="">-- Pilih Materi Hafalan --</option>
                                 <optgroup label="Surah Pendek">
-                                    @foreach($masterHafalan->where('kategori', 'surah_pendek') as $item)
-                                        <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                                    @endforeach
+                                    <?php $__currentLoopData = $masterHafalan->where('kategori', 'surah_pendek'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($item->id); ?>"><?php echo e($item->nama); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </optgroup>
                                 <optgroup label="Doa Sehari-hari">
-                                    @foreach($masterHafalan->where('kategori', 'doa_harian') as $item)
-                                        <option value="{{ $item->id }}">{{ $item->nama }}</option>
-                                    @endforeach
+                                    <?php $__currentLoopData = $masterHafalan->where('kategori', 'doa_harian'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($item->id); ?>"><?php echo e($item->nama); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </optgroup>
                             </select>
                         </div>
@@ -476,54 +477,57 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($riwayat as $item)
+                            <?php $__empty_1 = true; $__currentLoopData = $riwayat; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $item->tanggal->format('d/m/Y') }}</td>
-                                    <td><strong>{{ $item->santri->nama_santri }}</strong></td>
+                                    <td><?php echo e($loop->iteration); ?></td>
+                                    <td><?php echo e($item->tanggal->format('d/m/Y')); ?></td>
+                                    <td><strong><?php echo e($item->santri->nama_santri); ?></strong></td>
                                     <td>
-                                        @if($item->tipe === 'sorogan')
+                                        <?php if($item->tipe === 'sorogan'): ?>
                                             <span class="badge badge-sorogan">Sorogan</span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="badge badge-hafalan">Hafalan</span>
-                                        @endif
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        @if($item->tipe === 'sorogan')
-                                            @if($item->materi === 'iqro')
-                                                Iqro Jilid {{ $item->iqro_jilid }} Hal. {{ $item->iqro_halaman }}
-                                            @elseif($item->materi === 'alquran')
-                                                Al-Quran: Surah {{ $item->alquran_surah }} Ayat {{ $item->alquran_ayat }}
-                                            @else
-                                                Juz Amma: Surah {{ $item->juz_amma_surah }} Ayat {{ $item->juz_amma_ayat }}
-                                            @endif
-                                        @else
-                                            {{ $item->masterHafalan?->nama ?? '-' }} 
-                                            <span style="font-size: 11px; color: #6b7280;">({{ $item->masterHafalan?->kategori === 'surah_pendek' ? 'Surah' : 'Doa' }})</span>
-                                        @endif
+                                        <?php if($item->tipe === 'sorogan'): ?>
+                                            <?php if($item->materi === 'iqro'): ?>
+                                                Iqro Jilid <?php echo e($item->iqro_jilid); ?> Hal. <?php echo e($item->iqro_halaman); ?>
+
+                                            <?php elseif($item->materi === 'alquran'): ?>
+                                                Al-Quran: Surah <?php echo e($item->alquran_surah); ?> Ayat <?php echo e($item->alquran_ayat); ?>
+
+                                            <?php else: ?>
+                                                Juz Amma: Surah <?php echo e($item->juz_amma_surah); ?> Ayat <?php echo e($item->juz_amma_ayat); ?>
+
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <?php echo e($item->masterHafalan?->nama ?? '-'); ?> 
+                                            <span style="font-size: 11px; color: #6b7280;">(<?php echo e($item->masterHafalan?->kategori === 'surah_pendek' ? 'Surah' : 'Doa'); ?>)</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        @if($item->keterangan === 'lanjut')
+                                        <?php if($item->keterangan === 'lanjut'): ?>
                                             <span class="badge badge-lanjut">Lanjut</span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="badge badge-ulang">Ulang</span>
-                                        @endif
+                                        <?php endif; ?>
                                     </td>
-                                    <td class="wrap-column">{{ $item->catatan ?? '-' }}</td>
-                                    <td>{{ $item->guru?->nama_guru ?? ($item->user?->name ?? 'Admin') }}</td>
+                                    <td class="wrap-column"><?php echo e($item->catatan ?? '-'); ?></td>
+                                    <td><?php echo e($item->guru?->nama_guru ?? ($item->user?->name ?? 'Admin')); ?></td>
                                     <td style="text-align: center;">
-                                        <form action="{{ route('tpq.prestasi.destroy', $item->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan prestasi ini?')">
-                                            @csrf
-                                            @method('DELETE')
+                                        <form action="<?php echo e(route('tpq.prestasi.destroy', $item->id)); ?>" method="POST" style="display:inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan prestasi ini?')">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
                                             <button type="submit" class="btn-action btn-danger">Hapus</button>
                                         </form>
                                     </td>
                                 </tr>
-                            @empty
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <tr>
                                     <td colspan="9" style="text-align: center; color:#6b7280; padding:20px;">Belum ada riwayat pencatatan prestasi hari ini.</td>
                                 </tr>
-                            @endforelse
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -593,7 +597,7 @@
                 return;
             }
 
-            let url = `{{ route('tpq.prestasi.last-progress') }}?santri_id=${santriId}&tipe=${tipe}`;
+            let url = `<?php echo e(route('tpq.prestasi.last-progress')); ?>?santri_id=${santriId}&tipe=${tipe}`;
             if (isSorogan) {
                 url += `&materi=${materi}`;
             }
@@ -729,3 +733,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\masjid-baginda\resources\views/tpq/prestasi.blade.php ENDPATH**/ ?>
