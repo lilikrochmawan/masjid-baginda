@@ -37,7 +37,7 @@
         .page-title h1 { color: #0f4d36; font-size: 26px; font-weight: 700; }
 
         .grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 24px; }
-        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; }
+        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
         .section h2 { font-size: 18px; color: #0f4d36; margin-bottom: 16px; }
 
         .form-group { margin-bottom: 16px; }
@@ -53,7 +53,7 @@
         .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
         .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 500px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid #e6f4ed; text-align: left; font-size: 13px; color: #164a3f; }
         th { background: #f0fdf4; font-weight: 700; }
@@ -69,7 +69,7 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 16px 14px 30px; }
+            .main { margin-left: 0; padding: 16px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             th, td { padding: 10px 8px; font-size: 12px; }

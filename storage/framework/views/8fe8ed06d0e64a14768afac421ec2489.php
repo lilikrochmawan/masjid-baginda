@@ -171,7 +171,7 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 16px 14px 30px; }
+            .main { margin-left: 0; padding: 16px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             th, td { padding: 10px 8px; font-size: 12px; }
@@ -203,6 +203,19 @@
         .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
             background-color: #10b981;
         }
+        /* Pagination Custom CSS */
+        .pagination { display: flex; padding-left: 0; list-style: none; gap: 4px; flex-wrap: wrap; margin-top: 10px; margin-bottom: 0; align-items: center; justify-content: center; }
+        .page-link { position: relative; display: block; color: #10b981; text-decoration: none; background-color: #fbfffe; border: 1px solid #d1e7dd; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .page-link:hover { background-color: #e6f4ed; color: #047857; }
+        .page-item.active .page-link { z-index: 3; color: #fff; background-color: #10b981; border-color: #10b981; font-weight: 600; box-shadow: 0 2px 4px rgba(16,185,129,0.2); }
+        .page-item.disabled .page-link { color: #9ca3af; pointer-events: none; background-color: #f3f4f6; border-color: #e5e7eb; }
+        .pagination svg { width: 1.25rem; height: 1.25rem; display: inline-block; }
+        p.text-sm.text-gray-700.leading-5 { display: none; }
+        .flex.justify-between.flex-1.sm\:hidden { display: none; }
+        /* Sticky Column Name */
+        .table-wrapper th:nth-child(3), .table-wrapper td:nth-child(3) { position: sticky; left: 0; z-index: 2; background-color: #ffffff; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15); }
+        .table-wrapper th:nth-child(3) { background-color: #f0fdf4; z-index: 3; }
+        tr:hover td:nth-child(3) { background-color: #f3fff8; }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
@@ -459,7 +472,16 @@
 
             <!-- Right Column: Riwayat Input Terbaru -->
             <div class="section">
-                <h2>Riwayat Pencatatan Terbaru (Maks. 50)</h2>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px;">
+                    <h2 style="margin-bottom: 0;">Riwayat Pencatatan</h2>
+                    <form action="<?php echo e(route('tpq.prestasi.index')); ?>" method="GET" style="display: flex; gap: 8px; margin: 0;">
+                        <input type="text" name="search" value="<?php echo e(request('search')); ?>" placeholder="Cari nama santri..." style="padding: 8px 12px; border-radius: 8px; border: 1px solid #d1e7dd; font-size: 13px;">
+                        <button type="submit" style="padding: 8px 12px; border-radius: 8px; background: #10b981; color: white; border: none; cursor: pointer; font-size: 13px;">Cari</button>
+                        <?php if(request('search')): ?>
+                            <a href="<?php echo e(route('tpq.prestasi.index')); ?>" style="padding: 8px 12px; border-radius: 8px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 13px; text-decoration: none; display: flex; align-items: center;">Reset</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
                 
                 <div class="table-wrapper">
                     <table>
@@ -479,7 +501,7 @@
                         <tbody>
                             <?php $__empty_1 = true; $__currentLoopData = $riwayat; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                 <tr>
-                                    <td><?php echo e($loop->iteration); ?></td>
+                                    <td><?php echo e($riwayat->firstItem() + $loop->index); ?></td>
                                     <td><?php echo e($item->tanggal->format('d/m/Y')); ?></td>
                                     <td><strong><?php echo e($item->santri->nama_santri); ?></strong></td>
                                     <td>
@@ -530,6 +552,10 @@
                             <?php endif; ?>
                         </tbody>
                     </table>
+                </div>
+                <div style="margin-top: 16px;">
+                    <?php echo e($riwayat->links()); ?>
+
                 </div>
             </div>
         </div>

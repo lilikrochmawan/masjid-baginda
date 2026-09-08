@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ $logoFavicon }}">
+    <link rel="icon" href="<?php echo e($logoFavicon); ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard TPQ - Baginda</title>
@@ -59,7 +59,7 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 18px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
+            .main { margin-left: 0; padding: 18px 14px 30px; }
             .page-title h1 { font-size: 22px; }
             .stats-grid { gap: 14px; }
             .menu-grid { grid-template-columns: 1fr; gap: 14px; }
@@ -74,55 +74,55 @@
             <span>📚</span> Manajemen TPQ
         </div>
         <nav class="sidebar-nav">
-            <a href="{{ route('tpq.dashboard') }}" class="active">
+            <a href="<?php echo e(route('tpq.dashboard')); ?>" class="active">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru'))
-<a href="{{ route('tpq.guru.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
+<a href="<?php echo e(route('tpq.guru.index')); ?>">
                 <span class="nav-icon">👨‍🏫</span> Data Guru
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.kelas'))
-<a href="{{ route('tpq.kelas.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
+<a href="<?php echo e(route('tpq.kelas.index')); ?>">
                 <span class="nav-icon">🏫</span> Data Kelas
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.santri'))
-            <a href="{{ route('tpq.santri.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
+            <a href="<?php echo e(route('tpq.santri.index')); ?>">
                 <span class="nav-icon">🧑‍🎓</span> Data Santri
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.absensi'))
-<a href="{{ route('tpq.absensi.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
+<a href="<?php echo e(route('tpq.absensi.index')); ?>">
                 <span class="nav-icon">📝</span> Absensi Santri
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.laporan'))
-<a href="{{ route('tpq.laporan.index') }}">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
+<a href="<?php echo e(route('tpq.laporan.index')); ?>">
                 <span class="nav-icon">📊</span> Laporan Absen
             </a>
-@endif
-            <a href="{{ route('tpq.prestasi.index') }}">
+<?php endif; ?>
+            <a href="<?php echo e(route('tpq.prestasi.index')); ?>">
                 <span class="nav-icon">📖</span> Kartu Prestasi
             </a>
-            @if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator')
-            <a href="{{ route('tpq.master-hafalan.index') }}">
+            <?php if(auth()->user()->hasAccess('tpq.guru') || auth()->user()->hakakses->nama_hakakses === 'administrator'): ?>
+            <a href="<?php echo e(route('tpq.master-hafalan.index')); ?>">
                 <span class="nav-icon">⚙️</span> Master Hafalan
             </a>
-            @endif
-            @if(auth()->user()->hasAccess('tpq.keuangan'))
-            <a href="{{ route('tpq.keuangan.spp.index') }}" class="{{ request()->routeIs('tpq.keuangan.*') ? 'active' : '' }}">
+            <?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.keuangan')): ?>
+            <a href="<?php echo e(route('tpq.keuangan.spp.index')); ?>" class="<?php echo e(request()->routeIs('tpq.keuangan.*') ? 'active' : ''); ?>">
                 <span class="nav-icon">💰</span> Keuangan TPQ
             </a>
-            @endif
+            <?php endif; ?>
             <div class="divider"></div>
-            <a href="{{ route('dashboard') }}">
+            <a href="<?php echo e(route('dashboard')); ?>">
                 <span class="nav-icon">⬅️</span> Dashboard Utama
             </a>
         </nav>
         <div class="sidebar-footer">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit"><span>🚪</span> Logout</button>
             </form>
         </div>
@@ -152,69 +152,69 @@
                 <div class="stat-icon">👨‍🏫</div>
                 <div class="stat-details">
                     <span>Total Guru</span>
-                    <strong>{{ $totalGuru }}</strong>
+                    <strong><?php echo e($totalGuru); ?></strong>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🏫</div>
                 <div class="stat-details">
                     <span>Total Kelas</span>
-                    <strong>{{ $totalKelas }}</strong>
+                    <strong><?php echo e($totalKelas); ?></strong>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🧑‍🎓</div>
                 <div class="stat-details">
                     <span>Total Santri</span>
-                    <strong>{{ $totalSantri }}</strong>
+                    <strong><?php echo e($totalSantri); ?></strong>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📈</div>
                 <div class="stat-details">
                     <span>Hadir Hari Ini</span>
-                    <strong>{{ $persentaseHadir }}%</strong>
+                    <strong><?php echo e($persentaseHadir); ?>%</strong>
                 </div>
             </div>
         </div>
 
         <!-- Menu Navigation Grid -->
         <div class="menu-grid">
-            @if(auth()->user()->hasAccess('tpq.guru'))
-<a href="{{ route('tpq.guru.index') }}" class="menu-card">
+            <?php if(auth()->user()->hasAccess('tpq.guru')): ?>
+<a href="<?php echo e(route('tpq.guru.index')); ?>" class="menu-card">
                 <span class="menu-card-icon">👨‍🏫</span>
                 <h3>Data Guru</h3>
                 <p>Kelola data pengajar TPQ dan kaitkan dengan akun login mereka.</p>
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.kelas'))
-<a href="{{ route('tpq.kelas.index') }}" class="menu-card">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.kelas')): ?>
+<a href="<?php echo e(route('tpq.kelas.index')); ?>" class="menu-card">
                 <span class="menu-card-icon">🏫</span>
                 <h3>Data Kelas</h3>
                 <p>Kelola daftar kelas dan tentukan guru pengampu/wali kelas masing-masing.</p>
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.santri'))
-<a href="{{ route('tpq.santri.index') }}" class="menu-card">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.santri')): ?>
+<a href="<?php echo e(route('tpq.santri.index')); ?>" class="menu-card">
                 <span class="menu-card-icon">🧑‍🎓</span>
                 <h3>Data Santri</h3>
                 <p>Kelola database santri terdaftar dan hubungkan dengan kelas mereka.</p>
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.absensi'))
-<a href="{{ route('tpq.absensi.index') }}" class="menu-card">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.absensi')): ?>
+<a href="<?php echo e(route('tpq.absensi.index')); ?>" class="menu-card">
                 <span class="menu-card-icon">📝</span>
                 <h3>Absensi Santri</h3>
                 <p>Catat kehadiran harian santri. Guru pengampu hanya bisa mengabsen kelasnya.</p>
             </a>
-@endif
-            @if(auth()->user()->hasAccess('tpq.laporan'))
-<a href="{{ route('tpq.laporan.index') }}" class="menu-card">
+<?php endif; ?>
+            <?php if(auth()->user()->hasAccess('tpq.laporan')): ?>
+<a href="<?php echo e(route('tpq.laporan.index')); ?>" class="menu-card">
                 <span class="menu-card-icon">📊</span>
                 <h3>Laporan Kehadiran</h3>
                 <p>Lihat rekap persentase absensi mingguan, bulanan, dan tahunan per kelas.</p>
             </a>
-@endif
+<?php endif; ?>
         </div>
     </main>
 
@@ -229,3 +229,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\masjid-baginda\resources\views/tpq/dashboard.blade.php ENDPATH**/ ?>

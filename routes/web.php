@@ -131,6 +131,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/kelas/{id}', [App\Http\Controllers\TpqController::class, 'kelasDestroy'])->name('kelas.destroy');
 
         // Santri CRUD
+        Route::get('/santri/export/excel', [App\Http\Controllers\TpqController::class, 'santriExportExcel'])->name('santri.export.excel');
+        Route::get('/santri/export/pdf', [App\Http\Controllers\TpqController::class, 'santriExportPdf'])->name('santri.export.pdf');
         Route::get('/santri', [App\Http\Controllers\TpqController::class, 'santriIndex'])->name('santri.index');
         Route::post('/santri', [App\Http\Controllers\TpqController::class, 'santriStore'])->name('santri.store');
         Route::put('/santri/{id}', [App\Http\Controllers\TpqController::class, 'santriUpdate'])->name('santri.update');

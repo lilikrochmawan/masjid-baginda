@@ -36,7 +36,7 @@
         .page-title { margin-bottom: 20px; }
         .page-title h1 { color: #0f4d36; font-size: 26px; font-weight: 700; }
 
-        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; }
+        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
         
         .filter-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 20px; }
         .filter-group { flex: 1; min-width: 180px; }
@@ -45,7 +45,7 @@
 
         .alert { border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
         
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 700px; }
         th, td { padding: 10px 8px; border: 1px solid #e6f4ed; text-align: center; font-size: 13px; color: #164a3f; }
         th { background: #f0fdf4; font-weight: 700; }
@@ -69,7 +69,7 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 16px 14px 30px; }
+            .main { margin-left: 0; padding: 16px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             .filter-group { min-width: 100%; }

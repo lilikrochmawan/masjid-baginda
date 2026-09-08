@@ -31,12 +31,17 @@
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 190; }
         .sidebar-overlay.open { display: block; }
 
+        /* Sticky Column Name */
+        .table-wrapper th:nth-child(3), .table-wrapper td:nth-child(3) { position: sticky; left: 0; z-index: 2; background-color: #ffffff; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15); }
+        .table-wrapper th:nth-child(3) { background-color: #f0fdf4; z-index: 3; }
+        tr:hover td:nth-child(3) { background-color: #f3fff8; }
+
         /* ── Main content ── */
         .main { margin-left: 220px; min-height: 100vh; padding: 28px 28px 40px; }
         .page-title { margin-bottom: 20px; }
         .page-title h1 { color: #0f4d36; font-size: 26px; font-weight: 700; }
 
-        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; }
+        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
         
         .filter-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 20px; }
         .filter-group { flex: 1; min-width: 200px; }
@@ -57,7 +62,7 @@
             -webkit-overflow-scrolling: touch;
             display: block;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 600px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
         th, td { padding: 14px 12px; border-bottom: 1px solid #e6f4ed; text-align: left; font-size: 13.5px; color: #164a3f; }
         .table-wrapper th, .table-wrapper td { white-space: nowrap; }
         th { background: #f0fdf4; font-weight: 700; }
@@ -81,7 +86,7 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 16px 14px 30px; }
+            .main { margin-left: 0; padding: 16px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             .filter-group { min-width: 100%; }
@@ -89,6 +94,7 @@
             .radio-group { gap: 8px; }
             .radio-option { font-size: 12px; gap: 4px; }
             .radio-option input[type="radio"] { width: 16px; height: 16px; }
+            .table-wrapper th:nth-child(3), .table-wrapper td:nth-child(3) { max-width: 45vw; white-space: normal; word-wrap: break-word; }
         }
     </style>
 </head>
@@ -244,6 +250,9 @@
                                             <td>{{ $santri->nis ?? '-' }}</td>
                                             <td>
                                                 <strong>{{ $santri->nama_santri }}</strong>
+                                                @if($santri->nama_panggilan)
+                                                    <br><span style="font-size: 11px; color: #6b7280;">({{ $santri->nama_panggilan }})</span>
+                                                @endif
                                                 @if($absen)
                                                     <span class="status-badge badge-{{ $currentStatus === 'H' ? 'H' : 'A' }}">{{ $currentStatus === 'H' ? 'Hadir' : 'Alfa/tidak hadir' }}</span>
                                                 @endif

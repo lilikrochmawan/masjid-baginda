@@ -52,20 +52,28 @@ class TpqPrestasiController extends Controller
             } else {
                 $santris = collect();
             }
-            $riwayat = PrestasiSantri::whereIn('tb_santri_id', $santris->pluck('id'))
-                ->with(['santri', 'guru', 'user', 'masterHafalan'])
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('created_at', 'desc')
-                ->take(50)
-                ->get();
         } else {
             $santris = Santri::with('kelas')->orderBy('nama_santri')->get();
-            $riwayat = PrestasiSantri::with(['santri', 'guru', 'user', 'masterHafalan'])
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('created_at', 'desc')
-                ->take(50)
-                ->get();
         }
+
+        $search = $request->input('search');
+        
+        $riwayatQuery = PrestasiSantri::with(['santri', 'guru', 'user', 'masterHafalan']);
+
+        if ($isGuru) {
+            $riwayatQuery->whereIn('tb_santri_id', $santris->pluck('id'));
+        }
+
+        if (!empty($search)) {
+            $riwayatQuery->whereHas('santri', function($q) use ($search) {
+                $q->where('nama_santri', 'like', "%{$search}%");
+            });
+        }
+
+        $riwayat = $riwayatQuery->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
 
         $masterHafalan = TpqMasterHafalan::orderBy('kategori')->orderBy('nama')->get();
 

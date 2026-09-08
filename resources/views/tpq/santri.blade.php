@@ -37,7 +37,7 @@
         .page-title h1 { color: #0f4d36; font-size: 26px; font-weight: 700; }
 
         .grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 24px; }
-        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; }
+        .section { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 16px rgba(15,60,40,0.06); margin-bottom: 20px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
         .section h2 { font-size: 18px; color: #0f4d36; margin-bottom: 16px; }
 
         .form-group { margin-bottom: 16px; }
@@ -54,7 +54,7 @@
         .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
         .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid #e6f4ed; text-align: left; font-size: 13px; color: #164a3f; }
         th { background: #f0fdf4; font-weight: 700; }
@@ -70,11 +70,25 @@
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
             .topbar { display: flex; }
-            .main { margin-left: 0; padding: 16px 14px 30px; }
+            .main { margin-left: 0; padding: 16px 14px 30px; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
             .page-title h1 { font-size: 22px; }
             .section { padding: 16px 14px; }
             th, td { padding: 10px 8px; font-size: 12px; }
+            .table-wrapper th:nth-child(3), .table-wrapper td:nth-child(3) { max-width: 45vw; white-space: normal; word-wrap: break-word; }
         }
+        /* Pagination Custom CSS */
+        .pagination { display: flex; padding-left: 0; list-style: none; gap: 4px; flex-wrap: wrap; margin-top: 10px; margin-bottom: 0; align-items: center; justify-content: center; }
+        .page-link { position: relative; display: block; color: #10b981; text-decoration: none; background-color: #fbfffe; border: 1px solid #d1e7dd; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .page-link:hover { background-color: #e6f4ed; color: #047857; }
+        .page-item.active .page-link { z-index: 3; color: #fff; background-color: #10b981; border-color: #10b981; font-weight: 600; box-shadow: 0 2px 4px rgba(16,185,129,0.2); }
+        .page-item.disabled .page-link { color: #9ca3af; pointer-events: none; background-color: #f3f4f6; border-color: #e5e7eb; }
+        .pagination svg { width: 1.25rem; height: 1.25rem; display: inline-block; } /* Jika memakai icon panah svg default tailwind laravel */
+        p.text-sm.text-gray-700.leading-5 { display: none; } /* Sembunyikan text showing 1 to 10 of ... */
+        .flex.justify-between.flex-1.sm\:hidden { display: none; } /* Sembunyikan mobile link default tailwind laravel */
+        /* Sticky Column Name */
+        .table-wrapper th:nth-child(3), .table-wrapper td:nth-child(3) { position: sticky; left: 0; z-index: 2; background-color: #ffffff; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15); }
+        .table-wrapper th:nth-child(3) { background-color: #f0fdf4; z-index: 3; }
+        tr:hover td:nth-child(3) { background-color: #f3fff8; }
     </style>
 </head>
 <body>
@@ -176,6 +190,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="nama_panggilan">Nama Panggilan</label>
+                        <input type="text" id="nama_panggilan" name="nama_panggilan" placeholder="Masukkan nama panggilan santri">
+                    </div>
+
+                    <div class="form-group">
                         <label for="tb_kelas_id">Pilih Kelas</label>
                         <select id="tb_kelas_id" name="tb_kelas_id">
                             <option value="">Tanpa Kelas (Belum Ditempatkan)</option>
@@ -227,10 +246,16 @@
             <!-- Right Side: Table -->
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #e6f4ed; padding-bottom: 12px;">
-                    <h2 style="margin-bottom: 0;">Daftar Santri Terdaftar</h2>
-                    <form action="{{ route('tpq.santri.index') }}" method="GET" style="display: flex; gap: 8px; align-items: center; margin: 0;">
-                        <label for="filter_kelas_id" style="font-size: 13.5px; font-weight: 600; color: #164a3f;">Filter Kelas:</label>
-                        <select name="kelas_id" id="filter_kelas_id" onchange="this.form.submit()" style="padding: 10px 14px; border-radius: 10px; border: 1px solid #d1e7dd; font-size: 13.5px; background: #fbfffe; color: #103a2d; cursor: pointer; min-width: 160px; outline: none; transition: border-color 0.2s;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h2 style="margin-bottom: 0;">Daftar Santri Terdaftar</h2>
+                        <a href="{{ route('tpq.santri.export.excel') }}" style="background: #10b981; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600;"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
+                        <a href="{{ route('tpq.santri.export.pdf') }}" target="_blank" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600;"><i class="fa-solid fa-file-pdf"></i> Export PDF</a>
+                    </div>
+                    <form action="{{ route('tpq.santri.index') }}" method="GET" style="display: flex; gap: 8px; align-items: center; margin: 0; flex-wrap: wrap;">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama santri..." style="padding: 8px 12px; border-radius: 8px; border: 1px solid #d1e7dd; font-size: 13px; width: 200px;">
+                        
+                        <label for="filter_kelas_id" style="font-size: 13.5px; font-weight: 600; color: #164a3f; margin-left: 8px;">Filter Kelas:</label>
+                        <select name="kelas_id" id="filter_kelas_id" onchange="this.form.submit()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #d1e7dd; font-size: 13px; background: #fbfffe; color: #103a2d; cursor: pointer; min-width: 160px; outline: none; transition: border-color 0.2s;">
                             <option value="">Semua Kelas</option>
                             <option value="none" {{ (isset($selectedKelasId) && $selectedKelasId === 'none') ? 'selected' : '' }}>Tanpa Kelas</option>
                             @foreach($kelas as $k)
@@ -239,6 +264,10 @@
                                 </option>
                             @endforeach
                         </select>
+                        <button type="submit" style="padding: 8px 12px; border-radius: 8px; background: #10b981; color: white; border: none; cursor: pointer; font-size: 13px;">Cari</button>
+                        @if(request('search') || request('kelas_id'))
+                            <a href="{{ route('tpq.santri.index') }}" style="padding: 8px 12px; border-radius: 8px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 13px; text-decoration: none; display: flex; align-items: center;">Reset</a>
+                        @endif
                     </form>
                 </div>
                 <div class="table-wrapper">
@@ -261,9 +290,14 @@
                         <tbody>
                             @forelse($santris as $santri)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $santris->firstItem() + $loop->index }}</td>
                                     <td>{{ $santri->nis ?? '-' }}</td>
-                                    <td><strong>{{ $santri->nama_santri }}</strong></td>
+                                    <td>
+                                        <strong>{{ $santri->nama_santri }}</strong>
+                                        @if($santri->nama_panggilan)
+                                            <br><span style="font-size: 11px; color: #6b7280;">({{ $santri->nama_panggilan }})</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @if($santri->kelas)
                                             <span style="color:#0f766e; font-weight:600;">🏫 {{ $santri->kelas->nama_kelas }}</span>
@@ -294,6 +328,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div style="margin-top: 16px;">
+                    {{ $santris->links() }}
+                </div>
             </div>
         </div>
     </main>
@@ -318,6 +355,7 @@
 
         const nisInput = document.getElementById('nis');
         const namaInput = document.getElementById('nama_santri');
+        const panggilanInput = document.getElementById('nama_panggilan');
         const kelasIdSelect = document.getElementById('tb_kelas_id');
         const jkSelect = document.getElementById('jenis_kelamin');
         const tglLahirInput = document.getElementById('tanggal_lahir');
@@ -339,6 +377,7 @@
             // Fill inputs
             nisInput.value = santri.nis || "";
             namaInput.value = santri.nama_santri;
+            panggilanInput.value = santri.nama_panggilan || "";
             kelasIdSelect.value = santri.tb_kelas_id || "";
             jkSelect.value = santri.jenis_kelamin;
             tglLahirInput.value = santri.tanggal_lahir || "";

@@ -17,6 +17,7 @@ class Santri extends Model
         'tb_kelas_id',
         'nis',
         'nama_santri',
+        'nama_panggilan',
         'jenis_kelamin',
         'tanggal_lahir',
         'alamat_rumah',

@@ -225,7 +225,14 @@ class TpqController extends Controller
             }
         }
 
-        $santris = $query->get();
+        $search = $request->input('search');
+        if (!empty($search)) {
+            $query->where('nama_santri', 'like', "%{$search}%");
+        }
+
+        // Apply pagination
+        $santris = $query->paginate(20)->withQueryString();
+        
         $kelas = Kelas::all();
 
         // Auto-generate NIS (e.g. 0001, 0002)
@@ -251,6 +258,7 @@ class TpqController extends Controller
             'tb_kelas_id' => 'nullable|exists:tb_kelas,id',
             'nis' => 'nullable|unique:tb_santri,nis',
             'nama_santri' => 'required|string|max:255',
+            'nama_panggilan' => 'nullable|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'nullable|date',
             'nama_ayah' => 'nullable|string|max:255',
@@ -288,6 +296,7 @@ class TpqController extends Controller
             'tb_kelas_id' => 'nullable|exists:tb_kelas,id',
             'nis' => 'nullable|unique:tb_santri,nis,' . $santri->id,
             'nama_santri' => 'required|string|max:255',
+            'nama_panggilan' => 'nullable|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
             'tanggal_lahir' => 'nullable|date',
             'nama_ayah' => 'nullable|string|max:255',
@@ -307,6 +316,51 @@ class TpqController extends Controller
         $santri->delete();
 
         return redirect()->route('tpq.santri.index')->with('success', 'Data santri berhasil dihapus.');
+    }
+
+    public function santriExportExcel()
+    {
+        $santris = Santri::with('kelas')->orderBy('nama_santri')->get();
+        $csvFileName = 'data_santri_' . date('Ymd_His') . '.csv';
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$csvFileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['No', 'NIS', 'Nama Lengkap', 'Nama Panggilan', 'Kelas', 'L/P', 'Tanggal Lahir', 'Nama Ayah', 'Nama Ibu', 'No HP', 'Alamat'];
+
+        $callback = function() use($santris, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            $no = 1;
+            foreach ($santris as $s) {
+                fputcsv($file, [
+                    $no++,
+                    $s->nis,
+                    $s->nama_santri,
+                    $s->nama_panggilan,
+                    $s->kelas ? $s->kelas->nama_kelas : 'Tanpa Kelas',
+                    $s->jenis_kelamin,
+                    $s->tanggal_lahir ? date('d-m-Y', strtotime($s->tanggal_lahir)) : '',
+                    $s->nama_ayah,
+                    $s->nama_ibu,
+                    $s->no_hp_orang_tua,
+                    $s->alamat_rumah
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function santriExportPdf()
+    {
+        $santris = Santri::with('kelas')->orderBy('nama_santri')->get();
+        return view('tpq.santri_pdf', compact('santris'));
     }
 
     /**
