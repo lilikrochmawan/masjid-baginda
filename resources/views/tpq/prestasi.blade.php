@@ -603,11 +603,11 @@
         }
 
         // AJAX Recommendation fetch
-        function fetchLastProgress() {
+        function fetchLastProgress(autoMateri = false) {
             const santriId = document.getElementById('tb_santri_id').value;
             const isSorogan = document.getElementById('tipe_sorogan').checked;
             const tipe = isSorogan ? 'sorogan' : 'hafalan';
-            const materi = document.getElementById('materi').value;
+            let materi = document.getElementById('materi').value;
 
             const recommendAlert = document.getElementById('recommendationAlert');
             const recommendText = document.getElementById('recommendationText');
@@ -625,7 +625,7 @@
             }
 
             let url = `{{ route('tpq.prestasi.last-progress') }}?santri_id=${santriId}&tipe=${tipe}`;
-            if (isSorogan) {
+            if (isSorogan && !autoMateri) {
                 url += `&materi=${materi}`;
             }
 
@@ -638,16 +638,22 @@
                         const statusLabel = lastRec.keterangan === 'lanjut' ? 'Lanjut' : 'Ulang';
 
                         if (isSorogan) {
+                            if (autoMateri && lastRec.materi) {
+                                materi = lastRec.materi;
+                                document.getElementById('materi').value = materi;
+                                toggleMateriFields();
+                            }
+
                             if (materi === 'iqro') {
                                 document.getElementById('iqro_jilid').value = rec.iqro_jilid;
                                 document.getElementById('iqro_halaman').value = rec.iqro_halaman;
                                 recommendText.textContent = `Pertemuan sebelumnya: Jilid ${lastRec.iqro_jilid} Hal. ${lastRec.iqro_halaman} (${statusLabel}). Halaman otomatis terisi ke rekomendasi baru.`;
                             } else if (materi === 'alquran') {
-                                document.getElementById('alquran_surah').value = rec.alquran_surah;
+                                $('#alquran_surah').val(rec.alquran_surah).trigger('change');
                                 document.getElementById('alquran_ayat').value = rec.alquran_ayat;
                                 recommendText.textContent = `Pertemuan sebelumnya: Surah ${lastRec.alquran_surah} Ayat ${lastRec.alquran_ayat} (${statusLabel}). Ayat otomatis terisi ke rekomendasi baru.`;
                             } else if (materi === 'juz_amma') {
-                                document.getElementById('juz_amma_surah').value = rec.juz_amma_surah;
+                                $('#juz_amma_surah').val(rec.juz_amma_surah).trigger('change');
                                 document.getElementById('juz_amma_ayat').value = rec.juz_amma_ayat;
                                 recommendText.textContent = `Pertemuan sebelumnya: Surah ${lastRec.juz_amma_surah} Ayat ${lastRec.juz_amma_ayat} (${statusLabel}). Ayat otomatis terisi ke rekomendasi baru.`;
                             }
@@ -739,8 +745,8 @@
                 document.getElementById('recommendationAlert').style.display = 'none';
             }
 
-            // Manually trigger fetchLastProgress
-            fetchLastProgress();
+            // Manually trigger fetchLastProgress with autoMateri = true
+            fetchLastProgress(true);
         }
     </script>
 

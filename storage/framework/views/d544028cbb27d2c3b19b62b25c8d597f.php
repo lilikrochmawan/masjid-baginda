@@ -5,7 +5,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="<?php echo e($logoFavicon); ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Baginda</title>
@@ -302,49 +301,32 @@
         }
         
         .dashboard-header {
-            background: linear-gradient(135deg, #059669 0%, #022c1e 100%);
-            padding: 36px 30px;
-            border-radius: 24px;
-            box-shadow: 0 12px 36px rgba(5, 150, 105, 0.12);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
             margin-bottom: 30px;
+            border: 1px solid rgba(16, 185, 129, 0.08);
             position: relative;
             overflow: hidden;
-            border: none;
         }
 
         .dashboard-header::before {
             content: '';
             position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
-            top: -100px;
-            right: -100px;
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .dashboard-header::after {
-            content: '';
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
-            bottom: -50px;
-            left: -50px;
-            border-radius: 50%;
-            pointer-events: none;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #10b981, #059669);
         }
         
         .dashboard-header h2 {
-            color: #ffffff;
+            color: #0f172a;
             margin-bottom: 8px;
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            position: relative;
-            z-index: 2;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .user-info {
@@ -387,19 +369,16 @@
             font-weight: 600;
         }
         
-        .dashboard-card {
+        .dashboard-content {
             background: white;
-            padding: 28px;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
             border: 1px solid rgba(16, 185, 129, 0.08);
-            margin-bottom: 30px;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
+            margin-bottom: 40px;
         }
         
-        .dashboard-card h3 {
+        .dashboard-content h3 {
             color: #0f172a;
             font-size: 20px;
             font-weight: 800;
@@ -410,7 +389,7 @@
             position: relative;
         }
 
-        .dashboard-card h3::after {
+        .dashboard-content h3::after {
             content: '';
             position: absolute;
             bottom: -2px;
@@ -561,10 +540,10 @@
         .item-tpq { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
         .item-about { background: linear-gradient(135deg, #6b7280 0%, #374151 100%); }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 900px) {
             .dashboard-layout {
                 grid-template-columns: 1fr !important;
-                gap: 24px !important;
+                gap: 20px !important;
             }
         }
         
@@ -631,24 +610,22 @@
             }
             
             .dashboard-header {
-                padding: 28px 20px;
+                padding: 20px;
             }
             .dashboard-header h2 {
-                font-size: 24px;
+                font-size: 22px;
             }
             .user-info {
                 grid-template-columns: 1fr;
             }
             
-            .dashboard-card {
-                padding: 20px;
-                border-radius: 20px;
-                margin-bottom: 20px;
+            .dashboard-content {
+                padding: 24px;
             }
             
-            .menu-grid-container {
-                grid-template-columns: 1fr !important;
-                gap: 12px;
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
         }
     </style>
@@ -749,8 +726,11 @@
         
         <div class="dashboard-layout" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-bottom: 40px; margin-top: 20px;">
             <!-- Left Side: Slideshow / Announcement -->
-            <div class="dashboard-card slideshow-container" style="justify-content: space-between;">
-                <h3>📢 Pengumuman & Kegiatan Masjid</h3>
+            <div class="slideshow-container" style="background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid rgba(16, 185, 129, 0.08); padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                <h3 style="color:#0f172a; font-size:18px; font-weight:800; border-bottom:2px solid #e2e8f0; padding-bottom:12px; margin-bottom:20px; position:relative;">
+                    📢 Pengumuman & Kegiatan Masjid
+                    <span style="content:''; position:absolute; bottom:-2px; left:0; width:60px; height:2px; background:#10b981;"></span>
+                </h3>
                 
                 <div class="slider-wrapper" style="position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px; border: 1px solid #e2e8f0; background:#f8fafc;">
                     <?php if($pengumumanList->isEmpty()): ?>
@@ -789,8 +769,11 @@
             </div>
 
             <!-- Right Side: Menu Cards -->
-            <div class="dashboard-card dashboard-content">
-                <h3>📊 Menu Utama</h3>
+            <div class="dashboard-content" style="background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid rgba(16, 185, 129, 0.08); padding: 24px; display: flex; flex-direction: column;">
+                <h3 style="color:#0f172a; font-size:18px; font-weight:800; border-bottom:2px solid #e2e8f0; padding-bottom:12px; margin-bottom:20px; position:relative; text-align:left;">
+                    📊 Menu Utama
+                    <span style="content:''; position:absolute; bottom:-2px; left:0; width:60px; height:2px; background:#10b981;"></span>
+                </h3>
 
                 <div class="welcome-message" style="margin-bottom: 20px; font-size: 13.5px; color: #475569; text-align:left;">
                     <p>Anda login sebagai <strong><?php echo e(ucfirst($hakakses->nama_hakakses)); ?></strong>. Silakan pilih modul kerja di bawah:</p>
@@ -803,7 +786,7 @@
                             <div class="menu-item-icon-compact">👥</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Manajemen User</div>
-                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Atur data pengguna, hak akses, dan tingkat keamanan.</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Atur data pengguna, hak akses, dan tingkat keamanan.</div>
                             </div>
                         </a>
                     <?php endif; ?>
@@ -813,7 +796,7 @@
                             <div class="menu-item-icon-compact">🥫</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Koin Baginda</div>
-                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Pencatatan sirkulasi, stok, dan distribusi Koin Baginda.</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Pencatatan sirkulasi, stok, dan distribusi Koin Baginda.</div>
                             </div>
                         </a>
                     <?php endif; ?>
@@ -823,7 +806,7 @@
                             <div class="menu-item-icon-compact">📋</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Data Operasional</div>
-                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Pengelolaan inventarisasi fisik, aset, dan berkas.</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Pengelolaan inventarisasi fisik, aset, dan berkas.</div>
                             </div>
                         </a>
                     <?php endif; ?>
@@ -833,7 +816,7 @@
                             <div class="menu-item-icon-compact">💰</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Keuangan</div>
-                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Pantau catatan kas masuk, pengeluaran, anggaran, infak.</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Pantau catatan kas masuk, pengeluaran, anggaran, infak.</div>
                             </div>
                         </a>
                     <?php endif; ?>
@@ -843,7 +826,7 @@
                             <div class="menu-item-icon-compact">📚</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Manajemen TPQ</div>
-                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Kelola administrasi santri, data kelas, guru, absensi.</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Kelola administrasi santri, data kelas, guru, absensi.</div>
                             </div>
                         </a>
                     <?php endif; ?>
@@ -853,13 +836,12 @@
                             <div class="menu-item-icon-compact">⚙️</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px;">Pengaturan Sistem</div>
-                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); line-height: 1.4; margin-top: 2px;">Konfigurasi token Fonnte, Midtrans, & parameter sistem.</div>
+                                <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">Konfigurasi token Fonnte, Midtrans, & parameter sistem.</div>
                             </div>
                         </a>
                     <?php endif; ?>
                 </div>
             </div>
-        </div>
     </div>
     <script>
         const menuToggle     = document.getElementById('menuToggle');
@@ -962,6 +944,8 @@
             clearInterval(slideInterval);
         }
     </script>
+
+<?php echo $__env->make('components.global-loader', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </body>
 </html>
 <?php /**PATH C:\xampp\htdocs\masjid-baginda\resources\views/dashboard/index.blade.php ENDPATH**/ ?>

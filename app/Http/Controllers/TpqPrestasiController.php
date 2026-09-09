@@ -193,7 +193,7 @@ class TpqPrestasiController extends Controller
         }
 
         $query = PrestasiSantri::where('tb_santri_id', $santriId)->where('tipe', $tipe);
-        if ($tipe === 'sorogan') {
+        if ($tipe === 'sorogan' && !empty($materi)) {
             $query->where('materi', $materi);
         }
 
@@ -207,21 +207,38 @@ class TpqPrestasiController extends Controller
         $isLanjut = $last->keterangan === 'lanjut';
 
         if ($tipe === 'sorogan') {
-            if ($materi === 'iqro') {
+            $recMateri = $last->materi;
+            if ($recMateri === 'iqro') {
                 $recommendation = [
                     'iqro_jilid' => $last->iqro_jilid,
                     'iqro_halaman' => $isLanjut ? $last->iqro_halaman + 1 : $last->iqro_halaman,
                 ];
-            } elseif ($materi === 'alquran') {
-                $recommendation = [
-                    'alquran_surah' => $last->alquran_surah,
-                    'alquran_ayat' => $isLanjut ? $this->incrementAyat($last->alquran_ayat) : $last->alquran_ayat,
-                ];
-            } elseif ($materi === 'juz_amma') {
-                $recommendation = [
-                    'juz_amma_surah' => $last->juz_amma_surah,
-                    'juz_amma_ayat' => $isLanjut ? $this->incrementAyat($last->juz_amma_ayat) : $last->juz_amma_ayat,
-                ];
+            } elseif ($recMateri === 'alquran') {
+                if ($isLanjut) {
+                    $next = $this->incrementAlquran($last->alquran_surah, $last->alquran_ayat);
+                    $recommendation = [
+                        'alquran_surah' => $next['surah'],
+                        'alquran_ayat' => $next['ayat'],
+                    ];
+                } else {
+                    $recommendation = [
+                        'alquran_surah' => $last->alquran_surah,
+                        'alquran_ayat' => $last->alquran_ayat,
+                    ];
+                }
+            } elseif ($recMateri === 'juz_amma') {
+                if ($isLanjut) {
+                    $next = $this->incrementAlquran($last->juz_amma_surah, $last->juz_amma_ayat);
+                    $recommendation = [
+                        'juz_amma_surah' => $next['surah'],
+                        'juz_amma_ayat' => $next['ayat'],
+                    ];
+                } else {
+                    $recommendation = [
+                        'juz_amma_surah' => $last->juz_amma_surah,
+                        'juz_amma_ayat' => $last->juz_amma_ayat,
+                    ];
+                }
             }
         } elseif ($tipe === 'hafalan') {
             $currentHafalanId = $last->tb_tpq_master_hafalan_id;
@@ -313,6 +330,71 @@ class TpqPrestasiController extends Controller
             return (int)$ayat + 1;
         }
         return $ayat;
+    }
+
+    private const SURAH_DATA = [
+        'Al-Fatihah' => 7, 'Al-Baqarah' => 286, 'Ali \'Imran' => 200, 'An-Nisa\'' => 176, 'Al-Ma\'idah' => 120,
+        'Al-An\'am' => 165, 'Al-A\'raf' => 206, 'Al-Anfal' => 75, 'At-Taubah' => 129, 'Yunus' => 109,
+        'Hud' => 123, 'Yusuf' => 111, 'Ar-Ra\'d' => 43, 'Ibrahim' => 52, 'Al-Hijr' => 99,
+        'An-Nahl' => 128, 'Al-Isra\'' => 111, 'Al-Kahf' => 110, 'Maryam' => 98, 'Ta Ha' => 135,
+        'Al-Anbiya\'' => 112, 'Al-Hajj' => 78, 'Al-Mu\'minun' => 118, 'An-Nur' => 64, 'Al-Furqan' => 77,
+        'Ash-Shu\'ara\'' => 227, 'An-Naml' => 93, 'Al-Qasas' => 88, 'Al-\'Ankabut' => 69, 'Ar-Rum' => 60,
+        'Luqman' => 34, 'As-Sajdah' => 30, 'Al-Ahzab' => 73, 'Saba\'' => 54, 'Fatir' => 45,
+        'Ya Sin' => 83, 'As-Saffat' => 182, 'Sad' => 88, 'Az-Zumar' => 75, 'Ghafir' => 85,
+        'Fussilat' => 54, 'Ash-Shura' => 53, 'Az-Zukhruf' => 89, 'Ad-Dukhan' => 59, 'Al-Jathiyah' => 37,
+        'Al-Ahqaf' => 35, 'Muhammad' => 38, 'Al-Fath' => 29, 'Al-Hujurat' => 18, 'Qaf' => 45,
+        'Adh-Dhariyat' => 60, 'At-Tur' => 49, 'An-Najm' => 62, 'Al-Qamar' => 55, 'Ar-Rahman' => 78,
+        'Al-Waqi\'ah' => 96, 'Al-Hadid' => 29, 'Al-Mujadilah' => 22, 'Al-Hashr' => 24, 'Al-Mumtahanah' => 13,
+        'As-Saff' => 14, 'Al-Jumu\'ah' => 11, 'Al-Munafiqun' => 11, 'At-Taghabun' => 18, 'At-Talaq' => 12,
+        'At-Tahrim' => 12, 'Al-Mulk' => 30, 'Al-Qalam' => 52, 'Al-Haqqah' => 52, 'Al-Ma\'arij' => 44,
+        'Nuh' => 28, 'Al-Jinn' => 28, 'Al-Muzzammil' => 20, 'Al-Muddatthir' => 56, 'Al-Qiyamah' => 40,
+        'Al-Insan' => 31, 'Al-Mursalat' => 50, 'An-Naba\'' => 40, 'An-Nazi\'at' => 46, '\'Abasa' => 42,
+        'At-Takwir' => 29, 'Al-Infitar' => 19, 'Al-Mutaffifin' => 36, 'Al-Inshiqaq' => 25, 'Al-Buruj' => 22,
+        'At-Tariq' => 17, 'Al-A\'la' => 19, 'Al-Ghashiyah' => 26, 'Al-Fajr' => 30, 'Al-Balad' => 20,
+        'Ash-Shams' => 15, 'Al-Lail' => 21, 'Ad-Duha' => 11, 'Ash-Sharh' => 8, 'At-Tin' => 8,
+        'Al-\'Alaq' => 19, 'Al-Qadr' => 5, 'Al-Bayyinah' => 8, 'Az-Zalzalah' => 8, 'Al-\'Adiyat' => 11,
+        'Al-Qari\'ah' => 11, 'At-Takathur' => 8, 'Al-\'Asr' => 3, 'Al-Humazah' => 9, 'Al-Fil' => 5,
+        'Quraish' => 4, 'Al-Ma\'un' => 7, 'Al-Kawthar' => 3, 'Al-Kafirun' => 6, 'An-Nasr' => 3,
+        'Al-Masad' => 5, 'Al-Ikhlas' => 4, 'Al-Falaq' => 5, 'An-Nas' => 6
+    ];
+
+    private function incrementAlquran($surahName, $ayatStr)
+    {
+        if (empty($ayatStr)) return ['surah' => $surahName, 'ayat' => ''];
+        
+        // Parse current ayat (handle ranges like "1-5", just take the end)
+        $currentAyat = 0;
+        if (preg_match('/(\d+)\s*-\s*(\d+)/', $ayatStr, $matches)) {
+            $currentAyat = (int)$matches[2];
+        } elseif (is_numeric($ayatStr)) {
+            $currentAyat = (int)$ayatStr;
+        } else {
+            return ['surah' => $surahName, 'ayat' => $ayatStr]; // unparseable
+        }
+
+        $surahKeys = array_keys(self::SURAH_DATA);
+        $surahIndex = array_search($surahName, $surahKeys);
+
+        if ($surahIndex === false) {
+            // Surah not found in list, fallback to simple increment
+            return ['surah' => $surahName, 'ayat' => $currentAyat + 1];
+        }
+
+        $maxAyat = self::SURAH_DATA[$surahName];
+
+        if ($currentAyat >= $maxAyat) {
+            // Move to next surah
+            if ($surahIndex + 1 < count($surahKeys)) {
+                $nextSurah = $surahKeys[$surahIndex + 1];
+                return ['surah' => $nextSurah, 'ayat' => 1];
+            } else {
+                // Reached end of Quran
+                return ['surah' => $surahName, 'ayat' => $maxAyat];
+            }
+        } else {
+            // Still in same surah
+            return ['surah' => $surahName, 'ayat' => $currentAyat + 1];
+        }
     }
 
     /**

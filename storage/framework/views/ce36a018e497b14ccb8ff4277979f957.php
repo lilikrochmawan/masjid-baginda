@@ -6,7 +6,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="<?php echo e($logoFavicon); ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Baginda</title>
@@ -249,6 +248,8 @@ unset($__errorArgs, $__bag); ?>
             <button type="submit" class="submit-btn">Masuk Ke Sistem</button>
         </form>
     </div>
+
+<?php echo $__env->make('components.global-loader', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </body>
 </html>
 <?php /**PATH C:\xampp\htdocs\masjid-baginda\resources\views/auth/login.blade.php ENDPATH**/ ?>

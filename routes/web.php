@@ -46,6 +46,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/keuangan/{id}/confirm', [KeuanganController::class, 'confirm'])->name('keuangan.confirm');
     Route::get('/keuangan/laporan', [KeuanganController::class, 'laporan'])->name('keuangan.laporan');
 
+    // Keuangan Event
+    Route::get('/keuangan/event', [App\Http\Controllers\KeuanganEventController::class, 'index'])->name('keuangan.event.index');
+    Route::post('/keuangan/event', [App\Http\Controllers\KeuanganEventController::class, 'storeEvent'])->name('keuangan.event.store');
+    Route::get('/keuangan/event/{id}', [App\Http\Controllers\KeuanganEventController::class, 'show'])->name('keuangan.event.show');
+    Route::post('/keuangan/event/{id}/transaksi', [App\Http\Controllers\KeuanganEventController::class, 'storeTransaksi'])->name('keuangan.event.transaksi.store');
+    Route::post('/keuangan/event/{id}/transfer', [App\Http\Controllers\KeuanganEventController::class, 'transferSaldo'])->name('keuangan.event.transfer');
+
     // Pengaturan Sistem
     Route::get('/settings', [App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
