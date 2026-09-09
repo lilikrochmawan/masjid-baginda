@@ -6,7 +6,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ $logoFavicon }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Baginda</title>
@@ -234,5 +233,7 @@
             <button type="submit" class="submit-btn">Masuk Ke Sistem</button>
         </form>
     </div>
+
+@include('components.global-loader')
 </body>
 </html>

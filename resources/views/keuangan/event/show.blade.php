@@ -71,6 +71,23 @@
             .section { padding: 16px 14px; }
             th, td { padding: 10px 8px; font-size: 12px; }
         }
+        
+        .kop-header { display: none; align-items: center; gap: 18px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #d1e7dd; }
+        .kop-logo { width: 72px; height: 72px; border-radius: 16px; background: #f3faf7; display: flex; align-items: center; justify-content: center; border: 1px solid #d1e7dd; }
+        .kop-logo-img { width: 72px; height: 72px; object-fit: cover; border-radius: 16px; border: 1px solid #d1e7dd; }
+        .kop-text { line-height: 1.3; }
+        .kop-text .kop-title { font-size: 18px; font-weight: 800; color: #0f4d36; }
+        .kop-text .kop-subtitle { font-size: 14px; color: #164a3f; }
+        .kop-text .kop-address { font-size: 12px; color: #475057; }
+
+        @media print {
+            .sidebar, .topbar, .sidebar-overlay, .button-primary, .alert, .print-hide { display: none !important; }
+            .main { margin-left: 0; padding: 0; }
+            body { background: white; }
+            .kop-header { display: flex !important; }
+            .grid { display: block; }
+            .section { box-shadow: none; padding: 0; margin-bottom: 30px; border: none; }
+        }
     </style>
 </head>
 <body>
@@ -82,7 +99,7 @@
         </div>
         <nav class="sidebar-nav">
             @if(auth()->user()->hasAccess('keuangan.transaksi'))
-            <a href="{{ route('keuangan.index') }}" class="active">
+            <a href="{{ route('keuangan.index') }}">
                 <span class="nav-icon">🏠</span> Beranda
             </a>
             @endif
@@ -91,7 +108,7 @@
                 <span class="nav-icon">📊</span> Laporan
             </a>
             @endif
-            <a href="{{ route('keuangan.event.index') }}">
+            <a href="{{ route('keuangan.event.index') }}" class="active">
                 <span class="nav-icon">🎉</span> Keuangan Event
             </a>
             <div class="divider"></div>
@@ -121,7 +138,28 @@
 
     <!-- Main Content -->
     <main class="main">
-        <div class="page-title"><h1>Modul Keuangan</h1></div>
+        <div class="kop-header">
+            @php $setting = \App\Models\Setting::first(); @endphp
+            <div class="kop-logo">
+                @if($setting && $setting->logo)
+                    <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo Masjid" class="kop-logo-img">
+                @else
+                    <img src="{{ asset('images/image.png') }}" alt="Logo Masjid" class="kop-logo-img">
+                @endif
+            </div>
+            <div class="kop-text">
+                <div class="kop-title">MASJID BAGINDA</div>
+                <div class="kop-subtitle">Alamat: Perum Taman Harmoni Jeruk Sawit, Mojorejo, Gondangrejo, Karanganyar</div>          
+            </div>
+        </div>
+
+        <div class="page-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Keuangan Event: {{ $event->nama_event }}</h1>
+            <div>
+                <button type="button" class="button-primary" style="background: #0f766e; margin-right: 8px;" onclick="window.print()">🖨️ Cetak</button>
+                <a href="{{ route('keuangan.event.index') }}" class="button-primary" style="background: #64748b; text-decoration: none;">&larr; Kembali</a>
+            </div>
+        </div>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -130,102 +168,79 @@
             <div class="alert alert-error">{{ session('error') }}</div>
         @endif
 
-        <div class="section">
-            <h2>Input Arus Kas</h2>
-            <div class="grid">
-                <div>
-                    <form action="{{ route('keuangan.store') }}" method="POST">
-                        @csrf
-                        <div class="form-group">
-                            <label for="tanggal_kas">Tanggal</label>
-                            <input type="date" id="tanggal_kas" name="tanggal_kas" value="{{ old('tanggal_kas', date('Y-m-d')) }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="tipe">Tipe Arus Kas</label>
-                            <select id="tipe" name="tipe" required>
-                                <option value="">Pilih tipe</option>
-                                <option value="masuk" {{ old('tipe') === 'masuk' ? 'selected' : '' }}>Masuk</option>
-                                <option value="keluar" {{ old('tipe') === 'keluar' ? 'selected' : '' }}>Keluar</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="jumlah">Jumlah</label>
-                            <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah') }}" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="tb_penerimaan_kaleng_id">Penerimaan Kaleng (opsional)</label>
-                            <select id="tb_penerimaan_kaleng_id" name="tb_penerimaan_kaleng_id">
-                                <option value="">Tidak terkait penerimaan</option>
-                                @foreach($penerimaanOptions as $option)
-                                    <option value="{{ $option->id }}" data-amount="{{ $option->jumlah }}" {{ old('tb_penerimaan_kaleng_id') == $option->id ? 'selected' : '' }}>
-                                        {{ $option->tanggal_penerimaan }} - {{ $option->jumlah }} - {{ $option->user?->name ?? '-' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="keterangan">Keterangan</label>
-                            <textarea id="keterangan" name="keterangan">{{ old('keterangan') }}</textarea>
-                        </div>
-                        <button type="submit" class="button-primary">Simpan Kas</button>
-                    </form>
+        <div class="grid">
+            <div class="print-hide">
+                <div class="section">
+                    <h2>Input Transaksi Event</h2>
+                    @if($event->is_transferred)
+                        <div class="alert alert-error">Saldo event ini sudah ditransfer ke kas utama masjid. Anda tidak bisa lagi menambah transaksi baru.</div>
+                    @else
+                        <form action="{{ route('keuangan.event.transaksi.store', $event->id) }}" method="POST">
+                            @csrf
+                            <div class="form-group">
+                                <label for="tanggal_kas">Tanggal</label>
+                                <input type="date" id="tanggal_kas" name="tanggal_kas" value="{{ old('tanggal_kas', date('Y-m-d')) }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipe">Tipe Arus Kas</label>
+                                <select id="tipe" name="tipe" required>
+                                    <option value="">Pilih tipe</option>
+                                    <option value="masuk" {{ old('tipe') === 'masuk' ? 'selected' : '' }}>Masuk</option>
+                                    <option value="keluar" {{ old('tipe') === 'keluar' ? 'selected' : '' }}>Keluar</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="jumlah">Jumlah</label>
+                                <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah') }}" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="keterangan">Keterangan</label>
+                                <textarea id="keterangan" name="keterangan">{{ old('keterangan') }}</textarea>
+                            </div>
+                            <button type="submit" class="button-primary">Simpan Transaksi</button>
+                        </form>
+                    @endif
                 </div>
+            </div>
 
-                <div>
+            <div>
+                <div class="section">
+                    <h2>Ringkasan Event</h2>
                     <div class="summary-grid">
                         <div class="summary-card">
-                            <span>Status user</span>
-                            <strong>{{ ucfirst($hakakses->nama_hakakses) }}</strong>
+                            <span>Total Pemasukan</span>
+                            <strong>{{ number_format($totalMasuk, 0, ',', '.') }}</strong>
                         </div>
                         <div class="summary-card">
-                            <span>Pending kas masuk</span>
-                            <strong>{{ $pendingKasCount }}</strong>
+                            <span>Total Pengeluaran</span>
+                            <strong>{{ number_format($totalKeluar, 0, ',', '.') }}</strong>
+                        </div>
+                        <div class="summary-card" style="{{ $saldo < 0 ? 'background: #fee2e2;' : '' }}">
+                            <span>Sisa Saldo</span>
+                            <strong style="{{ $saldo < 0 ? 'color: #991b1b;' : '' }}">{{ number_format($saldo, 0, ',', '.') }}</strong>
                         </div>
                     </div>
-
-                    @if($hakakses->nama_hakakses === 'bendahara' && $pendingKas->isNotEmpty())
-                        <div class="section" style="margin-top: 16px;">
-                            <h2>Notifikasi Konfirmasi</h2>
-                            <p style="font-size:13px;color:#6b7280;margin-bottom:12px;">Ada {{ $pendingKasCount }} transaksi kas masuk menunggu konfirmasi.</p>
-                            <div class="table-wrapper">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Tanggal</th>
-                                            <th>Jumlah</th>
-                                            <th>Keterangan</th>
-                                            <th>Pengaju</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($pendingKas as $kas)
-                                            <tr>
-                                                <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $kas->tanggal_kas }}</td>
-                                                <td>{{ $kas->jumlah }}</td>
-                                                <td>{{ $kas->keterangan ?? '-' }}</td>
-                                                <td>{{ $kas->user?->name ?? '-' }}</td>
-                                                <td>
-                                                    <form action="{{ route('keuangan.confirm', $kas->id) }}" method="POST">
-                                                        @csrf
-                                                        <button type="submit" class="confirm-button">Konfirmasi</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    @endif
+                    
+                    <div class="print-hide" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                        <h3>Transfer ke Kas Masjid</h3>
+                        <p style="font-size: 13px; color: #4b5563; margin-top: 8px; margin-bottom: 16px;">
+                            Jika event ini sudah selesai, Anda bisa mentransfer sisa saldo event ini ke dalam kas operasional utama masjid.
+                        </p>
+                        @if($event->is_transferred)
+                            <div class="badge" style="background:#d1fae5; color:#065f46; padding: 8px 14px;">Sudah ditransfer ke kas utama</div>
+                        @else
+                            <form action="{{ route('keuangan.event.transfer', $event->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mentransfer sisa saldo Rp {{ number_format($saldo, 0, ',', '.') }} ke kas utama masjid? Setelah ditransfer, data event tidak bisa ditambah/diubah lagi.');">
+                                @csrf
+                                <button type="submit" class="button-primary" style="width: 100%; {{ $saldo <= 0 ? 'opacity: 0.5; pointer-events: none;' : '' }}">Transfer Saldo (Rp {{ number_format($saldo, 0, ',', '.') }})</button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="section">
-            <h2>Riwayat Kas</h2>
+            <h2>Riwayat Transaksi Event</h2>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -233,22 +248,30 @@
                             <th>#</th>
                             <th>Tanggal</th>
                             <th>Tipe</th>
-                            <th>Jumlah</th>
-                            <th>Referensi</th>
-                            <th>User</th>
+                            <th>Jumlah (Rp)</th>
+                            <th>Keterangan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($kasEntries as $item)
+                        @forelse($event->transaksis as $trx)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $item->tanggal_kas }}</td>
-                                <td>{{ ucfirst($item->tipe) }}</td>
-                                <td>{{ $item->jumlah }}</td>
-                                <td>{{ $item->penerimaanKaleng?->tanggal_penerimaan ? 'Penerimaan ' . $item->penerimaanKaleng->tanggal_penerimaan : '-' }}</td>
-                                <td>{{ $item->user?->name ?? '-' }}</td>
+                                <td>{{ $trx->tanggal_kas }}</td>
+                                <td>
+                                    @if($trx->tipe === 'masuk')
+                                        <span class="badge" style="background:#dcfce7; color:#166534;">Masuk</span>
+                                    @else
+                                        <span class="badge" style="background:#fee2e2; color:#991b1b;">Keluar</span>
+                                    @endif
+                                </td>
+                                <td>{{ number_format($trx->jumlah, 0, ',', '.') }}</td>
+                                <td>{{ $trx->keterangan ?? '-' }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Belum ada transaksi pada event ini.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -264,46 +287,7 @@
             toggle.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
             overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
         }
-
-        // Form logic
-        const penerimaanSelect = document.getElementById('tb_penerimaan_kaleng_id');
-        const tipeSelect       = document.getElementById('tipe');
-        const jumlahInput      = document.getElementById('jumlah');
-        const keteranganInput  = document.getElementById('keterangan');
-
-        function formatMonthLabel(date) {
-            const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-            return monthNames[date.getMonth()];
-        }
-
-        function setPenerimaanKas() {
-            const selectedOption = penerimaanSelect.options[penerimaanSelect.selectedIndex];
-            const amount = selectedOption.dataset.amount;
-            if (penerimaanSelect.value) {
-                tipeSelect.value = 'masuk';
-                tipeSelect.classList.add('disabled-select');
-                jumlahInput.value = amount || '';
-                jumlahInput.readOnly = true;
-                const now = new Date();
-                keteranganInput.value = 'Penerimaan koin Baginda bulan ' + formatMonthLabel(now);
-            } else {
-                tipeSelect.classList.remove('disabled-select');
-                jumlahInput.readOnly = false;
-                jumlahInput.value = '{{ old('jumlah') ?? '' }}';
-                keteranganInput.value = '{{ old('keterangan') ?? '' }}';
-            }
-        }
-
-        tipeSelect.addEventListener('change', function() {
-            if (penerimaanSelect.value) tipeSelect.value = 'masuk';
-        });
-
-        if (penerimaanSelect) {
-            penerimaanSelect.addEventListener('change', setPenerimaanKas);
-            setPenerimaanKas();
-        }
     </script>
-
 @include('components.global-loader')
 </body>
 </html>
