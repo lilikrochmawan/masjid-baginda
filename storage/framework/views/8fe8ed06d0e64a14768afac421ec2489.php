@@ -478,6 +478,33 @@
 
             <!-- Right Column: Riwayat Input Terbaru -->
             <div class="section">
+                <!-- Stat Cards -->
+                <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <!-- Sorogan Card -->
+                    <div style="flex: 1; min-width: 200px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">
+                            📖
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 2px;">Sorogan Hari Ini</div>
+                            <div style="font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1;"><?php echo e($countSoroganToday); ?></div>
+                            <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Santri menyetor</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hafalan Card -->
+                    <div style="flex: 1; min-width: 200px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;">
+                            🧠
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 2px;">Hafalan Hari Ini</div>
+                            <div style="font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1;"><?php echo e($countHafalanToday); ?></div>
+                            <div style="font-size: 12px; color: #10b981; margin-top: 4px;">Santri menyetor</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px;">
                     <h2 style="margin-bottom: 0;">Riwayat Pencatatan</h2>
                     <form action="<?php echo e(route('tpq.prestasi.index')); ?>" method="GET" style="display: flex; gap: 8px; margin: 0;">

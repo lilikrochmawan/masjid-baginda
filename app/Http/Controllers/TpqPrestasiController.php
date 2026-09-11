@@ -107,7 +107,22 @@ class TpqPrestasiController extends Controller
         // Juz 30 Surahs only
         $juz30Surahs = array_slice($surahs, 77, 37, true);
 
-        return view('tpq.prestasi', compact('user', 'hakakses', 'santris', 'riwayat', 'masterHafalan', 'surahs', 'juz30Surahs'));
+        // Count unique santri for today
+        $today = date('Y-m-d');
+        
+        $querySoroganToday = \App\Models\PrestasiSantri::whereDate('tanggal', $today)->where('tipe', 'sorogan');
+        if ($isGuru) {
+            $querySoroganToday->whereIn('tb_santri_id', $santris->pluck('id'));
+        }
+        $countSoroganToday = $querySoroganToday->distinct('tb_santri_id')->count('tb_santri_id');
+
+        $queryHafalanToday = \App\Models\PrestasiSantri::whereDate('tanggal', $today)->where('tipe', 'hafalan');
+        if ($isGuru) {
+            $queryHafalanToday->whereIn('tb_santri_id', $santris->pluck('id'));
+        }
+        $countHafalanToday = $queryHafalanToday->distinct('tb_santri_id')->count('tb_santri_id');
+
+        return view('tpq.prestasi', compact('user', 'hakakses', 'santris', 'riwayat', 'masterHafalan', 'surahs', 'juz30Surahs', 'countSoroganToday', 'countHafalanToday'));
     }
 
     /**

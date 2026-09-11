@@ -194,10 +194,10 @@
         <div class="section">
             <h2>Peta Pembayaran SPP Tahun {{ $year }}</h2>
 
-            <form class="filters" action="{{ route('tpq.keuangan.spp.index') }}" method="GET">
+            <form class="filters" action="{{ route('tpq.keuangan.spp.index') }}" method="GET" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
                 <label>
                     Tahun
-                    <select name="year">
+                    <select name="year" onchange="this.form.submit()">
                         @for($y = date('Y') - 3; $y <= date('Y') + 1; $y++)
                             <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor
@@ -212,7 +212,14 @@
                         @endforeach
                     </select>
                 </label>
-                <button type="submit">Tampilkan</button>
+                <label>
+                    Cari Santri
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama atau NIS..." style="padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; width: 250px;">
+                </label>
+                <button type="submit" style="padding: 10px 16px; height: 42px;">Tampilkan</button>
+                @if(request('search') || request('kelas_id') || request('year') != date('Y'))
+                    <a href="{{ route('tpq.keuangan.spp.index') }}" style="padding: 10px 16px; height: 42px; border-radius: 8px; background: #ef4444; color: white; text-decoration: none; display: flex; align-items: center;">Reset Filter</a>
+                @endif
             </form>
 
             <div class="table-wrapper">

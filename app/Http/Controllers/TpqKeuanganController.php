@@ -49,12 +49,19 @@ class TpqKeuanganController extends Controller
 
         $year = $request->input('year', date('Y'));
         $kelasId = $request->input('kelas_id');
+        $search = $request->input('search');
 
         $kelas = Kelas::all();
 
         $santriQuery = Santri::with('kelas');
         if ($kelasId) {
             $santriQuery->where('tb_kelas_id', $kelasId);
+        }
+        if ($search) {
+            $santriQuery->where(function($q) use ($search) {
+                $q->where('nama_santri', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
+            });
         }
         $santris = $santriQuery->get();
 
