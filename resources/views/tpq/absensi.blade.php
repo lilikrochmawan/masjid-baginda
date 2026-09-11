@@ -215,11 +215,39 @@
         @if($selectedClassId)
             <div class="section">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; flex-wrap:wrap; gap:10px;">
-                    <h2>Daftar Kehadiran Santri</h2>
-                    <span style="font-size: 14px; font-weight:600; color:#0f766e; background:#e6f7f0; padding:6px 12px; border-radius:8px;">
-                        📅 {{ date('d F Y', strtotime($tanggal)) }}
-                    </span>
+                    <h2 style="margin: 0;">Daftar Kehadiran Santri</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="searchSantri" placeholder="Cari nama santri..." style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 14px; width: 220px;" onkeyup="filterSantri()">
+                        <span style="font-size: 14px; font-weight:600; color:#0f766e; background:#e6f7f0; padding:6px 12px; border-radius:8px;">
+                            📅 {{ date('d F Y', strtotime($tanggal)) }}
+                        </span>
+                    </div>
                 </div>
+
+                <script>
+                function filterSantri() {
+                    let input = document.getElementById("searchSantri");
+                    let filter = input.value.toLowerCase();
+                    let table = document.querySelector(".table-wrapper table tbody");
+                    let tr = table.getElementsByTagName("tr");
+
+                    for (let i = 0; i < tr.length; i++) {
+                        // Col 2 is NIS, Col 3 is Nama
+                        let tdNis = tr[i].getElementsByTagName("td")[1];
+                        let tdNama = tr[i].getElementsByTagName("td")[2];
+                        if (tdNis || tdNama) {
+                            let textNis = tdNis.textContent || tdNis.innerText;
+                            let textNama = tdNama.textContent || tdNama.innerText;
+                            if (textNis.toLowerCase().indexOf(filter) > -1 || textNama.toLowerCase().indexOf(filter) > -1) {
+                                tr[i].style.display = "";
+                            } else {
+                                tr[i].style.display = "none";
+                            }
+                        }
+                    }
+                }
+                </script>
+
 
                 @if($santris->isNotEmpty())
                     <form action="{{ route('tpq.absensi.store') }}" method="POST" id="formAbsensi">
@@ -254,7 +282,7 @@
                                                     <br><span style="font-size: 11px; color: #6b7280;">({{ $santri->nama_panggilan }})</span>
                                                 @endif
                                                 @if($absen)
-                                                    <span class="status-badge badge-{{ $currentStatus === 'H' ? 'H' : 'A' }}">{{ $currentStatus === 'H' ? 'Hadir' : 'Alfa/tidak hadir' }}</span>
+                                                    <span class="status-badge badge-{{ $currentStatus === 'H' ? 'H' : 'A' }}">{{ $currentStatus === 'H' ? 'Hadir' : 'Tidak Hadir' }}</span>
                                                 @endif
                                             </td>
                                             <td style="text-align: center; vertical-align: middle;">
@@ -263,7 +291,7 @@
                                                         <input type="radio" name="absensi[{{ $santri->id }}]" value="H" {{ $currentStatus === 'H' ? 'checked' : '' }}> Hadir
                                                     </label>
                                                     <label class="radio-option" style="color: #991b1b;">
-                                                        <input type="radio" name="absensi[{{ $santri->id }}]" value="A" {{ $currentStatus !== 'H' ? 'checked' : '' }}> Alfa/tidak hadir
+                                                        <input type="radio" name="absensi[{{ $santri->id }}]" value="A" {{ $currentStatus !== 'H' ? 'checked' : '' }}> Tidak Hadir
                                                     </label>
                                                 </div>
                                             </td>
@@ -349,11 +377,6 @@
                                 },
                                 body: JSON.stringify(messages[i])
                             });
-
-                            // Wait 20 seconds before next message, unless it's the last one
-                            if (i < messages.length - 1) {
-                                await new Promise(r => setTimeout(r, 20000));
-                            }
                         }
                         document.getElementById('progressBar').style.width = '100%';
                         document.getElementById('progressText').innerText = 'Berhasil! Semua data absensi dan pesan WA terkirim.';

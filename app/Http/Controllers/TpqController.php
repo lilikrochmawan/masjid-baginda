@@ -473,7 +473,7 @@ class TpqController extends Controller
                         foreach ($absensiData as $santriId => $status) {
                             $santri = Santri::find($santriId);
                             if ($santri && $santri->no_hp_orang_tua) {
-                                $statusText = $status === 'H' ? 'Hadir' : 'Alfa / Tidak Hadir';
+                                $statusText = $status === 'H' ? 'Hadir' : 'Tidak Hadir';
                                 $msg = str_replace(
                                     ['{nama_santri}', '{tanggal}', '{status}', '{keterangan}', '{nama_wali}'],
                                     [$santri->nama_santri, date('d F Y', strtotime($tanggal)), $statusText, $keteranganData[$santriId] ?? '-', $santri->nama_ayah ?? 'Wali Santri'],
